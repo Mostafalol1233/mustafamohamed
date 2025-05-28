@@ -192,16 +192,6 @@ export default function PortfolioSection() {
                       <i className="fas fa-external-link-alt mr-1"></i>Live Demo
                     </a>
                   )}
-                  {project.githubUrl && (
-                    <a 
-                      href={project.githubUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80 font-medium"
-                    >
-                      <i className="fab fa-github mr-1"></i>Code
-                    </a>
-                  )}
                 </div>
               </CardContent>
             </Card>
