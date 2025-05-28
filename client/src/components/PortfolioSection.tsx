@@ -2,9 +2,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
-import bravezmImage from "@/assets/image_1748447815242.png";
-import bestyBoyImage from "@/assets/image_1748447890581.png";
-import ahmedHellyImage from "@/assets/image_1748448070181.png";
+import bravezmImage from "@assets/image_1748447815242.png";
+import bestyBoyImage from "@assets/image_1748447890581.png";
+import ahmedHellyImage from "@assets/image_1748448070181.png";
 
 export default function PortfolioSection() {
   const { data: projects = [], isLoading } = useQuery({
