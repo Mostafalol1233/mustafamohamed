@@ -8,21 +8,20 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "server/index.ts",
+      "use": "@vercel/node"
     }
   ],
-  "functions": {
-    "dist/index.js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/dist/index.js"
+      "dest": "/server/index.ts"
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/dist/index.js"
+      "dest": "/server/index.ts"
     },
     {
       "src": "/(.*)",
