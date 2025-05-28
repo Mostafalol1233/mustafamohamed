@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import express from "express";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema } from "@shared/schema";
@@ -44,7 +45,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Serve uploaded files
-  app.use("/uploads", require("express").static(path.join(process.cwd(), "uploads")));
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
