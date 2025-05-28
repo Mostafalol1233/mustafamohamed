@@ -1,0 +1,75 @@
+Key Features and Structure
+Database Models (drizzle-orm)
+
+Users, Sessions, Certificates, Reviews, Contact Messages, Projects tables are defined.
+
+Uses PostgreSQL as the database backend, with connection via DATABASE_URL.
+
+Authentication
+
+Uses Passport and openid-client for Replit OIDC authentication.
+
+Requires environment variables: REPLIT_DOMAINS, ISSUER_URL, REPL_ID, and SESSION_SECRET.
+
+Session storage is handled via PostgreSQL (connect-pg-simple).
+
+API Routes
+
+CRUD operations for certificates, reviews, contact messages, and projects.
+
+Image upload for certificates using Multer, stored in a local uploads directory.
+
+Static file serving for /uploads.
+
+Middleware & Validation
+
+Uses Zod schemas for validating input data.
+
+Has authentication middleware to protect certain routes.
+
+Vercel Deployment Considerations
+Your current architecture is designed for a traditional server (long-running Express app with local file storage), but Vercel uses a serverless model. Here are the main issues and solutions:
+
+Issue	Solution
+Persistent Express server	Refactor to use Vercel serverless functions (api/*.ts files exporting handlers).
+Local file uploads (/uploads)	Use cloud storage (e.g., S3, Cloudinary) instead, as Vercel's file system is ephemeral.
+PostgreSQL connection pooling	Use a serverless-friendly pooler (like @vercel/postgres or limit pool size).
+Static file serving	Move static assets to /public or serve from cloud storage.
+Environment variables	Set all required secrets in Vercel dashboard.
+Sessions in PostgreSQL	Ensure DB is accessible from Vercel; consider stateless JWT sessions for serverless.
+Steps to Adapt for Vercel
+Refactor Entry Point
+Move your main Express logic into a handler function. For example, in api/index.ts:
+
+js
+import app from '../server/index'; // your Express app
+export default (req, res) => app(req, res);
+Or split each route into its own file under /api.
+
+File Uploads
+Replace Multer's disk storage with a cloud storage solution. On upload, save files to S3/Cloudinary and store the URL in your DB.
+
+Sessions
+If using serverless, consider stateless authentication (JWT) or ensure your session store (PostgreSQL) works efficiently with many short-lived connections.
+
+Environment Variables
+Set all required environment variables in the Vercel dashboard.
+
+Database
+Use a managed PostgreSQL service that supports serverless environments. Limit connection pool size to avoid exhausting DB connections.
+
+Static Files
+Place any static assets in /public or serve from a CDN/cloud storage.
+
+Summary Table
+Feature	Current Approach	Vercel-Compatible Approach
+Express Server	Long-running process	Serverless handler per route
+File Uploads	Local /uploads dir	Cloud storage (S3/Cloudinary)
+Sessions	PostgreSQL session store	Stateless JWT or DB with pooling
+Static Files	Serve from /uploads	/public or cloud storage
+Final Notes
+Direct deployment of this code as-is will not work on Vercel without these changes.
+
+For quick testing, you can deploy the API as serverless functions, but file uploads and sessions will require the most significant changes.
+
+If you need help with a specific error or migration step, please provide details.
