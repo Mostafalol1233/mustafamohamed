@@ -41,44 +41,66 @@ export default function PortfolioSection() {
     );
   }
 
-  // Sample projects if none exist in database
-  const sampleProjects = [
+  // Real portfolio projects
+  const realProjects = [
     {
       id: 1,
-      title: "E-commerce Platform",
-      description: "Full-stack e-commerce solution with payment integration",
-      imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400",
-      technologies: ["React", "Node.js", "MongoDB"],
-      liveUrl: "#",
-      githubUrl: "#",
+      title: "Brave Game",
+      description: "Zombie mode shop for gaming with in-game purchases and item management",
+      imageUrl: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["React", "JavaScript", "Payment API", "Gaming"],
+      liveUrl: "https://bravegame.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
     {
       id: 2,
-      title: "CMS Dashboard",
-      description: "Custom content management system with analytics",
-      imageUrl: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400",
-      technologies: ["Vue.js", "PHP", "MySQL"],
-      liveUrl: "#",
-      githubUrl: "#",
+      title: "Bemora",
+      description: "Content creator blog platform with rich media support and audience engagement",
+      imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["WordPress", "PHP", "Content Management", "SEO"],
+      liveUrl: "https://www.youtube.com/@Bemora-site",
+      githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
     {
       id: 3,
-      title: "AI Content Generator",
-      description: "AI-powered tool for content creation and optimization",
-      imageUrl: "https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=600&h=400",
-      technologies: ["Python", "TensorFlow", "React"],
-      liveUrl: "#",
-      githubUrl: "#",
+      title: "OneTeam",
+      description: "HR company platform for workforce management and team collaboration",
+      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["Vue.js", "Laravel", "HR Management", "MySQL"],
+      liveUrl: "https://oneteam1.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 4,
+      title: "Beasty Boy",
+      description: "Gaming shop specializing in PUBG and Free Fire with free resources and downloads",
+      imageUrl: "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["React", "Express", "Gaming API", "Payment Integration"],
+      liveUrl: "https://bestyboy-gamma.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 5,
+      title: "Ahmed Helly",
+      description: "Learning platform with interactive courses and community comments system",
+      imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["React", "Node.js", "PostgreSQL", "Socket.io"],
+      liveUrl: "https://mr-ahmedhelly.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
   ];
 
-  const displayProjects = projects.length > 0 ? projects : sampleProjects;
+  const displayProjects = projects.length > 0 ? projects : realProjects;
 
   return (
     <section id="portfolio" className="section-padding bg-card">
@@ -91,7 +113,7 @@ export default function PortfolioSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayProjects.map((project: Project | typeof sampleProjects[0]) => (
+          {displayProjects.map((project: Project | typeof realProjects[0]) => (
             <Card key={project.id} className="group bg-muted overflow-hidden card-hover">
               {project.imageUrl && (
                 <img 

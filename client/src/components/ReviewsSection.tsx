@@ -55,7 +55,7 @@ export default function ReviewsSection() {
     const formData = new FormData(e.currentTarget);
     const data = {
       name: formData.get("name") as string,
-      email: formData.get("email") as string || undefined,
+      email: formData.get("email") as string,
       rating,
       comment: formData.get("comment") as string,
     };
@@ -151,12 +151,13 @@ export default function ReviewsSection() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="reviewer-email">Email (Optional)</Label>
+                  <Label htmlFor="reviewer-email">Email *</Label>
                   <Input 
                     id="reviewer-email"
                     name="email" 
                     type="email"
                     placeholder="Enter your email" 
+                    required
                   />
                 </div>
               </div>
