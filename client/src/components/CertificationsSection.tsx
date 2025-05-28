@@ -89,8 +89,8 @@ export default function CertificationsSection() {
     },
     {
       id: 2,
-      title: "Sample Certificate 2",
-      description: "Another sample certificate for demonstration.",
+      title: "Udacity",
+      description: "Full Stack Web Development Certificate from Udacity.",
       imageUrl: "/uploads/Learn the Latest Tech Skills; Advance Your Career _ Udacity.pdf",
       issueDate: "May 2024",
     },
