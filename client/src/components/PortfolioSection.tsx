@@ -1,13 +1,10 @@
-The code changes involve replacing the sample project data with updated information including details about a portfolio website, task management system, and weather dashboard, while also adding properties like isVisible and createdAt.
-```
 
-```replit_final_file>
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
-import bravezmImage from "@assets/image_1748447815242.png";
-import bestyBoyImage from "@assets/image_1748447890581.png";
-import ahmedHellyImage from "@assets/image_1748448070181.png";
+import bravezmImage from "@/assets/image_1748447815242.png";
+import bestyBoyImage from "@/assets/image_1748447890581.png";
+import ahmedHellyImage from "@/assets/image_1748448070181.png";
 
 export default function PortfolioSection() {
   const { data: projects = [], isLoading } = useQuery({
@@ -144,7 +141,6 @@ export default function PortfolioSection() {
       createdAt: new Date().toISOString()
     }
   ];
-
 
   return (
     <section id="portfolio" className="section-padding bg-card">
