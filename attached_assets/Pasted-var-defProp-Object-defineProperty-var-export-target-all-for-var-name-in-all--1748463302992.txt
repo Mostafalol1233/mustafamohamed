@@ -1,0 +1,707 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// server/index.ts
+import express3 from "express";
+
+// server/routes.ts
+import { createServer } from "http";
+import express from "express";
+
+// shared/schema.ts
+var schema_exports = {};
+__export(schema_exports, {
+  certificates: () => certificates,
+  contactMessages: () => contactMessages,
+  insertCertificateSchema: () => insertCertificateSchema,
+  insertContactMessageSchema: () => insertContactMessageSchema,
+  insertProjectSchema: () => insertProjectSchema,
+  insertReviewSchema: () => insertReviewSchema,
+  projects: () => projects,
+  reviews: () => reviews,
+  sessions: () => sessions,
+  users: () => users
+});
+import {
+  pgTable,
+  text,
+  varchar,
+  timestamp,
+  jsonb,
+  index,
+  serial,
+  integer,
+  boolean
+} from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+var sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull()
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)]
+);
+var users = pgTable("users", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+var certificates = pgTable("certificates", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  issueDate: text("issue_date"),
+  imageUrl: text("image_url"),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  rating: integer("rating").notNull(),
+  comment: text("comment").notNull(),
+  isApproved: boolean("is_approved").default(false),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  subject: text("subject"),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  imageUrl: text("image_url"),
+  technologies: text("technologies").array(),
+  liveUrl: text("live_url"),
+  githubUrl: text("github_url"),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow()
+});
+var insertCertificateSchema = createInsertSchema(certificates).omit({
+  id: true,
+  createdAt: true
+});
+var insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  isApproved: true,
+  createdAt: true
+});
+var insertContactMessageSchema = createInsertSchema(contactMessages).omit({
+  id: true,
+  isRead: true,
+  createdAt: true
+});
+var insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true
+});
+
+// server/db.ts
+import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-postgres";
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?"
+  );
+}
+var pool = new Pool({ connectionString: process.env.DATABASE_URL });
+var db = drizzle({ client: pool, schema: schema_exports });
+
+// server/storage.ts
+import { eq, desc } from "drizzle-orm";
+var DatabaseStorage = class {
+  // User operations (IMPORTANT) these user operations are mandatory for Replit Auth.
+  async getUser(id) {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  async upsertUser(userData) {
+    const [user] = await db.insert(users).values(userData).onConflictDoUpdate({
+      target: users.id,
+      set: {
+        ...userData,
+        updatedAt: /* @__PURE__ */ new Date()
+      }
+    }).returning();
+    return user;
+  }
+  // Certificate operations
+  async getCertificates() {
+    return await db.select().from(certificates).where(eq(certificates.isVisible, true)).orderBy(desc(certificates.createdAt));
+  }
+  async createCertificate(certificate) {
+    const [newCertificate] = await db.insert(certificates).values(certificate).returning();
+    return newCertificate;
+  }
+  async deleteCertificate(id) {
+    await db.delete(certificates).where(eq(certificates.id, id));
+  }
+  // Review operations
+  async getApprovedReviews() {
+    return await db.select().from(reviews).where(eq(reviews.isApproved, true)).orderBy(desc(reviews.createdAt));
+  }
+  async getAllReviews() {
+    return await db.select().from(reviews).orderBy(desc(reviews.createdAt));
+  }
+  async createReview(review) {
+    const [newReview] = await db.insert(reviews).values(review).returning();
+    return newReview;
+  }
+  async approveReview(id) {
+    await db.update(reviews).set({ isApproved: true }).where(eq(reviews.id, id));
+  }
+  async deleteReview(id) {
+    await db.delete(reviews).where(eq(reviews.id, id));
+  }
+  // Contact message operations
+  async createContactMessage(message) {
+    const [newMessage] = await db.insert(contactMessages).values(message).returning();
+    return newMessage;
+  }
+  async getContactMessages() {
+    return await db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
+  }
+  async markMessageAsRead(id) {
+    await db.update(contactMessages).set({ isRead: true }).where(eq(contactMessages.id, id));
+  }
+  // Project operations
+  async getVisibleProjects() {
+    return await db.select().from(projects).where(eq(projects.isVisible, true)).orderBy(desc(projects.createdAt));
+  }
+  async getAllProjects() {
+    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+  }
+  async createProject(project) {
+    const [newProject] = await db.insert(projects).values(project).returning();
+    return newProject;
+  }
+  async updateProject(id, project) {
+    const [updatedProject] = await db.update(projects).set(project).where(eq(projects.id, id)).returning();
+    return updatedProject;
+  }
+  async deleteProject(id) {
+    await db.delete(projects).where(eq(projects.id, id));
+  }
+};
+var storage = new DatabaseStorage();
+
+// server/replitAuth.ts
+import * as client from "openid-client";
+import { Strategy } from "openid-client/passport";
+import passport from "passport";
+import session from "express-session";
+import memoize from "memoizee";
+import connectPg from "connect-pg-simple";
+if (!process.env.REPLIT_DOMAINS) {
+  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+}
+var getOidcConfig = memoize(
+  async () => {
+    return await client.discovery(
+      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+      process.env.REPL_ID
+    );
+  },
+  { maxAge: 3600 * 1e3 }
+);
+function getSession() {
+  const sessionTtl = 7 * 24 * 60 * 60 * 1e3;
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: sessionTtl,
+    tableName: "sessions"
+  });
+  return session({
+    secret: process.env.SESSION_SECRET,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      maxAge: sessionTtl
+    }
+  });
+}
+function updateUserSession(user, tokens) {
+  user.claims = tokens.claims();
+  user.access_token = tokens.access_token;
+  user.refresh_token = tokens.refresh_token;
+  user.expires_at = user.claims?.exp;
+}
+async function upsertUser(claims) {
+  await storage.upsertUser({
+    id: claims["sub"],
+    email: claims["email"],
+    firstName: claims["first_name"],
+    lastName: claims["last_name"],
+    profileImageUrl: claims["profile_image_url"]
+  });
+}
+async function setupAuth(app2) {
+  app2.set("trust proxy", 1);
+  app2.use(getSession());
+  app2.use(passport.initialize());
+  app2.use(passport.session());
+  const config = await getOidcConfig();
+  const verify = async (tokens, verified) => {
+    const user = {};
+    updateUserSession(user, tokens);
+    await upsertUser(tokens.claims());
+    verified(null, user);
+  };
+  for (const domain of process.env.REPLIT_DOMAINS.split(",")) {
+    const strategy = new Strategy(
+      {
+        name: `replitauth:${domain}`,
+        config,
+        scope: "openid email profile offline_access",
+        callbackURL: `https://${domain}/api/callback`
+      },
+      verify
+    );
+    passport.use(strategy);
+  }
+  passport.serializeUser((user, cb) => cb(null, user));
+  passport.deserializeUser((user, cb) => cb(null, user));
+  app2.get("/api/login", (req, res, next) => {
+    passport.authenticate(`replitauth:${req.hostname}`, {
+      prompt: "login consent",
+      scope: ["openid", "email", "profile", "offline_access"]
+    })(req, res, next);
+  });
+  app2.get("/api/callback", (req, res, next) => {
+    passport.authenticate(`replitauth:${req.hostname}`, {
+      successReturnToOrRedirect: "/",
+      failureRedirect: "/api/login"
+    })(req, res, next);
+  });
+  app2.get("/api/logout", (req, res) => {
+    req.logout(() => {
+      res.redirect(
+        client.buildEndSessionUrl(config, {
+          client_id: process.env.REPL_ID,
+          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`
+        }).href
+      );
+    });
+  });
+}
+var isAuthenticated = async (req, res, next) => {
+  const user = req.user;
+  if (!req.isAuthenticated() || !user.expires_at) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const now = Math.floor(Date.now() / 1e3);
+  if (now <= user.expires_at) {
+    return next();
+  }
+  const refreshToken = user.refresh_token;
+  if (!refreshToken) {
+    return res.redirect("/api/login");
+  }
+  try {
+    const config = await getOidcConfig();
+    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+    updateUserSession(user, tokenResponse);
+    return next();
+  } catch (error) {
+    return res.redirect("/api/login");
+  }
+};
+
+// server/routes.ts
+import multer from "multer";
+import path from "path";
+import { promises as fs } from "fs";
+var upload = multer({
+  storage: multer.diskStorage({
+    destination: async (req, file, cb) => {
+      const uploadPath = path.join(process.cwd(), "uploads");
+      try {
+        await fs.mkdir(uploadPath, { recursive: true });
+      } catch (error) {
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024
+    // 5MB limit
+  }
+});
+async function registerRoutes(app2) {
+  await setupAuth(app2);
+  app2.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+  app2.get("/api/auth/user", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+  app2.get("/api/certificates", async (req, res) => {
+    try {
+      const certificates2 = await storage.getCertificates();
+      res.json(certificates2);
+    } catch (error) {
+      console.error("Error fetching certificates:", error);
+      res.status(500).json({ message: "Failed to fetch certificates" });
+    }
+  });
+  app2.post("/api/certificates", isAuthenticated, upload.single("image"), async (req, res) => {
+    try {
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      const certificateData = {
+        title: req.body.title,
+        description: req.body.description,
+        issueDate: req.body.issueDate,
+        imageUrl
+      };
+      const validatedData = insertCertificateSchema.parse(certificateData);
+      const certificate = await storage.createCertificate(validatedData);
+      res.json(certificate);
+    } catch (error) {
+      console.error("Error creating certificate:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create certificate" });
+    }
+  });
+  app2.delete("/api/certificates/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCertificate(id);
+      res.json({ message: "Certificate deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting certificate:", error);
+      res.status(500).json({ message: "Failed to delete certificate" });
+    }
+  });
+  app2.get("/api/reviews", async (req, res) => {
+    try {
+      const reviews2 = await storage.getApprovedReviews();
+      res.json(reviews2);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+  app2.post("/api/reviews/auto-approve", async (req, res) => {
+    try {
+      const allReviews = await storage.getAllReviews();
+      const unapprovedReviews = allReviews.filter((review) => !review.isApproved);
+      for (const review of unapprovedReviews) {
+        await storage.approveReview(review.id);
+      }
+      res.json({ message: `Auto-approved ${unapprovedReviews.length} reviews` });
+    } catch (error) {
+      console.error("Error auto-approving reviews:", error);
+      res.status(500).json({ message: "Failed to auto-approve reviews" });
+    }
+  });
+  app2.get("/api/reviews/all", isAuthenticated, async (req, res) => {
+    try {
+      const reviews2 = await storage.getAllReviews();
+      res.json(reviews2);
+    } catch (error) {
+      console.error("Error fetching all reviews:", error);
+      res.status(500).json({ message: "Failed to fetch reviews" });
+    }
+  });
+  app2.post("/api/reviews", async (req, res) => {
+    try {
+      const validatedData = insertReviewSchema.parse(req.body);
+      const review = await storage.createReview(validatedData);
+      res.json(review);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create review" });
+    }
+  });
+  app2.patch("/api/reviews/:id/approve", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.approveReview(id);
+      res.json({ message: "Review approved successfully" });
+    } catch (error) {
+      console.error("Error approving review:", error);
+      res.status(500).json({ message: "Failed to approve review" });
+    }
+  });
+  app2.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteReview(id);
+      res.json({ message: "Review deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+  app2.post("/api/contact", async (req, res) => {
+    try {
+      const validatedData = insertContactMessageSchema.parse(req.body);
+      const message = await storage.createContactMessage(validatedData);
+      res.json(message);
+    } catch (error) {
+      console.error("Error creating contact message:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to send message" });
+    }
+  });
+  app2.get("/api/contact", isAuthenticated, async (req, res) => {
+    try {
+      const messages = await storage.getContactMessages();
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching contact messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+  app2.patch("/api/contact/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.markMessageAsRead(id);
+      res.json({ message: "Message marked as read successfully" });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+  app2.get("/api/projects", async (req, res) => {
+    try {
+      const projects2 = await storage.getVisibleProjects();
+      res.json(projects2);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+  app2.get("/api/projects/all", isAuthenticated, async (req, res) => {
+    try {
+      const projects2 = await storage.getAllProjects();
+      res.json(projects2);
+    } catch (error) {
+      console.error("Error fetching all projects:", error);
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+  app2.post("/api/projects", isAuthenticated, upload.single("image"), async (req, res) => {
+    try {
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      const projectData = {
+        title: req.body.title,
+        description: req.body.description,
+        technologies: req.body.technologies ? JSON.parse(req.body.technologies) : [],
+        liveUrl: req.body.liveUrl,
+        githubUrl: req.body.githubUrl,
+        imageUrl,
+        isVisible: req.body.isVisible !== void 0 ? req.body.isVisible === "true" : true
+      };
+      const validatedData = insertProjectSchema.parse(projectData);
+      const project = await storage.createProject(validatedData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create project" });
+    }
+  });
+  app2.delete("/api/projects/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProject(id);
+      res.json({ message: "Project deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+  const httpServer = createServer(app2);
+  return httpServer;
+}
+
+// server/vite.ts
+import express2 from "express";
+import fs2 from "fs";
+import path3 from "path";
+import { createServer as createViteServer, createLogger } from "vite";
+
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path2 from "path";
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+var vite_config_default = defineConfig({
+  plugins: [
+    react(),
+    runtimeErrorOverlay(),
+    ...process.env.NODE_ENV !== "production" && process.env.REPL_ID !== void 0 ? [
+      await import("@replit/vite-plugin-cartographer").then(
+        (m) => m.cartographer()
+      )
+    ] : []
+  ],
+  resolve: {
+    alias: {
+      "@": path2.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path2.resolve(import.meta.dirname, "shared"),
+      "@assets": path2.resolve(import.meta.dirname, "attached_assets")
+    }
+  },
+  root: path2.resolve(import.meta.dirname, "client"),
+  build: {
+    outDir: path2.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true
+  }
+});
+
+// server/vite.ts
+import { nanoid } from "nanoid";
+var viteLogger = createLogger();
+function log(message, source = "express") {
+  const formattedTime = (/* @__PURE__ */ new Date()).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}
+async function setupVite(app2, server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server },
+    allowedHosts: true
+  };
+  const vite = await createViteServer({
+    ...vite_config_default,
+    configFile: false,
+    customLogger: {
+      ...viteLogger,
+      error: (msg, options) => {
+        viteLogger.error(msg, options);
+        process.exit(1);
+      }
+    },
+    server: serverOptions,
+    appType: "custom"
+  });
+  app2.use(vite.middlewares);
+  app2.use("*", async (req, res, next) => {
+    const url = req.originalUrl;
+    try {
+      const clientTemplate = path3.resolve(
+        import.meta.dirname,
+        "..",
+        "client",
+        "index.html"
+      );
+      let template = await fs2.promises.readFile(clientTemplate, "utf-8");
+      template = template.replace(
+        `src="/src/main.tsx"`,
+        `src="/src/main.tsx?v=${nanoid()}"`
+      );
+      const page = await vite.transformIndexHtml(url, template);
+      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+    } catch (e) {
+      vite.ssrFixStacktrace(e);
+      next(e);
+    }
+  });
+}
+function serveStatic(app2) {
+  const distPath = path3.resolve(import.meta.dirname, "public");
+  if (!fs2.existsSync(distPath)) {
+    throw new Error(
+      `Could not find the build directory: ${distPath}, make sure to build the client first`
+    );
+  }
+  app2.use(express2.static(distPath));
+  app2.use("*", (_req, res) => {
+    res.sendFile(path3.resolve(distPath, "index.html"));
+  });
+}
+
+// server/index.ts
+var app = express3();
+app.use(express3.json());
+app.use(express3.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+  const start = Date.now();
+  const path4 = req.path;
+  let capturedJsonResponse = void 0;
+  const originalResJson = res.json;
+  res.json = function(bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path4.startsWith("/api")) {
+      let logLine = `${req.method} ${path4} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "\u2026";
+      }
+      log(logLine);
+    }
+  });
+  next();
+});
+(async () => {
+  const server = await registerRoutes(app);
+  app.use((err, _req, res, _next) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    throw err;
+  });
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
+  const port = 5e3;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
