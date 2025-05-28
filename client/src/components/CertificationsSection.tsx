@@ -81,20 +81,20 @@ export default function CertificationsSection() {
 
   const displayCertificates = [
     {
-      id: 1,
+      id: "sample-1",
       title: "Sample Certificate 1",
       description: "This is a sample certificate.",
       imageUrl: "/uploads/ProfessionalPortfolio#word.doc.pdf",
       issueDate: "June 2024",
     },
     {
-      id: 2,
+      id: "sample-2",
       title: "Udacity",
       description: "Full Stack Web Development Certificate from Udacity.",
       imageUrl: "/uploads/Learn the Latest Tech Skills; Advance Your Career _ Udacity.pdf",
       issueDate: "May 2024",
     },
-    ...certificates,
+    ...(certificates as Certificate[]),
   ];
 
   if (isLoading) {
@@ -181,7 +181,7 @@ export default function CertificationsSection() {
                   <Button 
                     variant="secondary" 
                     size="sm"
-                    onClick={() => window.open(certificate.imageUrl, '_blank')}
+                    onClick={() => certificate.imageUrl && window.open(certificate.imageUrl, '_blank')}
                   >
                     <i className="fas fa-eye mr-2"></i>View Certificate
                   </Button>
