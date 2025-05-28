@@ -65,6 +65,26 @@ export default function AdminDashboard() {
     },
   });
 
+  const markMessageAsReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("PATCH", `/api/contact/${id}/read`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contact"] });
+      toast({
+        title: "Success",
+        description: "Message marked as read!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to mark message as read",
+        variant: "destructive",
+      });
+    },
+  });
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -328,7 +348,18 @@ export default function AdminDashboard() {
                         </div>
                       </CardHeader>
                       <CardContent className="pt-0">
-                        <p className="text-foreground">{message.message}</p>
+                        <p className="text-foreground mb-3">{message.message}</p>
+                        {!message.isRead && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => markMessageAsReadMutation.mutate(message.id)}
+                            disabled={markMessageAsReadMutation.isPending}
+                          >
+                            <i className="fas fa-check mr-2"></i>
+                            Mark as Read
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   ))}

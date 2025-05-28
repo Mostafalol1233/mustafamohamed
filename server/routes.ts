@@ -194,6 +194,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/contact/:id/read", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.markMessageAsRead(id);
+      res.json({ message: "Message marked as read successfully" });
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
   // Project routes
   app.get("/api/projects", async (req, res) => {
     try {
