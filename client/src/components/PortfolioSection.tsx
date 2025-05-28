@@ -1,3 +1,7 @@
+The code changes involve replacing the sample project data with updated information including details about a portfolio website, task management system, and weather dashboard, while also adding properties like isVisible and createdAt.
+```
+
+```replit_final_file>
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
@@ -105,6 +109,43 @@ export default function PortfolioSection() {
 
   const displayProjects = projects.length > 0 ? projects : realProjects;
 
+  const sampleProjects = [
+    {
+      id: 1,
+      title: "Professional Portfolio Website",
+      description: "A full-stack portfolio website built with React, TypeScript, and Express. Features include admin dashboard, reviews system, contact forms, and certificate management.",
+      technologies: ["React", "TypeScript", "Express", "PostgreSQL", "TailwindCSS"],
+      liveUrl: window.location.origin,
+      githubUrl: "https://github.com/username/portfolio",
+      imageUrl: null,
+      isVisible: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Task Management System",
+      description: "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
+      technologies: ["React", "Socket.io", "Express", "MongoDB"],
+      liveUrl: "https://example-tasks.com",
+      githubUrl: "https://github.com/username/task-manager",
+      imageUrl: null,
+      isVisible: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 3,
+      title: "Weather Dashboard",
+      description: "A responsive weather dashboard that displays current conditions and forecasts using OpenWeatherMap API with beautiful data visualizations.",
+      technologies: ["React", "Chart.js", "OpenWeatherMap API", "CSS Grid"],
+      liveUrl: "https://example-weather.com",
+      githubUrl: "https://github.com/username/weather-dashboard",
+      imageUrl: null,
+      isVisible: true,
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+
   return (
     <section id="portfolio" className="section-padding bg-card">
       <div className="container-max">
@@ -130,7 +171,7 @@ export default function PortfolioSection() {
                   <CardTitle className="text-xl text-primary">{project.title}</CardTitle>
                   <p className="text-muted-foreground">{project.description}</p>
                 </CardHeader>
-                
+
                 {project.technologies && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {project.technologies.map((tech, index) => (
@@ -143,7 +184,7 @@ export default function PortfolioSection() {
                     ))}
                   </div>
                 )}
-                
+
                 <div className="flex space-x-4">
                   {project.liveUrl && (
                     <a 

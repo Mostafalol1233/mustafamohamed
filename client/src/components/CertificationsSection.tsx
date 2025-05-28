@@ -29,11 +29,11 @@ export default function CertificationsSection() {
         body: formData,
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to create certificate");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -78,6 +78,24 @@ export default function CertificationsSection() {
     const formData = new FormData(e.currentTarget);
     createCertificateMutation.mutate(formData);
   };
+
+  const displayCertificates = [
+    {
+      id: 1,
+      title: "Sample Certificate 1",
+      description: "This is a sample certificate.",
+      imageUrl: "/uploads/ProfessionalPortfolio#word.doc.pdf",
+      issueDate: "June 2024",
+    },
+    {
+      id: 2,
+      title: "Sample Certificate 2",
+      description: "Another sample certificate for demonstration.",
+      imageUrl: "/uploads/Learn the Latest Tech Skills; Advance Your Career _ Udacity.pdf",
+      issueDate: "May 2024",
+    },
+    ...certificates,
+  ];
 
   if (isLoading) {
     return (
@@ -137,16 +155,38 @@ export default function CertificationsSection() {
           </Card>
 
           {/* Dynamic certificates from database */}
-          {certificates.map((certificate: Certificate) => (
+          {displayCertificates.map((certificate: Certificate) => (
             <Card key={certificate.id} className="card-hover group">
               <div className="p-6">
-                {certificate.imageUrl && (
-                  <img 
-                    src={certificate.imageUrl}
-                    alt={certificate.title} 
-                    className="w-full h-64 object-cover rounded-lg mb-4"
-                  />
+                <div className="relative group">
+                {certificate.imageUrl ? (
+                  certificate.imageUrl.endsWith('.pdf') ? (
+                    <div className="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 rounded-lg mb-4 flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-300 border-2 border-red-300">
+                      <i className="fas fa-file-pdf text-4xl text-red-600 mb-2"></i>
+                      <span className="text-sm text-red-700 font-medium">PDF Certificate</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={certificate.imageUrl}
+                      alt={certificate.title}
+                      className="w-full h-64 object-cover rounded-lg mb-4 group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg mb-4 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <i className="fas fa-certificate text-4xl text-accent"></i>
+                  </div>
                 )}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => window.open(certificate.imageUrl, '_blank')}
+                  >
+                    <i className="fas fa-eye mr-2"></i>View Certificate
+                  </Button>
+                </div>
+              </div>
                 <CardHeader className="p-0 mb-4">
                   <CardTitle className="text-xl text-primary">{certificate.title}</CardTitle>
                   {certificate.description && (
@@ -198,7 +238,7 @@ export default function CertificationsSection() {
                       required 
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="description">Description</Label>
                     <Textarea 
@@ -207,7 +247,7 @@ export default function CertificationsSection() {
                       placeholder="Enter certificate description" 
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="issueDate">Issue Date</Label>
                     <Input 
@@ -216,7 +256,7 @@ export default function CertificationsSection() {
                       placeholder="e.g., May 2024" 
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="image">Certificate Image</Label>
                     <Input 
@@ -227,7 +267,7 @@ export default function CertificationsSection() {
                       required 
                     />
                   </div>
-                  
+
                   <Button 
                     type="submit" 
                     className="w-full btn-accent"

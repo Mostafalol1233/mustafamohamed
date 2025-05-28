@@ -112,6 +112,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Development endpoint to auto-approve recent reviews
+  app.post("/api/reviews/auto-approve", async (req, res) => {
+    try {
+      const allReviews = await storage.getAllReviews();
+      const unapprovedReviews = allReviews.filter(review => !review.isApproved);
+      
+      for (const review of unapprovedReviews) {
+        await storage.approveReview(review.id);
+      }
+      
+      res.json({ message: `Auto-approved ${unapprovedReviews.length} reviews` });
+    } catch (error) {
+      console.error("Error auto-approving reviews:", error);
+      res.status(500).json({ message: "Failed to auto-approve reviews" });
+    }
+  });
+
   app.get("/api/reviews/all", isAuthenticated, async (req, res) => {
     try {
       const reviews = await storage.getAllReviews();
