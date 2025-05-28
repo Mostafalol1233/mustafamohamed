@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
+import bravezmImage from "@assets/image_1748447815242.png";
+import bestyBoyImage from "@assets/image_1748447890581.png";
+import ahmedHellyImage from "@assets/image_1748448070181.png";
 
 export default function PortfolioSection() {
   const { data: projects = [], isLoading } = useQuery({
@@ -45,10 +48,10 @@ export default function PortfolioSection() {
   const realProjects = [
     {
       id: 1,
-      title: "Brave Game",
-      description: "Zombie mode shop for gaming with in-game purchases and item management",
-      imageUrl: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-      technologies: ["React", "JavaScript", "Payment API", "Gaming"],
+      title: "BRAVEZM Gaming",
+      description: "Exclusive gaming characters & community platform with zombie mode shop",
+      imageUrl: "@assets/image_1748447815242.png",
+      technologies: ["React", "JavaScript", "Gaming API", "Community Features"],
       liveUrl: "https://bravegame.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
@@ -60,7 +63,7 @@ export default function PortfolioSection() {
       description: "Content creator blog platform with rich media support and audience engagement",
       imageUrl: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
       technologies: ["WordPress", "PHP", "Content Management", "SEO"],
-      liveUrl: "https://www.youtube.com/@Bemora-site",
+      liveUrl: "https://bemora.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
@@ -78,9 +81,9 @@ export default function PortfolioSection() {
     },
     {
       id: 4,
-      title: "Beasty Boy",
-      description: "Gaming shop specializing in PUBG and Free Fire with free resources and downloads",
-      imageUrl: "https://images.unsplash.com/photo-1511512578047-dfb367046420?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      title: "BestyBoy Gaming",
+      description: "CrossFire vouchers and gaming shop for PUBG, Free Fire with special bonuses",
+      imageUrl: "@assets/image_1748447890581.png",
       technologies: ["React", "Express", "Gaming API", "Payment Integration"],
       liveUrl: "https://bestyboy-gamma.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
@@ -89,10 +92,10 @@ export default function PortfolioSection() {
     },
     {
       id: 5,
-      title: "Ahmed Helly",
-      description: "Learning platform with interactive courses and community comments system",
-      imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-      technologies: ["React", "Node.js", "PostgreSQL", "Socket.io"],
+      title: "Ahmed Helly Academy",
+      description: "Educational platform with AI Chat, video tutorials, and advanced learning tools",
+      imageUrl: "@assets/image_1748448070181.png",
+      technologies: ["React", "Node.js", "AI Integration", "Educational Tools"],
       liveUrl: "https://mr-ahmedhelly.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
