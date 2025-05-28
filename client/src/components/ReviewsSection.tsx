@@ -203,12 +203,12 @@ export default function ReviewsSection() {
             <Card>
               <CardContent className="p-8 text-center">
                 <i className="fas fa-star text-4xl text-muted-foreground mb-4"></i>
-                <h3 className="text-xl font-semibold text-primary mb-2">No reviews yet</h3>
-                <p className="text-muted-foreground">Be the first to leave a review!</p>
+                <h3 className="text-xl font-semibold text-primary mb-2">Reviews are being reviewed</h3>
+                <p className="text-muted-foreground">Reviews are pending admin approval and will appear soon!</p>
               </CardContent>
             </Card>
           ) : (
-            reviews.map((review: Review) => (
+            (reviews as Review[]).map((review: Review) => (
               <Card key={review.id} className="shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
