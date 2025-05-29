@@ -132,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Quick admin access route for direct login
-  app.get("/admin-quick", (req, res) => {
+  app.get("/admin-quick", (_req, res) => {
     res.send(`
       <!DOCTYPE html>
       <html>
@@ -198,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
   // Certificate routes
-  app.get("/api/certificates", async (req, res) => {
+  app.get("/api/certificates", async (_req, res) => {
     try {
       const certificates = await storage.getCertificates();
       res.json(certificates);
@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Review routes
-  app.get("/api/reviews", async (req, res) => {
+  app.get("/api/reviews", async (_req, res) => {
     try {
       const reviews = await storage.getApprovedReviews();
       res.json(reviews);
@@ -252,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/reviews/all", requireAuth, async (req, res) => {
+  app.get("/api/reviews/all", requireAuth, async (_req, res) => {
     try {
       const reviews = await storage.getAllReviews();
       res.json(reviews);
@@ -311,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/contact/messages", requireAuth, async (req, res) => {
+  app.get("/api/contact/messages", requireAuth, async (_req, res) => {
     try {
       const messages = await storage.getContactMessages();
       res.json(messages);
@@ -333,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project routes
-  app.get("/api/projects", async (req, res) => {
+  app.get("/api/projects", async (_req, res) => {
     try {
       const projects = await storage.getVisibleProjects();
       res.json(projects);
@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/all", requireAuth, async (req, res) => {
+  app.get("/api/projects/all", requireAuth, async (_req, res) => {
     try {
       const projects = await storage.getAllProjects();
       res.json(projects);
