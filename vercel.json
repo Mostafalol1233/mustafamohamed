@@ -1,6 +1,11 @@
 
 {
+  "version": 2,
   "builds": [
+    {
+      "src": "client/dist/**",
+      "use": "@vercel/static"
+    },
     {
       "src": "server/index.ts",
       "use": "@vercel/node"
@@ -21,6 +26,12 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL": "1"
+  },
+  "functions": {
+    "server/index.ts": {
+      "maxDuration": 30
+    }
   }
 }
