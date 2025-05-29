@@ -172,7 +172,7 @@ export default function Navigation({ showAdminButton = true }: NavigationProps) 
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="admin"
+                    placeholder="اسم المستخدم"
                     disabled={isLoginPending}
                   />
                 </div>
@@ -183,7 +183,7 @@ export default function Navigation({ showAdminButton = true }: NavigationProps) 
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="admin123"
+                    placeholder="كلمة المرور"
                     disabled={isLoginPending}
                   />
                 </div>
@@ -194,9 +194,7 @@ export default function Navigation({ showAdminButton = true }: NavigationProps) 
                 >
                   {isLoginPending ? "جاري تسجيل الدخول..." : "دخول"}
                 </Button>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                  اسم المستخدم: admin | كلمة المرور: admin123
-                </p>
+
               </div>
             </form>
           </div>

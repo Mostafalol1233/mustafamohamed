@@ -129,19 +129,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       </head>
       <body>
         <div class="info">
-          <h3>اختصار دخول الإدارة</h3>
-          <p><strong>اسم المستخدم:</strong> admin</p>
-          <p><strong>كلمة المرور:</strong> admin123</p>
+          <h3>دخول الإدارة السريع</h3>
+          <p>أدخل بيانات تسجيل الدخول للوصول إلى لوحة التحكم</p>
         </div>
         
         <form onsubmit="login(event)">
           <div class="form-group">
             <label>اسم المستخدم:</label>
-            <input type="text" id="username" value="admin" required>
+            <input type="text" id="username" value="" required>
           </div>
           <div class="form-group">
             <label>كلمة المرور:</label>
-            <input type="password" id="password" value="admin123" required>
+            <input type="password" id="password" value="" required>
           </div>
           <button type="submit">دخول</button>
         </form>

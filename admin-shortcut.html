@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel - Quick Access</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            direction: rtl;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+        .quick-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .quick-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 لوحة التحكم</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">اسم المستخدم:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" id="loginBtn">دخول</button>
+            <div class="error" id="errorMsg">بيانات الدخول غير صحيحة</div>
+        </form>
+        
+        <div class="quick-links">
+            <a href="/" target="_blank">الموقع الرئيسي</a> |
+            <a href="/admin-quick" target="_blank">صفحة الدخول البديلة</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const loginBtn = document.getElementById('loginBtn');
+
+        // Get the current domain or use localhost for development
+        const baseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000' 
+            : window.location.origin;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'جاري تسجيل الدخول...';
+            errorMsg.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    // Redirect to admin panel
+                    window.open(`${baseUrl}/#/admin`, '_blank');
+                    // Clear form
+                    form.reset();
+                    loginBtn.textContent = 'تم الدخول بنجاح!';
+                    setTimeout(() => {
+                        loginBtn.textContent = 'دخول';
+                        loginBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Login failed');
+                }
+            } catch (error) {
+                errorMsg.style.display = 'block';
+                loginBtn.textContent = 'دخول';
+                loginBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus on username field
+        document.getElementById('username').focus();
+    </script>
+</body>
+</html>
