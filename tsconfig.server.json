@@ -1,24 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "allowJs": true,
+    "target": "ES2020",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "declaration": false,
+    "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
-    "rootDir": "./",
-    "baseUrl": "./",
+    "rootDir": ".",
+    "baseUrl": ".",
     "paths": {
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["server/**/*", "shared/**/*"],
-  "exclude": ["node_modules", "client", "dist"]
+  "include": ["server/**/*", "shared/**/*", "api/**/*"],
+  "exclude": ["node_modules", "client"]
 }

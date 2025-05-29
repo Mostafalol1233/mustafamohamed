@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import { db } from './db.js';
-import { admins } from '@shared/schema';
+import { admins } from '../shared/schema.js';
 import { eq } from 'drizzle-orm';
 
 export async function hashPassword(password: string): Promise<string> {
@@ -16,7 +16,7 @@ export async function createDefaultAdmin() {
   try {
     // Check if any admin exists
     const existingAdmin = await db.select().from(admins).limit(1);
-    
+
     if (existingAdmin.length === 0) {
       // Create default admin with username: admin, password: mostafalol1233@#
       const hashedPassword = await hashPassword('mostafalol1233@#');
