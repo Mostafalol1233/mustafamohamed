@@ -15,12 +15,12 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const { data: allReviews = [] } = useQuery({
+  const { data: allReviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews/all"],
     enabled: isAuthenticated,
   });
 
-  const { data: contactMessages = [] } = useQuery({
+  const { data: contactMessages = [] } = useQuery<ContactMessage[]>({
     queryKey: ["/api/contact/messages"],
     enabled: isAuthenticated,
   });
@@ -149,12 +149,16 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
           <div className="flex items-center space-x-4">
-            <a 
-              href="/api/logout"
-              className="text-sm text-red-600 hover:text-red-800"
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+              className="text-red-600 hover:text-red-800 border-red-200 hover:border-red-300"
             >
-              <i className="fas fa-sign-out-alt mr-1"></i>Logout
-            </a>
+              <i className="fas fa-sign-out-alt mr-1"></i>
+              {logoutMutation.isPending ? "Logging out..." : "Logout"}
+            </Button>
           </div>
         </div>
         
