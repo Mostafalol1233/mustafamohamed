@@ -12,22 +12,25 @@ import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
 
+// Configure multer for serverless environments
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: async (req, file, cb) => {
-      const uploadPath = path.join(process.cwd(), "uploads");
-      try {
-        await fs.mkdir(uploadPath, { recursive: true });
-      } catch (error) {
-        // Directory might already exist
-      }
-      cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-      cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
-    },
-  }),
+  storage: process.env.VERCEL 
+    ? multer.memoryStorage() // Use memory storage for serverless
+    : multer.diskStorage({
+        destination: async (req, file, cb) => {
+          const uploadPath = path.join(process.cwd(), "uploads");
+          try {
+            await fs.mkdir(uploadPath, { recursive: true });
+          } catch (error) {
+            // Directory might already exist
+          }
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+        },
+      }),
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -45,16 +48,34 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup simple session management
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-      secure: false, // Set to true in production with HTTPS
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-  }));
+  // Setup session management compatible with serverless
+  if (process.env.VERCEL) {
+    const MemoryStore = require('memorystore')(session);
+    app.use(session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+      resave: false,
+      saveUninitialized: false,
+      store: new MemoryStore({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      }),
+      cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax' as const
+      }
+    }));
+  } else {
+    app.use(session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+      resave: false,
+      saveUninitialized: false,
+      cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax' as const
+      }
+    }));
+  }
 
   // Create default admin on startup
   await createDefaultAdmin();
