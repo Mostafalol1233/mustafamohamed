@@ -403,16 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Handle all other routes - in development mode
-  app.get('*', (req, res) => {
-    // Only handle non-API routes
-    if (!req.path.startsWith('/api/')) {
-      // In development, let Vite handle serving the frontend
-      res.status(404).send('Page not found. Please access the site through the main URL.');
-    } else {
-      res.status(404).json({ error: 'API endpoint not found' });
-    }
-  });
+
 
   const httpServer = createServer(app);
   return httpServer;
