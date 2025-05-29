@@ -9,7 +9,7 @@ import ContactSection from "@/components/ContactSection";
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation showAdminButton={false} />
+      <Navigation showAdminButton={true} />
       <main>
         <HeroSection />
         <AboutSection />
