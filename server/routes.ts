@@ -98,6 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ error: "Logout failed" });
       }
+      res.clearCookie('connect.sid');
       res.json({ success: true });
     });
   });
@@ -254,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/reviews/:id/approve", requireAuth, async (req, res) => {
+  app.patch("/api/reviews/:id/approve", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.approveReview(id);
@@ -399,6 +400,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting project:", error);
       res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
+  // Handle all other routes - in development mode
+  app.get('*', (req, res) => {
+    // Only handle non-API routes
+    if (!req.path.startsWith('/api/')) {
+      // In development, let Vite handle serving the frontend
+      res.status(404).send('Page not found. Please access the site through the main URL.');
+    } else {
+      res.status(404).json({ error: 'API endpoint not found' });
     }
   });
 
