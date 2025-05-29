@@ -1,11 +1,8 @@
 import {
-  users,
   certificates,
   reviews,
   contactMessages,
   projects,
-  type User,
-  type UpsertUser,
   type Certificate,
   type InsertCertificate,
   type Review,
