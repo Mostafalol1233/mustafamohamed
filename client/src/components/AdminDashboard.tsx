@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { Review, ContactMessage } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: allReviews = [] } = useQuery({
     queryKey: ["/api/reviews/all"],
@@ -19,7 +21,7 @@ export default function AdminDashboard() {
   });
 
   const { data: contactMessages = [] } = useQuery({
-    queryKey: ["/api/contact"],
+    queryKey: ["/api/contact/messages"],
     enabled: isAuthenticated,
   });
 
@@ -67,10 +69,10 @@ export default function AdminDashboard() {
 
   const markMessageAsReadMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("PATCH", `/api/contact/${id}/read`);
+      await apiRequest("PUT", `/api/contact/${id}/read`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/contact"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contact/messages"] });
       toast({
         title: "Success",
         description: "Message marked as read!",
@@ -80,6 +82,27 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: "Failed to mark message as read",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/logout");
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      setLocation("/");
+      toast({
+        title: "Success",
+        description: "Logged out successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to logout",
         variant: "destructive",
       });
     },
