@@ -13,8 +13,9 @@ const poolConfig = {
   connectionString: process.env.DATABASE_URL,
   // Serverless-friendly settings
   max: 1, // Limit connections for serverless
-  idleTimeoutMillis: 0, // Close connections immediately when not in use
-  connectionTimeoutMillis: 0, // Don't wait for connections
+  idleTimeoutMillis: 30000, // 30 seconds
+  connectionTimeoutMillis: 10000, // 10 seconds timeout
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 };
 
 export const pool = new Pool(poolConfig);
