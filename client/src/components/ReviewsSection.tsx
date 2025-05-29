@@ -15,26 +15,30 @@ export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
 
-  const { data: reviews = [], isLoading } = useQuery({
+  const { data: reviews = [], isLoading } = useQuery<Review[]>({
     queryKey: ["/api/reviews"],
   });
 
   const createReviewMutation = useMutation({
     mutationFn: async (data: { name: string; email?: string; rating: number; comment: string }) => {
-      await apiRequest("POST", "/api/reviews", data);
+      const response = await apiRequest("POST", "/api/reviews", data);
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       toast({
-        title: "Thank you!",
-        description: "Your review has been submitted and is pending approval.",
+        title: "تم الإرسال!",
+        description: "تم إرسال تقييمك وهو في انتظار الموافقة.",
       });
       setRating(0);
+      // Reset form
+      const form = document.querySelector('#review-form') as HTMLFormElement;
+      if (form) form.reset();
     },
     onError: () => {
       toast({
-        title: "Error",
-        description: "Failed to submit review. Please try again.",
+        title: "خطأ",
+        description: "فشل في إرسال التقييم. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
     },
@@ -45,26 +49,35 @@ export default function ReviewsSection() {
     
     if (rating === 0) {
       toast({
-        title: "Rating Required",
-        description: "Please select a star rating before submitting.",
+        title: "التقييم مطلوب",
+        description: "يرجى اختيار تقييم بالنجوم قبل الإرسال.",
         variant: "destructive",
       });
       return;
     }
 
     const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const comment = formData.get("comment") as string;
+
+    if (!name || !comment) {
+      toast({
+        title: "بيانات ناقصة",
+        description: "يرجى ملء الاسم والتعليق.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const data = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
+      name: name.trim(),
+      email: email?.trim() || "",
       rating,
-      comment: formData.get("comment") as string,
+      comment: comment.trim(),
     };
 
     createReviewMutation.mutate(data);
-    
-    if (createReviewMutation.isSuccess) {
-      e.currentTarget.reset();
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -139,7 +152,7 @@ export default function ReviewsSection() {
         <Card className="shadow-lg mb-12">
           <CardContent className="p-8">
             <h3 className="text-2xl font-semibold text-primary mb-6">Leave a Review</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form id="review-form" onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="reviewer-name">Your Name *</Label>

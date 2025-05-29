@@ -164,6 +164,23 @@
 
         // Auto-focus on username field
         document.getElementById('username').focus();
+
+        // Add keyboard shortcut Alt+Shift+A
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey && e.shiftKey && e.key === 'A') {
+                e.preventDefault();
+                document.getElementById('username').value = 'admin';
+                document.getElementById('password').value = 'mostafalol1233@#';
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Show shortcut hint
+        document.addEventListener('DOMContentLoaded', function() {
+            const hint = document.createElement('div');
+            hint.innerHTML = '<small style="color: #666; text-align: center; display: block; margin-top: 10px;">اختصار سريع: Alt + Shift + A</small>';
+            document.querySelector('.container').appendChild(hint);
+        });
     </script>
 </body>
 </html>
