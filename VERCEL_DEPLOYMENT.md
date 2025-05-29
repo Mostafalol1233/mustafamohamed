@@ -27,7 +27,7 @@ postgresql://username:password@host:port/database
 2. اذهب إلى `/admin-quick` للدخول السريع للإدارة
 3. بيانات الدخول:
    - اسم المستخدم: `admin`
-   - كلمة المرور: `MySecurePass2024!`
+   - كلمة المرور: `mostafalol1233@#`
 
 ## الاختصارات المتاحة:
 - **الموقع الرئيسي**: `yoursite.vercel.app`
