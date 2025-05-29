@@ -159,6 +159,14 @@ export default function AdminDashboard() {
               <i className="fas fa-sign-out-alt mr-1"></i>
               {logoutMutation.isPending ? "Logging out..." : "Logout"}
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/")}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <i className="fas fa-times text-lg"></i>
+            </Button>
           </div>
         </div>
         
