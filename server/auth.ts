@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
-import { db } from './db';
+import { db } from './db.js';
 import { admins } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
