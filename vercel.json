@@ -11,16 +11,20 @@
   ],
   "routes": [
     {
-      "src": "/uploads/(.*)",
-      "dest": "/uploads/$1"
-    },
-    {
       "src": "/api/(.*)",
       "dest": "/server/index.ts"
     },
     {
-      "src": "/(.*)",
+      "src": "/uploads/(.*)",
+      "dest": "/server/index.ts"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg))",
       "dest": "/client/dist/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/dist/index.html"
     }
   ],
   "env": {
