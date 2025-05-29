@@ -1,9 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
+import session from "express-session";
 import { storage } from "./storage";
-import { setupAuth, requireAuth } from "./auth";
+import { requireAuth, comparePasswords, createDefaultAdmin } from "./auth";
 import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema } from "@shared/schema";
+import { db } from "./db";
+import { admins } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -41,8 +45,134 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
-  await setupAuth(app);
+  // Setup simple session management
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to true in production with HTTPS
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Create default admin on startup
+  await createDefaultAdmin();
+
+  // Authentication routes
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+
+      const admin = await db.select().from(admins).where(eq(admins.username, username)).limit(1);
+      
+      if (admin.length === 0) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const isValidPassword = await comparePasswords(password, admin[0].password);
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      req.session.adminId = admin[0].id;
+      req.session.username = admin[0].username;
+      
+      res.json({ 
+        success: true,
+        user: { username: admin[0].username }
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/auth/user", (req, res) => {
+    if (req.session && req.session.adminId) {
+      res.json({ username: req.session.username });
+    } else {
+      res.status(401).json({ error: "Not authenticated" });
+    }
+  });
+
+  // Quick admin access route for direct login
+  app.get("/admin-quick", (req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Quick Admin Login</title>
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
+          .form-group { margin-bottom: 15px; }
+          label { display: block; margin-bottom: 5px; font-weight: bold; }
+          input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+          button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+          button:hover { background: #0056b3; }
+          .info { background: #e7f3ff; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="info">
+          <h3>اختصار دخول الإدارة</h3>
+          <p><strong>اسم المستخدم:</strong> admin</p>
+          <p><strong>كلمة المرور:</strong> admin123</p>
+        </div>
+        
+        <form onsubmit="login(event)">
+          <div class="form-group">
+            <label>اسم المستخدم:</label>
+            <input type="text" id="username" value="admin" required>
+          </div>
+          <div class="form-group">
+            <label>كلمة المرور:</label>
+            <input type="password" id="password" value="admin123" required>
+          </div>
+          <button type="submit">دخول</button>
+        </form>
+
+        <script>
+          async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+              const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+              });
+              
+              if (response.ok) {
+                window.location.href = '/#/admin';
+              } else {
+                alert('خطأ في تسجيل الدخول');
+              }
+            } catch (error) {
+              alert('خطأ في الاتصال');
+            }
+          }
+        </script>
+      </body>
+      </html>
+    `);
+  });
 
   // Serve uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
