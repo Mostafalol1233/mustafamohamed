@@ -20,9 +20,6 @@ import { eq, desc } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations (IMPORTANT) these user operations are mandatory for Replit Auth.
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
   
   // Certificate operations
   getCertificates(): Promise<Certificate[]>;

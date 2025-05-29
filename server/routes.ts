@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, requireAuth } from "./auth";
 import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -20,15 +20,15 @@ const upload = multer({
       cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
       cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
-    }
+    },
   }),
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-
+    
     if (extname && mimetype) {
       return cb(null, true);
     } else {
@@ -36,28 +36,16 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  }
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
+  // Setup authentication
   await setupAuth(app);
 
   // Serve uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
 
   // Certificate routes
   app.get("/api/certificates", async (req, res) => {
@@ -70,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/certificates", isAuthenticated, upload.single("image"), async (req, res) => {
+  app.post("/api/certificates", requireAuth, upload.single("image"), async (req, res) => {
     try {
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
       
@@ -78,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: req.body.title,
         description: req.body.description,
         issueDate: req.body.issueDate,
-        imageUrl
+        imageUrl,
       };
 
       const validatedData = insertCertificateSchema.parse(certificateData);
@@ -86,15 +74,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(certificate);
     } catch (error) {
       console.error("Error creating certificate:", error);
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create certificate" });
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to create certificate" 
+      });
     }
   });
 
-  app.delete("/api/certificates/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/certificates/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteCertificate(id);
-      res.json({ message: "Certificate deleted successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error("Error deleting certificate:", error);
       res.status(500).json({ message: "Failed to delete certificate" });
@@ -112,24 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Development endpoint to auto-approve recent reviews
-  app.post("/api/reviews/auto-approve", async (req, res) => {
-    try {
-      const allReviews = await storage.getAllReviews();
-      const unapprovedReviews = allReviews.filter(review => !review.isApproved);
-      
-      for (const review of unapprovedReviews) {
-        await storage.approveReview(review.id);
-      }
-      
-      res.json({ message: `Auto-approved ${unapprovedReviews.length} reviews` });
-    } catch (error) {
-      console.error("Error auto-approving reviews:", error);
-      res.status(500).json({ message: "Failed to auto-approve reviews" });
-    }
-  });
-
-  app.get("/api/reviews/all", isAuthenticated, async (req, res) => {
+  app.get("/api/reviews/all", requireAuth, async (req, res) => {
     try {
       const reviews = await storage.getAllReviews();
       res.json(reviews);
@@ -146,26 +119,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(review);
     } catch (error) {
       console.error("Error creating review:", error);
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create review" });
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to create review" 
+      });
     }
   });
 
-  app.patch("/api/reviews/:id/approve", isAuthenticated, async (req, res) => {
+  app.put("/api/reviews/:id/approve", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.approveReview(id);
-      res.json({ message: "Review approved successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error("Error approving review:", error);
       res.status(500).json({ message: "Failed to approve review" });
     }
   });
 
-  app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/reviews/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteReview(id);
-      res.json({ message: "Review deleted successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error("Error deleting review:", error);
       res.status(500).json({ message: "Failed to delete review" });
@@ -180,11 +155,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(message);
     } catch (error) {
       console.error("Error creating contact message:", error);
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to send message" });
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to send message" 
+      });
     }
   });
 
-  app.get("/api/contact", isAuthenticated, async (req, res) => {
+  app.get("/api/contact/messages", requireAuth, async (req, res) => {
     try {
       const messages = await storage.getContactMessages();
       res.json(messages);
@@ -194,11 +171,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/contact/:id/read", isAuthenticated, async (req, res) => {
+  app.put("/api/contact/:id/read", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.markMessageAsRead(id);
-      res.json({ message: "Message marked as read successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error("Error marking message as read:", error);
       res.status(500).json({ message: "Failed to mark message as read" });
@@ -216,7 +193,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/all", isAuthenticated, async (req, res) => {
+  app.get("/api/projects/all", requireAuth, async (req, res) => {
     try {
       const projects = await storage.getAllProjects();
       res.json(projects);
@@ -226,18 +203,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", isAuthenticated, upload.single("image"), async (req, res) => {
+  app.post("/api/projects", requireAuth, upload.single("image"), async (req, res) => {
     try {
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
       
+      const technologies = req.body.technologies ? 
+        req.body.technologies.split(',').map((tech: string) => tech.trim()) : [];
+
       const projectData = {
         title: req.body.title,
         description: req.body.description,
-        technologies: req.body.technologies ? JSON.parse(req.body.technologies) : [],
+        imageUrl,
+        technologies,
         liveUrl: req.body.liveUrl,
         githubUrl: req.body.githubUrl,
-        imageUrl,
-        isVisible: req.body.isVisible !== undefined ? req.body.isVisible === 'true' : true
+        isVisible: req.body.isVisible === 'true',
       };
 
       const validatedData = insertProjectSchema.parse(projectData);
@@ -245,15 +225,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(project);
     } catch (error) {
       console.error("Error creating project:", error);
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create project" });
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to create project" 
+      });
     }
   });
 
-  app.delete("/api/projects/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/projects/:id", requireAuth, upload.single("image"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+      
+      const technologies = req.body.technologies ? 
+        req.body.technologies.split(',').map((tech: string) => tech.trim()) : undefined;
+
+      const updateData: any = {
+        title: req.body.title,
+        description: req.body.description,
+        technologies,
+        liveUrl: req.body.liveUrl,
+        githubUrl: req.body.githubUrl,
+        isVisible: req.body.isVisible === 'true',
+      };
+
+      if (imageUrl) {
+        updateData.imageUrl = imageUrl;
+      }
+
+      const project = await storage.updateProject(id, updateData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(400).json({ 
+        message: error instanceof Error ? error.message : "Failed to update project" 
+      });
+    }
+  });
+
+  app.delete("/api/projects/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteProject(id);
-      res.json({ message: "Project deleted successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error("Error deleting project:", error);
       res.status(500).json({ message: "Failed to delete project" });
