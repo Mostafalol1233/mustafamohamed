@@ -135,6 +135,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Backup API routes
+  app.post("/api/backup", requireAuth, async (_req, res) => {
+    try {
+      const { backupDatabase } = await import("./backup.js");
+      const success = await backupDatabase();
+      if (success) {
+        res.json({ success: true, message: "Backup completed successfully" });
+      } else {
+        res.status(500).json({ error: "Backup failed" });
+      }
+    } catch (error) {
+      console.error("Backup error:", error);
+      res.status(500).json({ error: "Backup failed" });
+    }
+  });
+
+  app.post("/api/restore", requireAuth, async (_req, res) => {
+    try {
+      const { restoreDatabase } = await import("./backup.js");
+      const success = await restoreDatabase();
+      if (success) {
+        res.json({ success: true, message: "Restore completed successfully" });
+      } else {
+        res.status(500).json({ error: "Restore failed or no backup found" });
+      }
+    } catch (error) {
+      console.error("Restore error:", error);
+      res.status(500).json({ error: "Restore failed" });
+    }
+  });
+
   // Quick admin access route for direct login
   app.get("/admin-quick", (_req, res) => {
     res.send(`

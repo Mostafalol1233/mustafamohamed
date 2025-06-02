@@ -4,6 +4,7 @@ import { certificates, reviews, contactMessages, projects } from "../shared/sche
 
 // Only import Replit Database in Replit environment
 let replitDb: any = null;
+
 if (process.env.REPLIT_DB_URL) {
   try {
     const Database = require("@replit/database");
@@ -43,12 +44,13 @@ export async function backupDatabase() {
     console.log(`✅ Backed up ${projectsData.length} projects`);
     
     // Save backup timestamp
-    await replitDb.set("backup_timestamp", new Date().toISOString());
+    const timestamp = new Date().toISOString();
+    await replitDb.set("backup_timestamp", timestamp);
     
-    console.log("✅ Database backup completed successfully!");
+    console.log(`🎉 Database backup completed successfully at ${timestamp}`);
     return true;
   } catch (error) {
-    console.error("❌ Error backing up database:", error);
+    console.error("❌ Backup failed:", error);
     return false;
   }
 }
@@ -117,10 +119,29 @@ export async function restoreDatabase() {
       console.log(`✅ Restored ${projectsBackup.length} projects`);
     }
     
-    console.log("✅ Database restoration completed successfully!");
+    console.log("🎉 Database restoration completed successfully!");
     return true;
   } catch (error) {
-    console.error("❌ Error restoring database:", error);
+    console.error("❌ Restore failed:", error);
     return false;
   }
+}
+
+// Auto backup every 30 minutes
+export function startAutoBackup() {
+  if (!replitDb) {
+    console.log("⚠️ Auto backup disabled - Replit Database not available");
+    return;
+  }
+  
+  console.log("🔄 Starting auto backup service...");
+  
+  // Initial backup
+  backupDatabase();
+  
+  // Schedule regular backups every 30 minutes
+  setInterval(() => {
+    console.log("⏰ Running scheduled backup...");
+    backupDatabase();
+  }, 30 * 60 * 1000); // 30 minutes
 }

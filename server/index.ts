@@ -65,11 +65,11 @@ async function createApp() {
     const express = (await import("express")).default;
     const fs = await import("fs");
     const distPath = path.resolve(process.cwd(), "client/dist");
-    
+
     if (fs.existsSync(distPath)) {
       app.use(express.static(distPath));
     }
-    
+
     // Add catch-all handler for SPA routing in production
     app.get('*', (req, res) => {
       if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
@@ -105,7 +105,7 @@ if (!process.env.VERCEL) {
       console.log("🔄 Checking for database backup...");
       await restoreDatabase();
     }
-    
+
     const { server } = await createApp();
 
     // ALWAYS serve the app on port 5000
