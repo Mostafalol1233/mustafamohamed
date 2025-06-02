@@ -3,9 +3,9 @@ export default function AboutSection() {
     <section id="about" className="section-padding bg-card">
       <div className="container-max">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">About Me</h2>
+          <h2 className="text-4xl font-bold text-primary mb-4">About Mostafa Mohamed</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Passionate about creating digital experiences that make a difference
+            Professional Full-Stack Developer & AI Specialist creating innovative digital solutions that drive business success
           </p>
         </div>
 
@@ -18,22 +18,26 @@ export default function AboutSection() {
             />
           </div>
           <div className="space-y-6">
-            <h3 className="text-3xl font-bold text-primary">Transforming Ideas into Digital Reality</h3>
+            <h3 className="text-3xl font-bold text-primary">Mostafa Mohamed - Transforming Ideas into Digital Reality</h3>
             <p className="text-lg text-foreground leading-relaxed">
-              As a full-stack developer with a passion for content strategy, I bridge the gap between technical excellence and compelling storytelling. My approach combines cutting-edge development practices with user-centered design principles.
+              As an expert Full-Stack Developer and AI Specialist, Mostafa Mohamed bridges technical excellence with innovative problem-solving. My portfolio showcases cutting-edge web development, AI integration, and modern digital solutions that deliver measurable results for clients worldwide.
             </p>
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">5+ years of web development experience</span>
+                <span className="text-foreground">5+ years of professional web development experience</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">Certified in AI and modern web technologies</span>
+                <span className="text-foreground">Certified in AI, Machine Learning, and modern web technologies</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">Content strategy and digital marketing expertise</span>
+                <span className="text-foreground">Expert in React, Node.js, TypeScript, and database optimization</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-accent rounded-full"></div>
+                <span className="text-foreground">Portfolio showcasing successful projects and client satisfaction</span>
               </div>
             </div>
           </div>

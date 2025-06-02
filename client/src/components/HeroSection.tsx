@@ -20,22 +20,22 @@ export default function HeroSection() {
           <div className="space-y-8 animate-slide-up">
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-6xl font-bold text-primary leading-tight">
-                Hi, I'm <span className="text-accent">Mustafa Mohamed</span>
+                Hi, I'm <span className="text-accent">Mostafa Mohamed</span>
               </h1>
               <h2 className="text-2xl lg:text-3xl text-muted-foreground font-medium">
-                Full-Stack Web Developer & Content Strategist
+                Expert Full-Stack Developer & AI Specialist
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                I build high-performance websites and craft content that converts.
+                Professional Portfolio showcasing cutting-edge web development and AI solutions.
               </p>
             </div>
             
             <div className="space-y-6">
               <p className="text-lg text-foreground leading-relaxed">
-                With a unique blend of technical proficiency and creative storytelling, I specialize in developing responsive, user-centered web applications — and writing impactful content that drives engagement and delivers results.
+                Mostafa Mohamed - Experienced Full-Stack Web Developer specializing in React, Node.js, TypeScript, and modern AI technologies. I create high-performance web applications, responsive portfolio websites, and innovative digital solutions that drive business growth.
               </p>
               <p className="text-lg text-foreground">
-                Whether you need a sleek landing page, a custom web solution, or compelling digital content, I bring precision, clarity, and creativity to every project.
+                From custom web development to AI integration, database design to user experience optimization - I deliver professional development services that exceed expectations. View my portfolio of successful projects and discover why clients choose Mostafa Mohamed for their development needs.
               </p>
             </div>
 

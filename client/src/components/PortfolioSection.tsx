@@ -146,9 +146,9 @@ export default function PortfolioSection() {
     <section id="portfolio" className="section-padding bg-card">
       <div className="container-max">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Portfolio</h2>
+          <h2 className="text-4xl font-bold text-primary mb-4">Mostafa Mohamed Portfolio - Featured Projects</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Featured projects showcasing technical expertise and creative solutions
+            Explore Mostafa Mohamed's professional portfolio showcasing full-stack web development, AI integration, and innovative digital solutions across various industries
           </p>
         </div>
 
