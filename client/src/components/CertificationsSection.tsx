@@ -127,7 +127,9 @@ export default function CertificationsSection() {
                 <img 
                   src={certificateImage}
                   alt="ALX AI Starter Kit Certificate - Mustafa Muhammad" 
-                  className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                  className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110 certificate-image"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
@@ -157,7 +159,7 @@ export default function CertificationsSection() {
                   certificate.imageUrl.endsWith('.pdf') ? (
                     <div 
                       className="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex flex-col items-center justify-center border-2 border-red-300 transition-all duration-700 group-hover:scale-110 group-hover:from-red-200 group-hover:to-red-300 group-hover:shadow-lg cursor-pointer"
-                      onClick={() => window.open(certificate.imageUrl, '_blank')}
+                      onClick={() => certificate.imageUrl && window.open(certificate.imageUrl, '_blank')}
                     >
                       <i className="fas fa-file-pdf text-4xl text-red-600 mb-2 transition-all duration-500 group-hover:scale-110 group-hover:text-red-700"></i>
                       <span className="text-sm text-red-700 font-medium transition-colors duration-300 group-hover:text-red-800">PDF Certificate</span>
@@ -166,8 +168,9 @@ export default function CertificationsSection() {
                     <img
                       src={certificate.imageUrl}
                       alt={certificate.title}
-                      className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110 cursor-pointer"
-                      onClick={() => window.open(certificate.imageUrl, '_blank')}
+                      className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110 certificate-image"
+                      onContextMenu={(e) => e.preventDefault()}
+                      onDragStart={(e) => e.preventDefault()}
                     />
                   )
                 ) : (
