@@ -80,6 +80,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create default admin on startup
   await createDefaultAdmin();
 
+  // Serve static assets
+  app.use('/assets', express.static(path.join(process.cwd(), 'attached_assets')));
+
   // Authentication routes
   app.post("/api/auth/login", async (req, res) => {
     try {
