@@ -1,12 +1,25 @@
 
 import { db } from "./db.js";
 import { certificates, reviews, contactMessages, projects } from "../shared/schema.js";
-import Database from "@replit/database";
 
-const replitDb = new Database();
+// Only import Replit Database in Replit environment
+let replitDb: any = null;
+if (process.env.REPLIT_DB_URL) {
+  try {
+    const Database = require("@replit/database");
+    replitDb = new Database();
+  } catch (error) {
+    console.log("Replit Database not available - running outside Replit environment");
+  }
+}
 
 export async function backupDatabase() {
   try {
+    if (!replitDb) {
+      console.log("⚠️ Backup not available - Replit Database not accessible");
+      return false;
+    }
+
     console.log("🔄 Starting database backup...");
     
     // Backup certificates
