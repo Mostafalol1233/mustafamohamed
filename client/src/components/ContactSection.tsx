@@ -194,6 +194,23 @@ export default function ContactSection() {
                   </a>
                 </div>
               </div>
+
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center">
+                  <i className="fas fa-link"></i>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-primary">Linktree</h4>
+                  <a 
+                    href="https://linktr.ee/Mustafa_Bemo" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-accent transition-colors"
+                  >
+                    All my links
+                  </a>
+                </div>
+              </div>
             </div>
 
             {/* Professional photo for contact section */}
