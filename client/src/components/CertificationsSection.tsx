@@ -79,23 +79,7 @@ export default function CertificationsSection() {
     createCertificateMutation.mutate(formData);
   };
 
-  const displayCertificates = [
-    {
-      id: "sample-1",
-      title: "Sample Certificate 1",
-      description: "This is a sample certificate.",
-      imageUrl: "/uploads/ProfessionalPortfolio#word.doc.pdf",
-      issueDate: "June 2024",
-    },
-    {
-      id: "sample-2",
-      title: "Udacity",
-      description: "Full Stack Web Development Certificate from Udacity.",
-      imageUrl: "/uploads/Learn the Latest Tech Skills; Advance Your Career _ Udacity.pdf",
-      issueDate: "May 2024",
-    },
-    ...(certificates as Certificate[]),
-  ];
+  const displayCertificates = certificates as Certificate[];
 
   if (isLoading) {
     return (
@@ -164,7 +148,7 @@ export default function CertificationsSection() {
           </Card>
 
           {/* Dynamic certificates from database */}
-          {displayCertificates.map((certificate: any) => (
+          {displayCertificates.map((certificate: Certificate) => (
             <Card key={certificate.id} className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 bg-gradient-to-br from-background to-background/50 border-2 hover:border-primary/50">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="relative p-6">
