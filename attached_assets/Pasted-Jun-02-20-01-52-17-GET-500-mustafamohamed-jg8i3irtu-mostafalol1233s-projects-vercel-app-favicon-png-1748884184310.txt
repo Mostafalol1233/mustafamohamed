@@ -1,0 +1,175 @@
+Jun 02 20:01:52.17
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:48.83
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:47.12
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:46.44
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:45.09
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:44.70
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:44.27
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:41.70
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:40.93
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:39.36
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:38.35
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.png
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:38.00
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:36.87
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:35.64
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:33.53
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:31.09
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:29.50
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:01:27.03
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:22.07
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:21.12
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/favicon.ico
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:20.20
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:19.61
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:16.71
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue. Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Jun 02 20:00:16.33
+GET
+500
+mustafamohamed-jg8i3irtu-mostafalol1233s-projects.vercel.app
+/
+Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue. Error: expected dbUrl, got undefined at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11) at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21) at <anonymous> (/vercel/path0/server/backup.ts:6:18) at ModuleJob.run (node:internal/modules/esm/module_job:274:25) at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26) at async d (/opt/rust/nodejs.js:16:19615) Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+No more logs to show within selected timeline
+
+Logs
+1 Error
+
+Error: expected dbUrl, got undefined
+    at getDbUrl (file:///var/task/node_modules/@replit/database/dist/index.mjs:219:11)
+    at new Client (file:///var/task/node_modules/@replit/database/dist/index.mjs:25:21)
+    at <anonymous> (/vercel/path0/server/backup.ts:6:18)
+    at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async d (/opt/rust/nodejs.js:16:19615)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+GET
+
+/favicon.png
+
+500
+Request started
+Jun 02 20:01:52.17GMT+3
+
+
+
+Function Invocation
+
+500
+Internal Server Error
+
+
+
+
