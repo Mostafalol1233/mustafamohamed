@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import session from "express-session";
+import memorystore from "memorystore";
 import { storage } from "./storage.js";
 import { requireAuth, comparePasswords, createDefaultAdmin } from "./auth.js";
 import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema, admins } from "../shared/schema.js";
@@ -16,7 +17,7 @@ const upload = multer({
   storage: process.env.VERCEL 
     ? multer.memoryStorage() // Use memory storage for serverless
     : multer.diskStorage({
-        destination: async (req, file, cb) => {
+        destination: async (_req, _file, cb) => {
           const uploadPath = path.join(process.cwd(), "uploads");
           try {
             await fs.mkdir(uploadPath, { recursive: true });
@@ -25,12 +26,12 @@ const upload = multer({
           }
           cb(null, uploadPath);
         },
-        filename: (req, file, cb) => {
+        filename: (_req, file, cb) => {
           const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
           cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
         },
       }),
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
@@ -49,7 +50,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session management compatible with serverless
   if (process.env.VERCEL) {
-    const MemoryStore = require('memorystore')(session);
+    const MemoryStore = memorystore(session);
     app.use(session({
       secret: process.env.SESSION_SECRET || 'your-secret-key-here',
       resave: false,

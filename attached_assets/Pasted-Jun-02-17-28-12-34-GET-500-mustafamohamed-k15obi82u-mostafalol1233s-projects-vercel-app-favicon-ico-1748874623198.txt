@@ -1,0 +1,68 @@
+Jun 02 17:28:12.34
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/favicon.ico
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+Jun 02 17:28:12.10
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+Jun 02 17:28:11.72
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/favicon.ico
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+Jun 02 17:28:11.48
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+Jun 02 17:28:11.11
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+Jun 02 17:28:10.98
+GET
+500
+mustafamohamed-k15obi82u-mostafalol1233s-projects.vercel.app
+/
+ReferenceError: require is not defined at registerRoutes (/vercel/path0/server/routes.ts:52:25) at createApp (/vercel/path0/server/index.ts:46:24) at getApp (/vercel/path0/server/index.ts:93:27) at Object.handler (/vercel/path0/server/index.ts:125:21) at r (/opt/rust/nodejs.js:2:14656) at Server.<anonymous> (/opt/rust/nodejs.js:2:11356) at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+No more logs to show within selected timeline
+
+Logs
+1 Error
+
+ReferenceError: require is not defined
+    at registerRoutes (/vercel/path0/server/routes.ts:52:25)
+    at createApp (/vercel/path0/server/index.ts:46:24)
+    at getApp (/vercel/path0/server/index.ts:93:27)
+    at Object.handler (/vercel/path0/server/index.ts:125:21)
+    at r (/opt/rust/nodejs.js:2:14656)
+    at Server.<anonymous> (/opt/rust/nodejs.js:2:11356)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:16:6960)
+GET
+
+/
+
+500
+Request started
+Jun 02 17:28:12.10GMT+3
+
+
+
+Function Invocation
+
+500
+Internal Server Error
+
+
+
+

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import { db } from './db.js';
 import { admins } from '../shared/schema.js';
-import { eq } from 'drizzle-orm';
+// eq import removed as it's not used in this file
 
 export async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, 10);
