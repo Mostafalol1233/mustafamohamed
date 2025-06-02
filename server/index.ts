@@ -100,9 +100,11 @@ async function getApp() {
 // For local development
 if (!process.env.VERCEL) {
   (async () => {
-    // Restore database from backup on startup
-    console.log("🔄 Checking for database backup...");
-    await restoreDatabase();
+    // Restore database from backup on startup (only in Replit environment)
+    if (process.env.REPLIT_DB_URL) {
+      console.log("🔄 Checking for database backup...");
+      await restoreDatabase();
+    }
     
     const { server } = await createApp();
 

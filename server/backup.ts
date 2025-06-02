@@ -55,6 +55,11 @@ export async function backupDatabase() {
 
 export async function restoreDatabase() {
   try {
+    if (!replitDb) {
+      console.log("⚠️ Restore not available - Replit Database not accessible");
+      return false;
+    }
+
     console.log("🔄 Starting database restoration...");
     
     // Check if backup exists
