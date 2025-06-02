@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
+import { restoreDatabase } from "./backup.js";
 import path from "path";
 
 // Initialize the app
@@ -99,6 +100,10 @@ async function getApp() {
 // For local development
 if (!process.env.VERCEL) {
   (async () => {
+    // Restore database from backup on startup
+    console.log("🔄 Checking for database backup...");
+    await restoreDatabase();
+    
     const { server } = await createApp();
 
     // ALWAYS serve the app on port 5000
