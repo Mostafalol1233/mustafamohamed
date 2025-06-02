@@ -1,5 +1,5 @@
 
-import { backupDatabase, restoreDatabase } from "./server/backup.js";
+import { backupDatabase, restoreDatabase } from "./server/backup.ts";
 
 const command = process.argv[2];
 
