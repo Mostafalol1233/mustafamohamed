@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await createDefaultAdmin();
 
   // Authentication routes
-  app.post("/api/login", async (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/logout", (req, res) => {
+  app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ error: "Logout failed" });
