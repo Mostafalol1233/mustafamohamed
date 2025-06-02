@@ -18,8 +18,8 @@ export async function createDefaultAdmin() {
     const existingAdmin = await db.select().from(admins).limit(1);
 
     if (existingAdmin.length === 0) {
-      // Create default admin with username: admin, password: mostafalol123
-      const hashedPassword = await hashPassword('mostafalol123');
+      // Create default admin with username: admin, password: mostafalol1233@#
+      const hashedPassword = await hashPassword('mostafalol1233@#');
       await db.insert(admins).values({
         username: 'admin',
         password: hashedPassword
