@@ -1,6 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes.js";
-import { setupVite, serveStatic, log } from "./vite.js";
 import path from "path";
 
 // Initialize the app
@@ -32,7 +31,12 @@ async function createApp() {
           logLine = logLine.slice(0, 79) + "…";
         }
 
-        log(logLine);
+        console.log(`${new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit", 
+          second: "2-digit",
+          hour12: true,
+        })} [express] ${logLine}`);
       }
     });
 
@@ -53,16 +57,27 @@ async function createApp() {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite.js");
     await setupVite(app, server);
   } else {
-    serveStatic(app);
-  }
-
-  // Add catch-all handler for SPA routing in production
-  if (app.get("env") === "production") {
+    // For production, serve static files directly
+    const express = (await import("express")).default;
+    const fs = await import("fs");
+    const distPath = path.resolve(process.cwd(), "client/dist");
+    
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+    }
+    
+    // Add catch-all handler for SPA routing in production
     app.get('*', (req, res) => {
       if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
-        res.sendFile(path.join(process.cwd(), 'client/dist/index.html'));
+        const indexPath = path.join(distPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(404).send('Not found');
+        }
       }
     });
   }
@@ -95,7 +110,12 @@ if (!process.env.VERCEL) {
       host: "0.0.0.0",
       reusePort: true,
     }, () => {
-      log(`serving on port ${port}`);
+      console.log(`${new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit", 
+        hour12: true,
+      })} [express] serving on port ${port}`);
     });
   })();
 }
