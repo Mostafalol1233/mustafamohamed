@@ -32,7 +32,7 @@ export default function HeroSection() {
             
             <div className="space-y-6">
               <p className="text-lg text-foreground leading-relaxed">
-                Mostafa Mohamed - Experienced Full-Stack Web Developer specializing in React, Node.js, TypeScript, and modern AI technologies. I create high-performance web applications, responsive portfolio websites, and innovative digital solutions that drive business growth.
+                مصطفى محمد Mostafa Mohamed - Experienced Full-Stack Web Developer and Software Engineer specializing in React.js, Node.js, TypeScript, JavaScript, Python, and cutting-edge AI technologies. Professional programmer with expertise in building high-performance web applications, responsive portfolio websites, e-commerce platforms, and innovative digital solutions that drive business growth and deliver exceptional user experiences.
               </p>
               <p className="text-lg text-foreground">
                 From custom web development to AI integration, database design to user experience optimization - I deliver professional development services that exceed expectations. View my portfolio of successful projects and discover why clients choose Mostafa Mohamed for their development needs.

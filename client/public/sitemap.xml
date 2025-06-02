@@ -6,7 +6,13 @@
   <url>
     <loc>https://mostafa-portfolio.vercel.app/</loc>
     <lastmod>2025-06-02</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://mostafa-portfolio.vercel.app/blog.html</loc>
+    <lastmod>2025-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
