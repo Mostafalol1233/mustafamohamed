@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
 import ecoEatsImage from "@assets/eco-eats-preview.png";
 import bmoToolsImage from "@assets/bmo-tools-preview.png";
+import bravezmImage from "@assets/image_1748447815242.png";
+import bestyBoyImage from "@assets/image_1748447890581.png";
+import ahmedHellyImage from "@assets/image_1748448070181.png";
 
 export default function PortfolioSection() {
   const { data: projects = [], isLoading } = useQuery<Project[]>({
@@ -46,8 +49,43 @@ export default function PortfolioSection() {
 
   // Real portfolio projects
   const realProjects = [
+    // Original Projects
     {
       id: 1,
+      title: "BRAVEZM Gaming",
+      description: "Exclusive gaming characters & community platform with zombie mode shop",
+      imageUrl: bravezmImage,
+      technologies: ["React", "JavaScript", "Gaming API", "Community Features"],
+      liveUrl: "https://bravegame.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 2,
+      title: "BestyBoy Gaming",
+      description: "CrossFire vouchers and gaming shop for PUBG, Free Fire with special bonuses",
+      imageUrl: bestyBoyImage,
+      technologies: ["React", "Express", "Gaming API", "Payment Integration"],
+      liveUrl: "https://bestyboy-gamma.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 3,
+      title: "Ahmed Helly Academy",
+      description: "Educational platform with AI Chat, video tutorials, and advanced learning tools",
+      imageUrl: ahmedHellyImage,
+      technologies: ["React", "Node.js", "AI Integration", "Educational Tools"],
+      liveUrl: "https://mr-ahmedhelly.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    // New Projects as requested
+    {
+      id: 4,
       title: "Eco Eats",
       description: "Food Waste Awareness Campaign - A modern, responsive website for the Eco Eats campaign focusing on reducing food waste among students and teenagers.",
       imageUrl: ecoEatsImage,
@@ -58,7 +96,7 @@ export default function PortfolioSection() {
       createdAt: new Date(),
     },
     {
-      id: 2,
+      id: 5,
       title: "BMO Tools",
       description: "Arabic Calculator Tools - Comprehensive website for daily tools and calculators in Arabic and English with full RTL support. Features 10 advanced calculators, BMO advanced encryption system, smart encryption detector, comprehensive unit converter, and bilingual support.",
       imageUrl: bmoToolsImage,
@@ -69,7 +107,7 @@ export default function PortfolioSection() {
       createdAt: new Date(),
     },
     {
-      id: 3,
+      id: 6,
       title: "OneTeam",
       description: "HR company platform for workforce management and team collaboration with comprehensive employee management features.",
       imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
@@ -80,7 +118,7 @@ export default function PortfolioSection() {
       createdAt: new Date(),
     },
     {
-      id: 4,
+      id: 7,
       title: "Bemora",
       description: "Content creator blog platform with rich media support and audience engagement features for modern content creators.",
       imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
@@ -91,7 +129,7 @@ export default function PortfolioSection() {
       createdAt: new Date(),
     },
     {
-      id: 5,
+      id: 8,
       title: "MRMO Business",
       description: "Professional business portfolio and consulting services platform showcasing expertise in digital transformation and business strategy.",
       imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
@@ -102,7 +140,7 @@ export default function PortfolioSection() {
       createdAt: new Date(),
     },
     {
-      id: 6,
+      id: 9,
       title: "Diaa Elden Shop",
       description: "Comprehensive e-commerce platform featuring modern shopping experience, secure payment processing, inventory management, and customer support.",
       imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",

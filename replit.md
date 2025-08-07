@@ -36,12 +36,21 @@ A professional portfolio website for Mustafa Mohamed showcasing personal achieve
 - Project management (CRUD operations)
 
 ## Recent Changes
-- Initial project setup with portfolio structure
-- Database schema for projects, reviews, contacts
-- Authentication system
-- Portfolio section displaying projects
+- Fixed database connection issues and got application running properly
+- Restored original projects: BRAVEZM Gaming, BestyBoy Gaming, Ahmed Helly Academy
+- Added new projects as requested:
+  * Eco Eats - Food waste awareness campaign
+  * BMO Tools - Arabic calculator tools with RTL support  
+  * Updated OneTeam link to oneteam-hr.vercel.app
+  * Updated Bemora link to bemora.netlify.app
+  * Added MRMO Business - professional consulting platform
+  * Added Diaa Elden Shop - e-commerce platform
+- Preserved all original certificates and content
+- Portfolio now displays 9 total projects with proper images and descriptions
 
 ## Current Status
-- Application needs fixing and updating
-- Adding new projects as requested by user
-- Updating existing project links
+- Application is fully functional and running
+- Database connected and working
+- Portfolio displays both original and new projects
+- All requested changes implemented successfully
+- Date: August 7, 2025
