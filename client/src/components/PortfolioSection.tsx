@@ -2,12 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Project } from "@shared/schema";
-import bravezmImage from "@assets/image_1748447815242.png";
-import bestyBoyImage from "@assets/image_1748447890581.png";
-import ahmedHellyImage from "@assets/image_1748448070181.png";
+import ecoEatsImage from "@assets/eco-eats-preview.png";
+import bmoToolsImage from "@assets/bmo-tools-preview.png";
 
 export default function PortfolioSection() {
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
@@ -49,22 +48,22 @@ export default function PortfolioSection() {
   const realProjects = [
     {
       id: 1,
-      title: "BRAVEZM Gaming",
-      description: "Exclusive gaming characters & community platform with zombie mode shop",
-      imageUrl: bravezmImage,
-      technologies: ["React", "JavaScript", "Gaming API", "Community Features"],
-      liveUrl: "https://bravegame.vercel.app/",
+      title: "Eco Eats",
+      description: "Food Waste Awareness Campaign - A modern, responsive website for the Eco Eats campaign focusing on reducing food waste among students and teenagers.",
+      imageUrl: ecoEatsImage,
+      technologies: ["React", "JavaScript", "Environmental Awareness", "Campaign Platform"],
+      liveUrl: "https://eco-eats-campaign.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
     {
       id: 2,
-      title: "Bemora",
-      description: "Content creator blog platform with rich media support and audience engagement",
-      imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-      technologies: ["WordPress", "PHP", "Content Management", "SEO"],
-      liveUrl: "https://bemora.vercel.app/",
+      title: "BMO Tools",
+      description: "Arabic Calculator Tools - Comprehensive website for daily tools and calculators in Arabic and English with full RTL support. Features 10 advanced calculators, BMO advanced encryption system, smart encryption detector, comprehensive unit converter, and bilingual support.",
+      imageUrl: bmoToolsImage,
+      technologies: ["React", "JavaScript", "RTL Support", "Encryption", "Calculators"],
+      liveUrl: "https://bmo-tools.netlify.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
@@ -72,32 +71,43 @@ export default function PortfolioSection() {
     {
       id: 3,
       title: "OneTeam",
-      description: "HR company platform for workforce management and team collaboration",
+      description: "HR company platform for workforce management and team collaboration with comprehensive employee management features.",
       imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
       technologies: ["Vue.js", "Laravel", "HR Management", "MySQL"],
-      liveUrl: "https://oneteam1.vercel.app/",
+      liveUrl: "https://oneteam-hr.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
     {
       id: 4,
-      title: "BestyBoy Gaming",
-      description: "CrossFire vouchers and gaming shop for PUBG, Free Fire with special bonuses",
-      imageUrl: bestyBoyImage,
-      technologies: ["React", "Express", "Gaming API", "Payment Integration"],
-      liveUrl: "https://bestyboy-gamma.vercel.app/",
+      title: "Bemora",
+      description: "Content creator blog platform with rich media support and audience engagement features for modern content creators.",
+      imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["WordPress", "PHP", "Content Management", "SEO"],
+      liveUrl: "https://bemora.netlify.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
     },
     {
       id: 5,
-      title: "Ahmed Helly Academy",
-      description: "Educational platform with AI Chat, video tutorials, and advanced learning tools",
-      imageUrl: ahmedHellyImage,
-      technologies: ["React", "Node.js", "AI Integration", "Educational Tools"],
-      liveUrl: "https://mr-ahmedhelly.vercel.app/",
+      title: "MRMO Business",
+      description: "Professional business portfolio and consulting services platform showcasing expertise in digital transformation and business strategy.",
+      imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["React", "TypeScript", "Business Portfolio", "Consulting"],
+      liveUrl: "https://mrmo.vercel.app/",
+      githubUrl: "https://github.com/mustafa-mohamed",
+      isVisible: true,
+      createdAt: new Date(),
+    },
+    {
+      id: 6,
+      title: "Diaa Elden Shop",
+      description: "Comprehensive e-commerce platform featuring modern shopping experience, secure payment processing, inventory management, and customer support.",
+      imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      technologies: ["React", "Node.js", "E-commerce", "Payment Integration", "MongoDB"],
+      liveUrl: "https://diaa-elden.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
       isVisible: true,
       createdAt: new Date(),
@@ -106,41 +116,7 @@ export default function PortfolioSection() {
 
   const displayProjects = projects.length > 0 ? projects : realProjects;
 
-  const sampleProjects = [
-    {
-      id: 1,
-      title: "Professional Portfolio Website",
-      description: "A full-stack portfolio website built with React, TypeScript, and Express. Features include admin dashboard, reviews system, contact forms, and certificate management.",
-      technologies: ["React", "TypeScript", "Express", "PostgreSQL", "TailwindCSS"],
-      liveUrl: window.location.origin,
-      githubUrl: "https://github.com/username/portfolio",
-      imageUrl: null,
-      isVisible: true,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 2,
-      title: "Task Management System",
-      description: "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
-      technologies: ["React", "Socket.io", "Express", "MongoDB"],
-      liveUrl: "https://example-tasks.com",
-      githubUrl: "https://github.com/username/task-manager",
-      imageUrl: null,
-      isVisible: true,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: "Weather Dashboard",
-      description: "A responsive weather dashboard that displays current conditions and forecasts using OpenWeatherMap API with beautiful data visualizations.",
-      technologies: ["React", "Chart.js", "OpenWeatherMap API", "CSS Grid"],
-      liveUrl: "https://example-weather.com",
-      githubUrl: "https://github.com/username/weather-dashboard",
-      imageUrl: null,
-      isVisible: true,
-      createdAt: new Date().toISOString()
-    }
-  ];
+
 
   return (
     <section id="portfolio" className="section-padding bg-card">
