@@ -81,18 +81,58 @@ export default function CertificationsSection() {
 
   const displayCertificates = [
     {
-      id: "sample-1",
-      title: "Sample Certificate 1",
-      description: "This is a sample certificate.",
-      imageUrl: "/uploads/ProfessionalPortfolio#word.doc.pdf",
-      issueDate: "June 2024",
+      id: 1,
+      title: "ALX AI Starter Kit Certificate",
+      description: "Comprehensive AI and Machine Learning fundamentals course completion",
+      imageUrl: null,
+      issueDate: "2024",
+      isVisible: true,
+      verified: true
     },
     {
-      id: "sample-2",
-      title: "Udacity",
-      description: "Full Stack Web Development Certificate from Udacity.",
-      imageUrl: "/uploads/Learn the Latest Tech Skills; Advance Your Career _ Udacity.pdf",
-      issueDate: "May 2024",
+      id: 2,
+      title: "Full Stack Web Development",
+      description: "Advanced web development with modern frameworks and technologies",
+      imageUrl: null,
+      issueDate: "2023",
+      isVisible: true,
+      verified: true
+    },
+    {
+      id: 3,
+      title: "Database Design & Management",
+      description: "Professional database design, optimization and management certification",
+      imageUrl: null,
+      issueDate: "2023",
+      isVisible: true,
+      verified: true
+    },
+    {
+      id: 4,
+      title: "Cloud Computing Fundamentals",
+      description: "AWS and cloud infrastructure deployment and management",
+      imageUrl: null,
+      issueDate: "2022",
+      isVisible: true,
+      verified: true
+    },
+    {
+      id: 5,
+      title: "Cybersecurity Essentials",
+      description: "Network security, ethical hacking and security best practices",
+      imageUrl: null,
+      issueDate: "2022",
+      isVisible: true,
+      verified: true
+    },
+    {
+      id: 6,
+      title: "Project Management Professional",
+      description: "Agile methodology and project lifecycle management certification",
+      imageUrl: null,
+      issueDate: "2021",
+      isVisible: true,
+      verified: true
     },
     ...(certificates as Certificate[]),
   ];
@@ -135,93 +175,59 @@ export default function CertificationsSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {/* ALX AI Starter Kit Certificate */}
-          <Card className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 bg-gradient-to-br from-background to-background/50 border-2 hover:border-primary/50">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative p-6">
-              <div className="relative overflow-hidden rounded-lg mb-4">
-                <img 
-                  src={certificateImage}
-                  alt="ALX AI Starter Kit Certificate - Mustafa Muhammad" 
-                  className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-3 border border-white/30">
-                    <i className="fas fa-award text-white text-2xl"></i>
-                  </div>
-                </div>
-              </div>
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-xl text-primary transition-colors duration-300 group-hover:text-accent">ALX AI Starter Kit</CardTitle>
-                <p className="text-muted-foreground transition-all duration-300 group-hover:text-foreground">Successfully completed AI fundamentals program</p>
-              </CardHeader>
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span className="transition-colors duration-300 group-hover:text-primary">Issued: May 2024</span>
-                <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105">Verified</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Dynamic certificates from database */}
           {displayCertificates.map((certificate: any) => (
-            <Card key={certificate.id} className="group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 bg-gradient-to-br from-background to-background/50 border-2 hover:border-primary/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative p-6">
-                <div className="relative overflow-hidden rounded-lg mb-4">
-                {certificate.imageUrl ? (
-                  certificate.imageUrl.endsWith('.pdf') ? (
-                    <div className="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex flex-col items-center justify-center border-2 border-red-300 transition-all duration-700 group-hover:scale-110 group-hover:from-red-200 group-hover:to-red-300 group-hover:shadow-lg">
-                      <i className="fas fa-file-pdf text-4xl text-red-600 mb-2 transition-all duration-500 group-hover:scale-110 group-hover:text-red-700"></i>
-                      <span className="text-sm text-red-700 font-medium transition-colors duration-300 group-hover:text-red-800">PDF Certificate</span>
+            <Card key={certificate.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="p-6">
+                <div className="relative mb-4">
+                  {certificate.id === 1 ? (
+                    // ALX AI Certificate with special dark blue background
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-blue-800 rounded-xl flex flex-col items-center justify-center text-white relative overflow-hidden">
+                      <div className="absolute top-4 left-4 text-xs text-blue-200">ALX</div>
+                      <div className="absolute top-4 right-4 text-xs text-blue-200">ACHIEVEMENT</div>
+                      <div className="text-center z-10">
+                        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-3">
+                          <i className="fas fa-robot text-2xl text-white"></i>
+                        </div>
+                        <h3 className="font-bold text-lg text-white">AI Muhammad</h3>
+                        <p className="text-sm text-blue-200 mt-1">Artificial Intelligence and Machine Learning</p>
+                      </div>
+                      <div className="absolute bottom-4 left-4 text-xs text-blue-200">Issued: {certificate.issueDate}</div>
+                      <div className="absolute bottom-4 right-4">
+                        <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">Verified</span>
+                      </div>
                     </div>
                   ) : (
-                    <img
-                      src={certificate.imageUrl}
-                      alt={certificate.title}
-                      className="w-full h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
-                    />
-                  )
-                ) : (
-                  <div className="w-full h-48 bg-gradient-to-br from-accent/20 to-primary/20 rounded-lg flex items-center justify-center transition-all duration-700 group-hover:scale-110 group-hover:from-accent/30 group-hover:to-primary/30">
-                    <i className="fas fa-certificate text-4xl text-accent transition-all duration-500 group-hover:scale-110 group-hover:text-primary"></i>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg"></div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    onClick={() => certificate.imageUrl && window.open(certificate.imageUrl, '_blank')}
-                    className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 transition-all duration-300 transform hover:scale-105"
-                  >
-                    <i className="fas fa-eye mr-2"></i>View Certificate
-                  </Button>
-                </div>
-              </div>
-                <CardHeader className="p-0 mb-4">
-                  <CardTitle className="text-xl text-primary transition-colors duration-300 group-hover:text-accent">{certificate.title}</CardTitle>
-                  {certificate.description && (
-                    <p className="text-muted-foreground transition-all duration-300 group-hover:text-foreground">{certificate.description}</p>
+                    // Other certificates with modern card design
+                    <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-xl flex flex-col items-center justify-center relative">
+                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-3">
+                        <i className="fas fa-check text-white text-xl"></i>
+                      </div>
+                      <div className="absolute bottom-4 right-4">
+                        <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">Verified</span>
+                      </div>
+                    </div>
                   )}
-                </CardHeader>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span className="transition-colors duration-300 group-hover:text-primary">Issued: {certificate.issueDate || 'N/A'}</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-105">Verified</span>
-                    {isAuthenticated && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => deleteCertificateMutation.mutate(certificate.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 hover:scale-110"
-                        disabled={deleteCertificateMutation.isPending}
-                      >
-                        <i className="fas fa-trash text-xs"></i>
-                      </Button>
-                    )}
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="font-bold text-lg text-blue-600 dark:text-blue-400">{certificate.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{certificate.description}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    <span>Issued: {certificate.issueDate}</span>
                   </div>
                 </div>
+
+                {isAuthenticated && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteCertificateMutation.mutate(certificate.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-all duration-300 mt-4"
+                    disabled={deleteCertificateMutation.isPending}
+                  >
+                    <i className="fas fa-trash text-xs"></i>
+                  </Button>
+                )}
               </div>
             </Card>
           ))}

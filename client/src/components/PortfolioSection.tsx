@@ -7,6 +7,9 @@ import bmoToolsImage from "@assets/bmo-tools-preview.png";
 import bravezmImage from "@assets/image_1748447815242.png";
 import bestyBoyImage from "@assets/image_1748447890581.png";
 import ahmedHellyImage from "@assets/image_1748448070181.png";
+import diaaEldenImage from "@assets/diaa-elden-shop.png";
+import mrMohammedImage from "@assets/mr-mohammed.png";
+import bemoraNewImage from "@assets/bemora-new.png";
 
 export default function PortfolioSection() {
   const { data: projects = [], isLoading } = useQuery<Project[]>({
@@ -121,7 +124,7 @@ export default function PortfolioSection() {
       id: 7,
       title: "Bemora",
       description: "Content creator blog platform with rich media support and audience engagement features for modern content creators.",
-      imageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      imageUrl: bemoraNewImage,
       technologies: ["WordPress", "PHP", "Content Management", "SEO"],
       liveUrl: "https://bemora.netlify.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
@@ -130,9 +133,9 @@ export default function PortfolioSection() {
     },
     {
       id: 8,
-      title: "MRMO Business",
+      title: "MR Mohammed",
       description: "Professional business portfolio and consulting services platform showcasing expertise in digital transformation and business strategy.",
-      imageUrl: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      imageUrl: mrMohammedImage,
       technologies: ["React", "TypeScript", "Business Portfolio", "Consulting"],
       liveUrl: "https://mrmo.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
@@ -143,7 +146,7 @@ export default function PortfolioSection() {
       id: 9,
       title: "Diaa Elden Shop",
       description: "Comprehensive e-commerce platform featuring modern shopping experience, secure payment processing, inventory management, and customer support.",
-      imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      imageUrl: diaaEldenImage,
       technologies: ["React", "Node.js", "E-commerce", "Payment Integration", "MongoDB"],
       liveUrl: "https://diaa-elden.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
