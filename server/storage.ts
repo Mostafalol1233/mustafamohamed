@@ -101,6 +101,19 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(reviews.createdAt));
   }
 
+  async approveReview(id: number): Promise<void> {
+    await db
+      .update(reviews)
+      .set({ isApproved: true })
+      .where(eq(reviews.id, id));
+  }
+
+  async deleteReview(id: number): Promise<void> {
+    await db
+      .delete(reviews)
+      .where(eq(reviews.id, id));
+  }
+
   async getAllReviews(): Promise<Review[]> {
     return await db
       .select()
@@ -117,17 +130,6 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return newReview;
-  }
-
-  async approveReview(id: number): Promise<void> {
-    await db
-      .update(reviews)
-      .set({ isApproved: true })
-      .where(eq(reviews.id, id));
-  }
-
-  async deleteReview(id: number): Promise<void> {
-    await db.delete(reviews).where(eq(reviews.id, id));
   }
 
   // Contact message operations

@@ -80,163 +80,166 @@ function DragonConsole() {
           transform: `translate(-50%, -50%) rotate(${Math.atan2(mousePosition.y - dragonPosition.y, mousePosition.x - dragonPosition.x) * 180 / Math.PI}deg)`
         }}
       >
-        <svg width="160" height="80" viewBox="0 0 160 80" className="drop-shadow-2xl">
-          {/* Majestic Dragon Head with Horns */}
+        <svg width="200" height="120" viewBox="0 0 200 120" className="drop-shadow-2xl">
+          {/* Realistic Dragon Head */}
           <g className="animate-pulse">
-            {/* Main skull structure */}
+            {/* Dragon skull */}
             <path 
-              d="M120 35 Q135 25 145 35 Q148 40 145 45 Q140 50 125 48 Q115 45 120 35 Z" 
+              d="M150 55 Q170 45 185 55 Q190 65 185 75 Q175 85 155 80 Q145 70 150 55 Z" 
               fill="none" 
               stroke="#fbbf24" 
-              strokeWidth="2.5"
-              className="animate-pulse"
+              strokeWidth="3"
             />
             
-            {/* Dragon horns */}
-            <path d="M125 30 Q130 20 135 25 Q132 28 128 32" fill="none" stroke="#d97706" strokeWidth="2" className="animate-pulse" />
-            <path d="M135 28 Q142 18 148 23 Q145 26 140 30" fill="none" stroke="#d97706" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
-            
-            {/* Intricate skull details */}
-            <path d="M120 38 Q125 35 130 38 Q135 35 140 38" fill="none" stroke="#fbbf24" strokeWidth="1.5" />
-            
             {/* Glowing eyes */}
-            <circle cx="128" cy="38" r="3" fill="#ef4444" opacity="0.9" className="animate-ping" />
-            <circle cx="137" cy="36" r="2.5" fill="#dc2626" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.5s' }} />
+            <circle cx="165" cy="60" r="4" fill="#ef4444" opacity="0.9" className="animate-ping" />
+            <circle cx="175" cy="58" r="3.5" fill="#dc2626" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.5s' }} />
             
-            {/* Extended jaw with detailed teeth */}
-            <path d="M125 45 Q135 48 145 45 Q143 52 125 50 Z" fill="none" stroke="#fbbf24" strokeWidth="2" />
-            <line x1="130" y1="45" x2="130" y2="50" stroke="#f9fafb" strokeWidth="1.5" />
-            <line x1="135" y1="45" x2="135" y2="49" stroke="#f9fafb" strokeWidth="1.5" />
-            <line x1="140" y1="45" x2="140" y2="48" stroke="#f9fafb" strokeWidth="1.5" />
+            {/* Jaw with teeth */}
+            <path d="M155 70 Q170 75 185 70 Q183 82 155 78 Z" fill="none" stroke="#fbbf24" strokeWidth="2.5" />
+            <line x1="165" y1="70" x2="165" y2="78" stroke="#f9fafb" strokeWidth="2" />
+            <line x1="172" y1="70" x2="172" y2="76" stroke="#f9fafb" strokeWidth="2" />
+            <line x1="178" y1="70" x2="178" y2="75" stroke="#f9fafb" strokeWidth="2" />
           </g>
           
-          {/* Articulated Neck and Spine */}
+          {/* Dragon Body and Spine */}
           <g>
-            {/* Main spine with curves */}
-            <path d="M120 40 Q100 42 80 40 Q60 38 40 40 Q20 42 5 40" stroke="#fbbf24" strokeWidth="2.5" fill="none" className="animate-pulse" />
+            <path d="M150 60 Q120 62 90 60 Q60 58 30 60 Q10 62 5 60" stroke="#fbbf24" strokeWidth="3.5" fill="none" className="animate-pulse" />
             
-            {/* Detailed vertebrae with movement */}
-            {Array.from({ length: 12 }).map((_, i) => {
-              const x = 120 - i * 9;
-              const y = 40 + Math.sin(i * 0.3) * 2;
+            {Array.from({ length: 15 }).map((_, i) => {
+              const x = 150 - i * 10;
+              const y = 60 + Math.sin(i * 0.3) * 3;
               return (
                 <g key={i}>
                   <circle 
                     cx={x} 
                     cy={y} 
-                    r="2.5" 
+                    r="3" 
                     fill="none" 
                     stroke="#fbbf24" 
+                    strokeWidth="2.5" 
+                    className="animate-pulse"
+                    style={{ animationDelay: `${i * 0.1}s` }}
+                  />
+                  {/* Detailed ribs */}
+                  <line 
+                    x1={x} 
+                    y1={y} 
+                    x2={x - 4 + Math.sin(i * 0.5) * 3} 
+                    y2={y - 18} 
+                    stroke="#d97706" 
                     strokeWidth="2" 
                     className="animate-pulse"
-                    style={{ animationDelay: `${i * 0.08}s` }}
-                  />
-                  {/* Articulated rib bones */}
-                  <line 
-                    x1={x} 
-                    y1={y} 
-                    x2={x - 3 + Math.sin(i * 0.4) * 2} 
-                    y2={y - 12} 
-                    stroke="#d97706" 
-                    strokeWidth="1.5" 
-                    className="animate-pulse"
-                    style={{ animationDelay: `${i * 0.08}s` }}
+                    style={{ animationDelay: `${i * 0.1}s` }}
                   />
                   <line 
                     x1={x} 
                     y1={y} 
-                    x2={x - 3 + Math.sin(i * 0.4) * 2} 
-                    y2={y + 12} 
+                    x2={x - 4 + Math.sin(i * 0.5) * 3} 
+                    y2={y + 18} 
                     stroke="#d97706" 
-                    strokeWidth="1.5" 
+                    strokeWidth="2" 
                     className="animate-pulse"
-                    style={{ animationDelay: `${i * 0.08}s` }}
+                    style={{ animationDelay: `${i * 0.1}s` }}
                   />
                 </g>
               );
             })}
           </g>
           
-          {/* Advanced Wing Structure */}
+          {/* Realistic Wing Structure */}
           <g>
-            {/* Left wing with multiple bones */}
+            {/* Upper Wing */}
             <g className="animate-bounce">
-              <line x1="100" y1="38" x2="85" y2="20" stroke="#b45309" strokeWidth="3" />
-              <line x1="85" y1="20" x2="65" y2="10" stroke="#b45309" strokeWidth="2.5" />
-              <line x1="65" y1="10" x2="50" y2="15" stroke="#b45309" strokeWidth="2" />
-              <line x1="50" y1="15" x2="40" y2="25" stroke="#b45309" strokeWidth="1.5" />
+              {/* Main wing bone */}
+              <line x1="130" y1="58" x2="100" y2="25" stroke="#b45309" strokeWidth="4" />
+              <line x1="100" y1="25" x2="70" y2="15" stroke="#b45309" strokeWidth="3.5" />
+              <line x1="70" y1="15" x2="45" y2="20" stroke="#b45309" strokeWidth="3" />
+              <line x1="45" y1="20" x2="25" y2="35" stroke="#b45309" strokeWidth="2.5" />
               
-              {/* Wing membrane lines */}
-              <path d="M100 38 Q85 25 70 15 Q55 20 45 30" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
-              <path d="M90 35 Q75 25 60 20 Q50 25 45 30" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+              {/* Wing fingers */}
+              <line x1="100" y1="25" x2="85" y2="10" stroke="#b45309" strokeWidth="2.5" />
+              <line x1="70" y1="15" x2="55" y2="8" stroke="#b45309" strokeWidth="2" />
+              <line x1="45" y1="20" x2="35" y2="15" stroke="#b45309" strokeWidth="2" />
+              
+              {/* Wing membrane */}
+              <path d="M130 58 Q100 30 70 20 Q45 25 30 40 Q40 35 55 30 Q80 25 110 35 Q125 45 130 58" 
+                    fill="rgba(180, 83, 9, 0.3)" 
+                    stroke="#92400e" 
+                    strokeWidth="1.5" />
+              
+              {/* Wing support lines */}
+              <path d="M120 50 Q90 25 60 20" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.7" />
+              <path d="M110 45 Q80 22 50 18" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.7" />
             </g>
             
-            {/* Right wing with multiple bones */}
-            <g className="animate-bounce" style={{ animationDelay: '0.3s' }}>
-              <line x1="100" y1="42" x2="85" y2="60" stroke="#b45309" strokeWidth="3" />
-              <line x1="85" y1="60" x2="65" y2="70" stroke="#b45309" strokeWidth="2.5" />
-              <line x1="65" y1="70" x2="50" y2="65" stroke="#b45309" strokeWidth="2" />
-              <line x1="50" y1="65" x2="40" y2="55" stroke="#b45309" strokeWidth="1.5" />
+            {/* Lower Wing */}
+            <g className="animate-bounce" style={{ animationDelay: '0.4s' }}>
+              {/* Main wing bone */}
+              <line x1="130" y1="62" x2="100" y2="95" stroke="#b45309" strokeWidth="4" />
+              <line x1="100" y1="95" x2="70" y2="105" stroke="#b45309" strokeWidth="3.5" />
+              <line x1="70" y1="105" x2="45" y2="100" stroke="#b45309" strokeWidth="3" />
+              <line x1="45" y1="100" x2="25" y2="85" stroke="#b45309" strokeWidth="2.5" />
               
-              {/* Wing membrane lines */}
-              <path d="M100 42 Q85 55 70 65 Q55 60 45 50" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
-              <path d="M90 45 Q75 55 60 60 Q50 55 45 50" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+              {/* Wing fingers */}
+              <line x1="100" y1="95" x2="85" y2="110" stroke="#b45309" strokeWidth="2.5" />
+              <line x1="70" y1="105" x2="55" y2="112" stroke="#b45309" strokeWidth="2" />
+              <line x1="45" y1="100" x2="35" y2="105" stroke="#b45309" strokeWidth="2" />
+              
+              {/* Wing membrane */}
+              <path d="M130 62 Q100 90 70 100 Q45 95 30 80 Q40 85 55 90 Q80 95 110 85 Q125 75 130 62" 
+                    fill="rgba(180, 83, 9, 0.3)" 
+                    stroke="#92400e" 
+                    strokeWidth="1.5" />
+              
+              {/* Wing support lines */}
+              <path d="M120 70 Q90 95 60 100" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.7" />
+              <path d="M110 75 Q80 98 50 102" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.7" />
             </g>
           </g>
           
-          {/* Articulated Arms with Claws */}
+          {/* Dragon Arms */}
           <g>
             {/* Left arm */}
-            <g className="animate-pulse" style={{ animationDelay: '0.1s' }}>
-              <line x1="90" y1="40" x2="85" y2="55" stroke="#fbbf24" strokeWidth="2.5" />
-              <line x1="85" y1="55" x2="80" y2="70" stroke="#fbbf24" strokeWidth="2" />
-              <line x1="80" y1="70" x2="75" y2="75" stroke="#f9fafb" strokeWidth="1.5" />
-              <line x1="80" y1="70" x2="78" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
-              <line x1="80" y1="70" x2="82" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+            <g className="animate-pulse" style={{ animationDelay: '0.15s' }}>
+              <line x1="110" y1="60" x2="105" y2="85" stroke="#fbbf24" strokeWidth="3.5" />
+              <line x1="105" y1="85" x2="100" y2="110" stroke="#fbbf24" strokeWidth="3" />
+              <line x1="100" y1="110" x2="95" y2="118" stroke="#f9fafb" strokeWidth="2" />
+              <line x1="100" y1="110" x2="97" y2="120" stroke="#f9fafb" strokeWidth="2" />
+              <line x1="100" y1="110" x2="103" y2="120" stroke="#f9fafb" strokeWidth="2" />
             </g>
             
             {/* Right arm */}
-            <g className="animate-pulse" style={{ animationDelay: '0.2s' }}>
-              <line x1="70" y1="40" x2="75" y2="55" stroke="#fbbf24" strokeWidth="2.5" />
-              <line x1="75" y1="55" x2="80" y2="70" stroke="#fbbf24" strokeWidth="2" />
-              <line x1="80" y1="70" x2="85" y2="75" stroke="#f9fafb" strokeWidth="1.5" />
-              <line x1="80" y1="70" x2="82" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
-              <line x1="80" y1="70" x2="78" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+            <g className="animate-pulse" style={{ animationDelay: '0.25s' }}>
+              <line x1="90" y1="60" x2="95" y2="85" stroke="#fbbf24" strokeWidth="3.5" />
+              <line x1="95" y1="85" x2="100" y2="110" stroke="#fbbf24" strokeWidth="3" />
+              <line x1="100" y1="110" x2="105" y2="118" stroke="#f9fafb" strokeWidth="2" />
+              <line x1="100" y1="110" x2="102" y2="120" stroke="#f9fafb" strokeWidth="2" />
+              <line x1="100" y1="110" x2="98" y2="120" stroke="#f9fafb" strokeWidth="2" />
             </g>
           </g>
           
-          {/* Flowing Serpentine Tail */}
+          {/* Serpentine Tail */}
           <g>
-            {Array.from({ length: 10 }).map((_, i) => {
-              const x = 40 - i * 4;
-              const y = 40 + Math.sin(i * 0.6) * 8;
+            {Array.from({ length: 12 }).map((_, i) => {
+              const x = 30 - i * 5;
+              const y = 60 + Math.sin(i * 0.7) * 12;
               return (
-                <g key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.15}s` }}>
+                <g key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}>
                   <circle 
                     cx={x} 
                     cy={y} 
-                    r="2" 
+                    r="2.5" 
                     fill="none" 
                     stroke="#fbbf24" 
-                    strokeWidth="1.5"
+                    strokeWidth="2"
                   />
-                  {i < 9 && (
+                  {i < 11 && (
                     <path 
-                      d={`M ${x} ${y} Q ${x - 3} ${y + Math.sin((i + 1) * 0.6) * 4} ${x - 4} ${40 + Math.sin((i + 1) * 0.6) * 8}`}
+                      d={`M ${x} ${y} Q ${x - 4} ${y + Math.sin((i + 1) * 0.7) * 6} ${x - 5} ${60 + Math.sin((i + 1) * 0.7) * 12}`}
                       stroke="#d97706" 
-                      strokeWidth="2" 
+                      strokeWidth="2.5" 
                       fill="none"
-                    />
-                  )}
-                  {/* Tail spikes */}
-                  {i % 2 === 0 && (
-                    <line 
-                      x1={x} 
-                      y1={y} 
-                      x2={x - 2} 
-                      y2={y - 6} 
-                      stroke="#b45309" 
-                      strokeWidth="1.5"
                     />
                   )}
                 </g>
@@ -246,10 +249,9 @@ function DragonConsole() {
           
           {/* Enhanced Fire Breath */}
           <g>
-            <circle cx="150" cy="35" r="4" fill="#fbbf24" opacity="0.9" className="animate-ping" />
-            <circle cx="155" cy="38" r="3" fill="#f59e0b" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.2s' }} />
-            <circle cx="160" cy="36" r="2" fill="#ef4444" opacity="0.9" className="animate-ping" style={{ animationDelay: '0.4s' }} />
-            <ellipse cx="152" cy="37" rx="6" ry="2" fill="#fbbf24" opacity="0.6" className="animate-pulse" />
+            <ellipse cx="190" cy="55" rx="8" ry="4" fill="#fbbf24" opacity="0.8" className="animate-ping" />
+            <circle cx="195" cy="58" r="4" fill="#f59e0b" opacity="0.7" className="animate-ping" style={{ animationDelay: '0.3s' }} />
+            <circle cx="200" cy="56" r="3" fill="#ef4444" opacity="0.9" className="animate-ping" style={{ animationDelay: '0.6s' }} />
           </g>
         </svg>
       </div>
