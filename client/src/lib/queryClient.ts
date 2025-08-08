@@ -29,7 +29,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    let url = queryKey[0] as string;
+    
+    // Check if we're on Vercel and it's an API call
+    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+      if (url.startsWith('/api/')) {
+        url = url + '.json';
+      }
+    }
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 
