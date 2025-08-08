@@ -34,13 +34,13 @@ export const getQueryFn: <T>(options: {
     
     // Return static data for main endpoints - this makes the site work instantly!
     if (url === "/api/projects") {
-      return staticProjects as T;
+      return staticProjects as any;
     }
     if (url === "/api/certificates") {
-      return staticCertificates as T;
+      return staticCertificates as any;
     }
     if (url === "/api/reviews") {
-      return staticReviews as T;
+      return staticReviews as any;
     }
     
     // For other endpoints, try API first but return static fallback
@@ -57,9 +57,9 @@ export const getQueryFn: <T>(options: {
       return await res.json();
     } catch (error) {
       // Fallback to static data if API fails
-      if (url === "/api/projects") return staticProjects as T;
-      if (url === "/api/certificates") return staticCertificates as T;
-      if (url === "/api/reviews") return staticReviews as T;
+      if (url === "/api/projects") return staticProjects as any;
+      if (url === "/api/certificates") return staticCertificates as any;
+      if (url === "/api/reviews") return staticReviews as any;
       throw error;
     }
   };

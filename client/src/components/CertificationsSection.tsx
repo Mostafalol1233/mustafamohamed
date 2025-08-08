@@ -79,9 +79,9 @@ export default function CertificationsSection() {
     createCertificateMutation.mutate(formData);
   };
 
-  const displayCertificates = [
+  const displayCertificates = certificates.length > 0 ? certificates : [
     {
-      id: 1,
+      id: "static-1",
       title: "ALX AI Starter Kit Certificate",
       description: "Comprehensive AI and Machine Learning fundamentals course completion",
       imageUrl: null,
@@ -90,7 +90,7 @@ export default function CertificationsSection() {
       verified: true
     },
     {
-      id: 2,
+      id: "static-2",
       title: "Full Stack Web Development",
       description: "Advanced web development with modern frameworks and technologies",
       imageUrl: null,
@@ -99,7 +99,7 @@ export default function CertificationsSection() {
       verified: true
     },
     {
-      id: 3,
+      id: "static-3",
       title: "Database Design & Management",
       description: "Professional database design, optimization and management certification",
       imageUrl: null,
@@ -108,7 +108,7 @@ export default function CertificationsSection() {
       verified: true
     },
     {
-      id: 4,
+      id: "static-4",
       title: "Cloud Computing Fundamentals",
       description: "AWS and cloud infrastructure deployment and management",
       imageUrl: null,
@@ -117,7 +117,7 @@ export default function CertificationsSection() {
       verified: true
     },
     {
-      id: 5,
+      id: "static-5",
       title: "Cybersecurity Essentials",
       description: "Network security, ethical hacking and security best practices",
       imageUrl: null,
@@ -126,15 +126,14 @@ export default function CertificationsSection() {
       verified: true
     },
     {
-      id: 6,
+      id: "static-6",
       title: "Project Management Professional",
       description: "Agile methodology and project lifecycle management certification",
       imageUrl: null,
       issueDate: "2021",
       isVisible: true,
       verified: true
-    },
-    ...(certificates as Certificate[]),
+    }
   ];
 
   if (isLoading) {
@@ -179,7 +178,7 @@ export default function CertificationsSection() {
             <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="p-0">
                 <div className="relative">
-                  {certificate.id === 1 ? (
+                  {certificate.id === "static-1" || certificate.id === "cert-1" ? (
                     // ALX AI Certificate with dark blue design matching the reference
                     <div className="relative">
                       <img 

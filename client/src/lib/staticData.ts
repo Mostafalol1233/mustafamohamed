@@ -94,35 +94,41 @@ export const staticProjects = [
 
 export const staticCertificates = [
   {
-    id: "1",
+    id: "cert-1",
     title: "ALX AI Starter Kit Certificate",
     description: "شهادة متقدمة في الذكاء الاصطناعي من برنامج ALX",
     imageUrl: "/assets/113-alx-ai-starter-kit-certificate-mustafa-muhammad-DJ1gWx95.png",
     issuer: "ALX Programme",
-    date: "2024"
+    date: "2024",
+    issueDate: "2024",
+    isVisible: true,
+    verified: true
   }
 ];
 
 export const staticReviews = [
   {
-    id: "1",
+    id: "review-1",
     name: "أحمد محمد",
-    review: "مطور ممتاز ومتميز في عمله، يقدم حلول إبداعية ومبتكرة",
+    comment: "مطور ممتاز ومتميز في عمله، يقدم حلول إبداعية ومبتكرة",
     rating: 5,
-    isApproved: true
+    isApproved: true,
+    createdAt: "2024-01-15T10:00:00Z"
   },
   {
-    id: "2", 
+    id: "review-2", 
     name: "فاطمة علي",
-    review: "تعامل راقي ومهني، وجودة عمل عالية جداً",
+    comment: "تعامل راقي ومهني، وجودة عمل عالية جداً",
     rating: 5,
-    isApproved: true
+    isApproved: true,
+    createdAt: "2024-01-10T14:30:00Z"
   },
   {
-    id: "3",
+    id: "review-3",
     name: "محمد حسن",
-    review: "استجابة سريعة وحلول فعالة للمشاكل التقنية",
+    comment: "استجابة سريعة وحلول فعالة للمشاكل التقنية",
     rating: 5,
-    isApproved: true
+    isApproved: true,
+    createdAt: "2024-01-05T09:15:00Z"
   }
 ];
