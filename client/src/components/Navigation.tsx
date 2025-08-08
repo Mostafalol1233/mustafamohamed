@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import AdminDashboard from "./AdminDashboard";
 
 interface NavigationProps {
   showAdminButton?: boolean;
@@ -104,8 +105,8 @@ export default function Navigation({ showAdminButton = true }: NavigationProps) 
                 <i className="fas fa-times text-xl"></i>
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-gray-600">Admin dashboard content will be implemented here.</p>
+            <div className="p-0">
+              <AdminDashboard />
             </div>
           </div>
         </div>

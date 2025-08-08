@@ -44,23 +44,31 @@ function DragonConsole() {
   return (
     <div 
       ref={consoleRef}
-      className="relative w-full h-80 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-xl overflow-hidden border border-cyan-500/30 shadow-2xl cursor-none"
+      className="relative w-full h-80 bg-black rounded-xl overflow-hidden border border-yellow-600/50 shadow-2xl cursor-none"
+      style={{
+        backgroundImage: `
+          radial-gradient(circle at 25% 25%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(255, 140, 0, 0.08) 0%, transparent 50%),
+          linear-gradient(45deg, rgba(255, 215, 0, 0.05) 0%, rgba(0, 0, 0, 0.9) 100%)
+        `
+      }}
     >
-      {/* Console Grid Background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="grid grid-cols-16 grid-rows-12 h-full">
-          {Array.from({ length: 192 }).map((_, i) => (
-            <div key={i} className="border border-cyan-500/10"></div>
-          ))}
-        </div>
+      {/* Ancient Mystical Background Pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255, 215, 0, 0.1) 20px, rgba(255, 215, 0, 0.1) 21px),
+            repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(184, 134, 11, 0.1) 20px, rgba(184, 134, 11, 0.1) 21px)
+          `
+        }}></div>
       </div>
       
-      {/* Animated Console Text */}
-      <div className="absolute top-4 left-4 text-green-400 font-mono text-sm space-y-1">
-        <div className="animate-pulse">{'> System Active...'}</div>
-        <div className="text-cyan-300 animate-pulse" style={{ animationDelay: '0.5s' }}>{'> Skeletal_Dragon.exe running'}</div>
-        <div className="text-blue-300 animate-pulse" style={{ animationDelay: '1s' }}>{'> Mouse tracking enabled'}</div>
-        <div className="text-purple-300 animate-pulse" style={{ animationDelay: '1.5s' }}>{'> Bone Dragon initialized'}</div>
+      {/* Ancient Dragon Console Text */}
+      <div className="absolute top-4 left-4 text-yellow-400 font-mono text-sm space-y-1">
+        <div className="animate-pulse">{'> Ancient Magic Activated...'}</div>
+        <div className="text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }}>{'> Mystic_Dragon.exe summoned'}</div>
+        <div className="text-amber-300 animate-pulse" style={{ animationDelay: '1s' }}>{'> Spirit tracking enabled'}</div>
+        <div className="text-orange-300 animate-pulse" style={{ animationDelay: '1.5s' }}>{'> Ancient Dragon awakened'}</div>
       </div>
       
       {/* Skeletal Dragon with Wire Frame */}
@@ -72,143 +80,176 @@ function DragonConsole() {
           transform: `translate(-50%, -50%) rotate(${Math.atan2(mousePosition.y - dragonPosition.y, mousePosition.x - dragonPosition.x) * 180 / Math.PI}deg)`
         }}
       >
-        <svg width="120" height="60" viewBox="0 0 120 60" className="drop-shadow-lg">
-          {/* Dragon Skull */}
+        <svg width="160" height="80" viewBox="0 0 160 80" className="drop-shadow-2xl">
+          {/* Majestic Dragon Head with Horns */}
           <g className="animate-pulse">
-            {/* Skull outline */}
+            {/* Main skull structure */}
             <path 
-              d="M85 25 Q95 20 100 25 Q102 30 98 35 Q95 40 85 38 Q80 35 85 25 Z" 
+              d="M120 35 Q135 25 145 35 Q148 40 145 45 Q140 50 125 48 Q115 45 120 35 Z" 
               fill="none" 
-              stroke="#10b981" 
-              strokeWidth="2"
+              stroke="#fbbf24" 
+              strokeWidth="2.5"
               className="animate-pulse"
             />
             
-            {/* Eye sockets */}
-            <circle cx="90" cy="28" r="3" fill="none" stroke="#ef4444" strokeWidth="1.5" className="animate-ping" />
-            <circle cx="95" cy="26" r="2.5" fill="none" stroke="#ef4444" strokeWidth="1.5" className="animate-ping" style={{ animationDelay: '0.5s' }} />
+            {/* Dragon horns */}
+            <path d="M125 30 Q130 20 135 25 Q132 28 128 32" fill="none" stroke="#d97706" strokeWidth="2" className="animate-pulse" />
+            <path d="M135 28 Q142 18 148 23 Q145 26 140 30" fill="none" stroke="#d97706" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
             
-            {/* Jaw */}
-            <path 
-              d="M88 35 Q95 38 100 35 Q98 40 88 38 Z" 
-              fill="none" 
-              stroke="#10b981" 
-              strokeWidth="1.5"
-            />
+            {/* Intricate skull details */}
+            <path d="M120 38 Q125 35 130 38 Q135 35 140 38" fill="none" stroke="#fbbf24" strokeWidth="1.5" />
             
-            {/* Teeth */}
-            <line x1="92" y1="35" x2="92" y2="38" stroke="#f3f4f6" strokeWidth="1" />
-            <line x1="96" y1="35" x2="96" y2="37" stroke="#f3f4f6" strokeWidth="1" />
+            {/* Glowing eyes */}
+            <circle cx="128" cy="38" r="3" fill="#ef4444" opacity="0.9" className="animate-ping" />
+            <circle cx="137" cy="36" r="2.5" fill="#dc2626" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.5s' }} />
+            
+            {/* Extended jaw with detailed teeth */}
+            <path d="M125 45 Q135 48 145 45 Q143 52 125 50 Z" fill="none" stroke="#fbbf24" strokeWidth="2" />
+            <line x1="130" y1="45" x2="130" y2="50" stroke="#f9fafb" strokeWidth="1.5" />
+            <line x1="135" y1="45" x2="135" y2="49" stroke="#f9fafb" strokeWidth="1.5" />
+            <line x1="140" y1="45" x2="140" y2="48" stroke="#f9fafb" strokeWidth="1.5" />
           </g>
           
-          {/* Spine/Vertebrae */}
+          {/* Articulated Neck and Spine */}
           <g>
-            {/* Main spine */}
-            <line x1="85" y1="30" x2="20" y2="30" stroke="#10b981" strokeWidth="2" className="animate-pulse" />
+            {/* Main spine with curves */}
+            <path d="M120 40 Q100 42 80 40 Q60 38 40 40 Q20 42 5 40" stroke="#fbbf24" strokeWidth="2.5" fill="none" className="animate-pulse" />
             
-            {/* Vertebrae */}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <g key={i}>
-                <circle 
-                  cx={85 - i * 8} 
-                  cy="30" 
-                  r="2" 
-                  fill="none" 
-                  stroke="#10b981" 
-                  strokeWidth="1.5" 
-                  className="animate-pulse"
-                  style={{ animationDelay: `${i * 0.1}s` }}
-                />
-                {/* Rib bones */}
-                <line 
-                  x1={85 - i * 8} 
-                  y1="30" 
-                  x2={85 - i * 8 - 2} 
-                  y2="20" 
-                  stroke="#10b981" 
-                  strokeWidth="1" 
-                  className="animate-pulse"
-                  style={{ animationDelay: `${i * 0.1}s` }}
-                />
-                <line 
-                  x1={85 - i * 8} 
-                  y1="30" 
-                  x2={85 - i * 8 - 2} 
-                  y2="40" 
-                  stroke="#10b981" 
-                  strokeWidth="1" 
-                  className="animate-pulse"
-                  style={{ animationDelay: `${i * 0.1}s` }}
-                />
-              </g>
-            ))}
-          </g>
-          
-          {/* Wing Bones */}
-          <g>
-            {/* Left Wing */}
-            <g className="animate-bounce">
-              <line x1="70" y1="28" x2="60" y2="15" stroke="#06b6d4" strokeWidth="2" />
-              <line x1="60" y1="15" x2="45" y2="10" stroke="#06b6d4" strokeWidth="1.5" />
-              <line x1="45" y1="10" x2="35" y2="18" stroke="#06b6d4" strokeWidth="1" />
-              <line x1="70" y1="28" x2="55" y2="25" stroke="#06b6d4" strokeWidth="1" />
-              <line x1="55" y1="25" x2="40" y2="22" stroke="#06b6d4" strokeWidth="1" />
-            </g>
-            
-            {/* Right Wing */}
-            <g className="animate-bounce" style={{ animationDelay: '0.5s' }}>
-              <line x1="70" y1="32" x2="60" y2="45" stroke="#06b6d4" strokeWidth="2" />
-              <line x1="60" y1="45" x2="45" y2="50" stroke="#06b6d4" strokeWidth="1.5" />
-              <line x1="45" y1="50" x2="35" y2="42" stroke="#06b6d4" strokeWidth="1" />
-              <line x1="70" y1="32" x2="55" y2="35" stroke="#06b6d4" strokeWidth="1" />
-              <line x1="55" y1="35" x2="40" y2="38" stroke="#06b6d4" strokeWidth="1" />
-            </g>
-          </g>
-          
-          {/* Tail Bones */}
-          <g>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <g key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}>
-                <circle 
-                  cx={20 - i * 6} 
-                  cy={30 + Math.sin(i * 0.5) * 3} 
-                  r="1.5" 
-                  fill="none" 
-                  stroke="#10b981" 
-                  strokeWidth="1"
-                />
-                {i < 5 && (
+            {/* Detailed vertebrae with movement */}
+            {Array.from({ length: 12 }).map((_, i) => {
+              const x = 120 - i * 9;
+              const y = 40 + Math.sin(i * 0.3) * 2;
+              return (
+                <g key={i}>
+                  <circle 
+                    cx={x} 
+                    cy={y} 
+                    r="2.5" 
+                    fill="none" 
+                    stroke="#fbbf24" 
+                    strokeWidth="2" 
+                    className="animate-pulse"
+                    style={{ animationDelay: `${i * 0.08}s` }}
+                  />
+                  {/* Articulated rib bones */}
                   <line 
-                    x1={20 - i * 6} 
-                    y1={30 + Math.sin(i * 0.5) * 3} 
-                    x2={20 - (i + 1) * 6} 
-                    y2={30 + Math.sin((i + 1) * 0.5) * 3} 
-                    stroke="#10b981" 
+                    x1={x} 
+                    y1={y} 
+                    x2={x - 3 + Math.sin(i * 0.4) * 2} 
+                    y2={y - 12} 
+                    stroke="#d97706" 
+                    strokeWidth="1.5" 
+                    className="animate-pulse"
+                    style={{ animationDelay: `${i * 0.08}s` }}
+                  />
+                  <line 
+                    x1={x} 
+                    y1={y} 
+                    x2={x - 3 + Math.sin(i * 0.4) * 2} 
+                    y2={y + 12} 
+                    stroke="#d97706" 
+                    strokeWidth="1.5" 
+                    className="animate-pulse"
+                    style={{ animationDelay: `${i * 0.08}s` }}
+                  />
+                </g>
+              );
+            })}
+          </g>
+          
+          {/* Advanced Wing Structure */}
+          <g>
+            {/* Left wing with multiple bones */}
+            <g className="animate-bounce">
+              <line x1="100" y1="38" x2="85" y2="20" stroke="#b45309" strokeWidth="3" />
+              <line x1="85" y1="20" x2="65" y2="10" stroke="#b45309" strokeWidth="2.5" />
+              <line x1="65" y1="10" x2="50" y2="15" stroke="#b45309" strokeWidth="2" />
+              <line x1="50" y1="15" x2="40" y2="25" stroke="#b45309" strokeWidth="1.5" />
+              
+              {/* Wing membrane lines */}
+              <path d="M100 38 Q85 25 70 15 Q55 20 45 30" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+              <path d="M90 35 Q75 25 60 20 Q50 25 45 30" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+            </g>
+            
+            {/* Right wing with multiple bones */}
+            <g className="animate-bounce" style={{ animationDelay: '0.3s' }}>
+              <line x1="100" y1="42" x2="85" y2="60" stroke="#b45309" strokeWidth="3" />
+              <line x1="85" y1="60" x2="65" y2="70" stroke="#b45309" strokeWidth="2.5" />
+              <line x1="65" y1="70" x2="50" y2="65" stroke="#b45309" strokeWidth="2" />
+              <line x1="50" y1="65" x2="40" y2="55" stroke="#b45309" strokeWidth="1.5" />
+              
+              {/* Wing membrane lines */}
+              <path d="M100 42 Q85 55 70 65 Q55 60 45 50" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+              <path d="M90 45 Q75 55 60 60 Q50 55 45 50" fill="none" stroke="#92400e" strokeWidth="1" opacity="0.6" />
+            </g>
+          </g>
+          
+          {/* Articulated Arms with Claws */}
+          <g>
+            {/* Left arm */}
+            <g className="animate-pulse" style={{ animationDelay: '0.1s' }}>
+              <line x1="90" y1="40" x2="85" y2="55" stroke="#fbbf24" strokeWidth="2.5" />
+              <line x1="85" y1="55" x2="80" y2="70" stroke="#fbbf24" strokeWidth="2" />
+              <line x1="80" y1="70" x2="75" y2="75" stroke="#f9fafb" strokeWidth="1.5" />
+              <line x1="80" y1="70" x2="78" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+              <line x1="80" y1="70" x2="82" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+            </g>
+            
+            {/* Right arm */}
+            <g className="animate-pulse" style={{ animationDelay: '0.2s' }}>
+              <line x1="70" y1="40" x2="75" y2="55" stroke="#fbbf24" strokeWidth="2.5" />
+              <line x1="75" y1="55" x2="80" y2="70" stroke="#fbbf24" strokeWidth="2" />
+              <line x1="80" y1="70" x2="85" y2="75" stroke="#f9fafb" strokeWidth="1.5" />
+              <line x1="80" y1="70" x2="82" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+              <line x1="80" y1="70" x2="78" y2="77" stroke="#f9fafb" strokeWidth="1.5" />
+            </g>
+          </g>
+          
+          {/* Flowing Serpentine Tail */}
+          <g>
+            {Array.from({ length: 10 }).map((_, i) => {
+              const x = 40 - i * 4;
+              const y = 40 + Math.sin(i * 0.6) * 8;
+              return (
+                <g key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.15}s` }}>
+                  <circle 
+                    cx={x} 
+                    cy={y} 
+                    r="2" 
+                    fill="none" 
+                    stroke="#fbbf24" 
                     strokeWidth="1.5"
                   />
-                )}
-              </g>
-            ))}
+                  {i < 9 && (
+                    <path 
+                      d={`M ${x} ${y} Q ${x - 3} ${y + Math.sin((i + 1) * 0.6) * 4} ${x - 4} ${40 + Math.sin((i + 1) * 0.6) * 8}`}
+                      stroke="#d97706" 
+                      strokeWidth="2" 
+                      fill="none"
+                    />
+                  )}
+                  {/* Tail spikes */}
+                  {i % 2 === 0 && (
+                    <line 
+                      x1={x} 
+                      y1={y} 
+                      x2={x - 2} 
+                      y2={y - 6} 
+                      stroke="#b45309" 
+                      strokeWidth="1.5"
+                    />
+                  )}
+                </g>
+              );
+            })}
           </g>
           
-          {/* Leg Bones */}
+          {/* Enhanced Fire Breath */}
           <g>
-            {/* Front legs */}
-            <line x1="65" y1="30" x2="65" y2="45" stroke="#10b981" strokeWidth="2" className="animate-pulse" />
-            <line x1="65" y1="45" x2="62" y2="52" stroke="#10b981" strokeWidth="1.5" />
-            <line x1="65" y1="45" x2="68" y2="52" stroke="#10b981" strokeWidth="1.5" />
-            
-            {/* Back legs */}
-            <line x1="45" y1="30" x2="45" y2="45" stroke="#10b981" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.3s' }} />
-            <line x1="45" y1="45" x2="42" y2="52" stroke="#10b981" strokeWidth="1.5" />
-            <line x1="45" y1="45" x2="48" y2="52" stroke="#10b981" strokeWidth="1.5" />
-          </g>
-          
-          {/* Fire Breath Effect */}
-          <g>
-            <circle cx="105" cy="25" r="3" fill="#fbbf24" opacity="0.8" className="animate-ping" />
-            <circle cx="110" cy="28" r="2" fill="#f59e0b" opacity="0.6" className="animate-ping" style={{ animationDelay: '0.3s' }} />
-            <circle cx="115" cy="26" r="1.5" fill="#ef4444" opacity="0.9" className="animate-ping" style={{ animationDelay: '0.6s' }} />
+            <circle cx="150" cy="35" r="4" fill="#fbbf24" opacity="0.9" className="animate-ping" />
+            <circle cx="155" cy="38" r="3" fill="#f59e0b" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.2s' }} />
+            <circle cx="160" cy="36" r="2" fill="#ef4444" opacity="0.9" className="animate-ping" style={{ animationDelay: '0.4s' }} />
+            <ellipse cx="152" cy="37" rx="6" ry="2" fill="#fbbf24" opacity="0.6" className="animate-pulse" />
           </g>
         </svg>
       </div>
@@ -231,12 +272,12 @@ function DragonConsole() {
         ))}
       </div>
       
-      {/* Console Status Bar */}
-      <div className="absolute bottom-4 left-4 right-4 bg-black/50 backdrop-blur-sm rounded-lg p-2 border border-cyan-500/30">
+      {/* Mystical Status Bar */}
+      <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 border border-yellow-600/40">
         <div className="flex justify-between items-center text-xs font-mono">
-          <span className="text-green-400">Status: ONLINE</span>
-          <span className="text-cyan-400">Dragon AI v3.0</span>
-          <span className="text-purple-400">FPS: 60</span>
+          <span className="text-yellow-400">Status: AWAKENED</span>
+          <span className="text-amber-400">Ancient Dragon v∞</span>
+          <span className="text-orange-400">Power: ∞</span>
         </div>
       </div>
     </div>
