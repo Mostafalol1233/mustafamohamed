@@ -125,7 +125,10 @@ export class DatabaseStorage implements IStorage {
     const [newReview] = await db
       .insert(reviews)
       .values({
-        ...review,
+        name: review.name,
+        email: review.email,
+        rating: review.rating,
+        comment: review.comment,
         isApproved: true // Auto-approve reviews so they appear publicly for everyone
       })
       .returning();
