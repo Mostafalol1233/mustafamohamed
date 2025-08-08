@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { staticProjects, staticCertificates, staticReviews } from "./staticData";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -31,16 +32,36 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     
-    const res = await fetch(url, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    // Return static data for main endpoints - this makes the site work instantly!
+    if (url === "/api/projects") {
+      return staticProjects as T;
     }
+    if (url === "/api/certificates") {
+      return staticCertificates as T;
+    }
+    if (url === "/api/reviews") {
+      return staticReviews as T;
+    }
+    
+    // For other endpoints, try API first but return static fallback
+    try {
+      const res = await fetch(url, {
+        credentials: "include",
+      });
 
-    await throwIfResNotOk(res);
-    return await res.json();
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      // Fallback to static data if API fails
+      if (url === "/api/projects") return staticProjects as T;
+      if (url === "/api/certificates") return staticCertificates as T;
+      if (url === "/api/reviews") return staticReviews as T;
+      throw error;
+    }
   };
 
 export const queryClient = new QueryClient({
