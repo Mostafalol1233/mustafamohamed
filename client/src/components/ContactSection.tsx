@@ -125,7 +125,7 @@ export default function ContactSection() {
           <div className="space-y-8">
             <div>
               <h3 className="text-2xl font-semibold text-primary mb-6">Get in touch</h3>
-              <p className="text-lg text-foreground mb-8">
+              <p className="text-lg text-gray-700 font-medium mb-8">
                 I'm always excited to discuss new projects and opportunities. Feel free to reach out through any of the channels below.
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function ContactSection() {
                   <h4 className="font-semibold text-primary">Email</h4>
                   <a 
                     href="mailto:overthegardenwall317@gmail.com" 
-                    className="text-muted-foreground hover:text-accent transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors font-medium"
                   >
                     overthegardenwall317@gmail.com
                   </a>
@@ -154,7 +154,7 @@ export default function ContactSection() {
                   <h4 className="font-semibold text-primary">Phone</h4>
                   <a 
                     href="tel:+201500302461" 
-                    className="text-muted-foreground hover:text-accent transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors font-medium"
                   >
                     +20 1500302461
                   </a>
@@ -171,7 +171,7 @@ export default function ContactSection() {
                     href="https://x.com/Bemora_BEMO" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-accent transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors font-medium"
                   >
                     @Bemora_BEMO
                   </a>
@@ -188,7 +188,7 @@ export default function ContactSection() {
                     href="https://www.youtube.com/@Bemora-site" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-accent transition-colors"
+                    className="text-gray-700 hover:text-green-600 transition-colors font-medium"
                   >
                     Bemora-site
                   </a>
