@@ -174,62 +174,57 @@ export default function CertificationsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {displayCertificates.map((certificate: any) => (
-            <Card key={certificate.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700">
-              <div className="p-6">
-                <div className="relative mb-4">
+            <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <div className="p-0">
+                <div className="relative">
                   {certificate.id === 1 ? (
-                    // ALX AI Certificate with special dark blue background
-                    <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-blue-800 rounded-xl flex flex-col items-center justify-center text-white relative overflow-hidden">
-                      <div className="absolute top-4 left-4 text-xs text-blue-200">ALX</div>
-                      <div className="absolute top-4 right-4 text-xs text-blue-200">ACHIEVEMENT</div>
-                      <div className="text-center z-10">
-                        <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-3">
-                          <i className="fas fa-robot text-2xl text-white"></i>
-                        </div>
-                        <h3 className="font-bold text-lg text-white">AI Muhammad</h3>
-                        <p className="text-sm text-blue-200 mt-1">Artificial Intelligence and Machine Learning</p>
-                      </div>
-                      <div className="absolute bottom-4 left-4 text-xs text-blue-200">Issued: {certificate.issueDate}</div>
-                      <div className="absolute bottom-4 right-4">
-                        <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">Verified</span>
-                      </div>
+                    // ALX AI Certificate with dark blue design matching the reference
+                    <div className="relative">
+                      <img 
+                        src={certificateImage}
+                        alt="ALX AI Starter Kit Certificate" 
+                        className="w-full h-40 object-cover"
+                      />
                     </div>
                   ) : (
-                    // Other certificates with modern card design
-                    <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-xl flex flex-col items-center justify-center relative">
-                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-3">
-                        <i className="fas fa-check text-white text-xl"></i>
-                      </div>
-                      <div className="absolute bottom-4 right-4">
-                        <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs">Verified</span>
+                    // Other certificates with mint/teal background and green badge
+                    <div className="w-full h-40 bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center relative">
+                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
                       </div>
                     </div>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="font-bold text-lg text-blue-600 dark:text-blue-400">{certificate.title}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{certificate.description}</p>
-                  <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mt-3">
-                    <span>Issued: {certificate.issueDate}</span>
+                <div className="p-4">
+                  <h3 className="font-semibold text-lg text-blue-700 mb-2">{certificate.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3 leading-relaxed">{certificate.description}</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">Issued: {certificate.issueDate}</span>
+                    <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      Verified
+                    </span>
                   </div>
-                </div>
 
-                {isAuthenticated && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteCertificateMutation.mutate(certificate.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-all duration-300 mt-4"
-                    disabled={deleteCertificateMutation.isPending}
-                  >
-                    <i className="fas fa-trash text-xs"></i>
-                  </Button>
-                )}
+                  {isAuthenticated && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => deleteCertificateMutation.mutate(certificate.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-all duration-300 mt-3"
+                      disabled={deleteCertificateMutation.isPending}
+                    >
+                      <i className="fas fa-trash text-xs"></i>
+                    </Button>
+                  )}
+                </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
 

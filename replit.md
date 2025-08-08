@@ -43,8 +43,11 @@ A professional portfolio website for Mustafa Mohamed showcasing personal achieve
   * BMO Tools - Arabic calculator tools with RTL support  
   * Updated OneTeam link to oneteam-hr.vercel.app
   * Updated Bemora link to bemora.netlify.app
-  * Added MRMO Business - professional consulting platform
-  * Added Diaa Elden Shop - e-commerce platform
+  * Renamed "MRMO Business" to "MR Mohammed" with new image
+  * Updated Diaa Elden Shop with gaming platform image
+  * Updated Bemora with new BMO Tools-style image
+- Updated certificates section with modern card design matching user reference image
+- Updated contact section image to jordwalke-style GitHub avatar
 - Preserved all original certificates and content
 - Portfolio now displays 9 total projects with proper images and descriptions
 
@@ -52,5 +55,6 @@ A professional portfolio website for Mustafa Mohamed showcasing personal achieve
 - Application is fully functional and running
 - Database connected and working
 - Portfolio displays both original and new projects
+- Modern certificate design implemented to match reference
 - All requested changes implemented successfully
-- Date: August 7, 2025
+- Date: August 8, 2025
