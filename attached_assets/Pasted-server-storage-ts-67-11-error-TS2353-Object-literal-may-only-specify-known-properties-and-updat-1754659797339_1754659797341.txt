@@ -1,0 +1,14 @@
+server/storage.ts(67,11): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type 'PgUpdateSetSource<PgTableWithColumns<{ name: "users"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "users"; dataType: "string"; columnType: "PgVarchar"; data: string; driverParam: string; notNull: true; hasDefault: false; ... 6 more ...; generated: undefined; }, {}, { ...; }>; ... 5 more ...; ...'.
+server/storage.ts(107,14): error TS2353: Object literal may only specify known properties, and 'isApproved' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; rating?: number | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; comment?: string | ... 1 more ... | PgColumn<...>; }'.
+server/storage.ts(127,8): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; rating: number | SQL<unknown> | Placeholder<string, any>; comment: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'email' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; rating: number | SQL<unknown> | Placeholder<string, any>; comment: string | SQL<unknown> | Placeholder<string, any>; }'.
+  Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; rating: number | SQL<unknown> | Placeholder<string, any>; comment: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; rating: number | SQL<unknown> | Placeholder<string, any>; comment: string | SQL<unknown> | Placeholder<string, any>; }[]'.
+server/storage.ts(129,23): error TS2339: Property 'email' does not exist on type '{ name: string; rating: number; comment: string; }'.
+server/storage.ts(157,14): error TS2353: Object literal may only specify known properties, and 'isRead' does not exist in type '{ email?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; message?: string | ... 1 more ... | PgColumn<...>; }'.
+server/replitAuth.ts(62,5): error TS2353: Object literal may only specify known properties, and 'email' does not exist in type '{ id: string; }'.
+Build Completed in /vercel/output [25s]
+Deploying outputs...
+Deployment completed
+Creating build cache...

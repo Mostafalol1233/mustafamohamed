@@ -62,10 +62,7 @@ export class DatabaseStorage implements IStorage {
       .values(userData)
       .onConflictDoUpdate({
         target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
+        set: userData,
       })
       .returning();
     return user;
@@ -104,7 +101,7 @@ export class DatabaseStorage implements IStorage {
   async approveReview(id: number): Promise<void> {
     await db
       .update(reviews)
-      .set({ isApproved: true })
+      .set({})
       .where(eq(reviews.id, id));
   }
 
@@ -126,10 +123,8 @@ export class DatabaseStorage implements IStorage {
       .insert(reviews)
       .values({
         name: review.name,
-        email: review.email,
         rating: review.rating,
         comment: review.comment,
-        isApproved: true // Auto-approve reviews so they appear publicly for everyone
       })
       .returning();
     return newReview;
@@ -154,7 +149,7 @@ export class DatabaseStorage implements IStorage {
   async markMessageAsRead(id: number): Promise<void> {
     await db
       .update(contactMessages)
-      .set({ isRead: true })
+      .set({})
       .where(eq(contactMessages.id, id));
   }
 
