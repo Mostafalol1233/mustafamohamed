@@ -58,56 +58,159 @@ function DragonConsole() {
       {/* Animated Console Text */}
       <div className="absolute top-4 left-4 text-green-400 font-mono text-sm space-y-1">
         <div className="animate-pulse">{'> System Active...'}</div>
-        <div className="text-cyan-300 animate-pulse" style={{ animationDelay: '0.5s' }}>{'> Dragon.exe running'}</div>
+        <div className="text-cyan-300 animate-pulse" style={{ animationDelay: '0.5s' }}>{'> Skeletal_Dragon.exe running'}</div>
         <div className="text-blue-300 animate-pulse" style={{ animationDelay: '1s' }}>{'> Mouse tracking enabled'}</div>
-        <div className="text-purple-300 animate-pulse" style={{ animationDelay: '1.5s' }}>{'> AI Dragon initialized'}</div>
+        <div className="text-purple-300 animate-pulse" style={{ animationDelay: '1.5s' }}>{'> Bone Dragon initialized'}</div>
       </div>
       
-      {/* Interactive Dragon with Joints */}
+      {/* Skeletal Dragon with Wire Frame */}
       <div 
-        className="absolute transition-all duration-300 ease-out transform hover:scale-125"
+        className="absolute transition-all duration-200 ease-out"
         style={{
           left: `${dragonPosition.x}%`,
           top: `${dragonPosition.y}%`,
-          transform: `translate(-50%, -50%) rotate(${(mousePosition.x - dragonPosition.x) * 0.1}deg)`
+          transform: `translate(-50%, -50%) rotate(${Math.atan2(mousePosition.y - dragonPosition.y, mousePosition.x - dragonPosition.x) * 180 / Math.PI}deg)`
         }}
       >
-        <div className="relative">
-          {/* Dragon Body with Articulated Joints */}
-          <div className="w-16 h-10 bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 rounded-full relative animate-pulse shadow-lg">
+        <svg width="120" height="60" viewBox="0 0 120 60" className="drop-shadow-lg">
+          {/* Dragon Skull */}
+          <g className="animate-pulse">
+            {/* Skull outline */}
+            <path 
+              d="M85 25 Q95 20 100 25 Q102 30 98 35 Q95 40 85 38 Q80 35 85 25 Z" 
+              fill="none" 
+              stroke="#10b981" 
+              strokeWidth="2"
+              className="animate-pulse"
+            />
             
-            {/* Dragon Head with Moving Parts */}
-            <div className="absolute -right-3 top-2 w-8 h-6 bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full transform hover:scale-110 transition-transform">
-              {/* Animated Eyes */}
-              <div className="absolute top-1 left-1 w-2 h-2 bg-red-900 rounded-full animate-ping"></div>
-              <div className="absolute top-1 right-1 w-2 h-2 bg-red-900 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-              {/* Dragon Mouth */}
-              <div className="absolute bottom-0 right-0 w-1 h-1 bg-red-700 rounded-full animate-bounce"></div>
-            </div>
+            {/* Eye sockets */}
+            <circle cx="90" cy="28" r="3" fill="none" stroke="#ef4444" strokeWidth="1.5" className="animate-ping" />
+            <circle cx="95" cy="26" r="2.5" fill="none" stroke="#ef4444" strokeWidth="1.5" className="animate-ping" style={{ animationDelay: '0.5s' }} />
             
-            {/* Articulated Tail with Multiple Joints */}
-            <div className="absolute -left-4 top-3 w-10 h-6 bg-gradient-to-l from-red-600 to-red-800 rounded-full transform rotate-12 animate-pulse">
-              <div className="absolute -left-3 top-1 w-8 h-4 bg-gradient-to-l from-red-800 to-red-900 rounded-full transform -rotate-6 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
-              <div className="absolute -left-5 top-2 w-6 h-2 bg-gradient-to-l from-red-900 to-purple-800 rounded-full transform rotate-3 animate-pulse" style={{ animationDelay: '0.6s' }}></div>
-            </div>
+            {/* Jaw */}
+            <path 
+              d="M88 35 Q95 38 100 35 Q98 40 88 38 Z" 
+              fill="none" 
+              stroke="#10b981" 
+              strokeWidth="1.5"
+            />
             
-            {/* Animated Wings with Joint Movement */}
-            <div className="absolute -top-3 left-3 w-6 h-8 bg-gradient-to-t from-blue-600 to-purple-500 rounded-full transform -rotate-12 animate-bounce opacity-80 shadow-lg"></div>
-            <div className="absolute -top-3 right-3 w-6 h-8 bg-gradient-to-t from-blue-600 to-purple-500 rounded-full transform rotate-12 animate-bounce opacity-80 shadow-lg" style={{ animationDelay: '0.5s' }}></div>
-            
-            {/* Dragon Legs with Joint Articulation */}
-            <div className="absolute -bottom-2 left-2 w-2 h-4 bg-orange-600 rounded-full transform rotate-6 animate-pulse"></div>
-            <div className="absolute -bottom-2 right-2 w-2 h-4 bg-orange-600 rounded-full transform -rotate-6 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
-          </div>
+            {/* Teeth */}
+            <line x1="92" y1="35" x2="92" y2="38" stroke="#f3f4f6" strokeWidth="1" />
+            <line x1="96" y1="35" x2="96" y2="37" stroke="#f3f4f6" strokeWidth="1" />
+          </g>
           
-          {/* Dragon Fire Breath Effect */}
-          <div className="absolute -right-8 top-3 flex space-x-1">
-            <div className="w-3 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-            <div className="w-2 h-1 bg-red-500 rounded-full animate-ping"></div>
-            <div className="w-1 h-1 bg-yellow-400 rounded-full animate-bounce"></div>
-            <div className="w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
-          </div>
-        </div>
+          {/* Spine/Vertebrae */}
+          <g>
+            {/* Main spine */}
+            <line x1="85" y1="30" x2="20" y2="30" stroke="#10b981" strokeWidth="2" className="animate-pulse" />
+            
+            {/* Vertebrae */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <g key={i}>
+                <circle 
+                  cx={85 - i * 8} 
+                  cy="30" 
+                  r="2" 
+                  fill="none" 
+                  stroke="#10b981" 
+                  strokeWidth="1.5" 
+                  className="animate-pulse"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                />
+                {/* Rib bones */}
+                <line 
+                  x1={85 - i * 8} 
+                  y1="30" 
+                  x2={85 - i * 8 - 2} 
+                  y2="20" 
+                  stroke="#10b981" 
+                  strokeWidth="1" 
+                  className="animate-pulse"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                />
+                <line 
+                  x1={85 - i * 8} 
+                  y1="30" 
+                  x2={85 - i * 8 - 2} 
+                  y2="40" 
+                  stroke="#10b981" 
+                  strokeWidth="1" 
+                  className="animate-pulse"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                />
+              </g>
+            ))}
+          </g>
+          
+          {/* Wing Bones */}
+          <g>
+            {/* Left Wing */}
+            <g className="animate-bounce">
+              <line x1="70" y1="28" x2="60" y2="15" stroke="#06b6d4" strokeWidth="2" />
+              <line x1="60" y1="15" x2="45" y2="10" stroke="#06b6d4" strokeWidth="1.5" />
+              <line x1="45" y1="10" x2="35" y2="18" stroke="#06b6d4" strokeWidth="1" />
+              <line x1="70" y1="28" x2="55" y2="25" stroke="#06b6d4" strokeWidth="1" />
+              <line x1="55" y1="25" x2="40" y2="22" stroke="#06b6d4" strokeWidth="1" />
+            </g>
+            
+            {/* Right Wing */}
+            <g className="animate-bounce" style={{ animationDelay: '0.5s' }}>
+              <line x1="70" y1="32" x2="60" y2="45" stroke="#06b6d4" strokeWidth="2" />
+              <line x1="60" y1="45" x2="45" y2="50" stroke="#06b6d4" strokeWidth="1.5" />
+              <line x1="45" y1="50" x2="35" y2="42" stroke="#06b6d4" strokeWidth="1" />
+              <line x1="70" y1="32" x2="55" y2="35" stroke="#06b6d4" strokeWidth="1" />
+              <line x1="55" y1="35" x2="40" y2="38" stroke="#06b6d4" strokeWidth="1" />
+            </g>
+          </g>
+          
+          {/* Tail Bones */}
+          <g>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <g key={i} className="animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}>
+                <circle 
+                  cx={20 - i * 6} 
+                  cy={30 + Math.sin(i * 0.5) * 3} 
+                  r="1.5" 
+                  fill="none" 
+                  stroke="#10b981" 
+                  strokeWidth="1"
+                />
+                {i < 5 && (
+                  <line 
+                    x1={20 - i * 6} 
+                    y1={30 + Math.sin(i * 0.5) * 3} 
+                    x2={20 - (i + 1) * 6} 
+                    y2={30 + Math.sin((i + 1) * 0.5) * 3} 
+                    stroke="#10b981" 
+                    strokeWidth="1.5"
+                  />
+                )}
+              </g>
+            ))}
+          </g>
+          
+          {/* Leg Bones */}
+          <g>
+            {/* Front legs */}
+            <line x1="65" y1="30" x2="65" y2="45" stroke="#10b981" strokeWidth="2" className="animate-pulse" />
+            <line x1="65" y1="45" x2="62" y2="52" stroke="#10b981" strokeWidth="1.5" />
+            <line x1="65" y1="45" x2="68" y2="52" stroke="#10b981" strokeWidth="1.5" />
+            
+            {/* Back legs */}
+            <line x1="45" y1="30" x2="45" y2="45" stroke="#10b981" strokeWidth="2" className="animate-pulse" style={{ animationDelay: '0.3s' }} />
+            <line x1="45" y1="45" x2="42" y2="52" stroke="#10b981" strokeWidth="1.5" />
+            <line x1="45" y1="45" x2="48" y2="52" stroke="#10b981" strokeWidth="1.5" />
+          </g>
+          
+          {/* Fire Breath Effect */}
+          <g>
+            <circle cx="105" cy="25" r="3" fill="#fbbf24" opacity="0.8" className="animate-ping" />
+            <circle cx="110" cy="28" r="2" fill="#f59e0b" opacity="0.6" className="animate-ping" style={{ animationDelay: '0.3s' }} />
+            <circle cx="115" cy="26" r="1.5" fill="#ef4444" opacity="0.9" className="animate-ping" style={{ animationDelay: '0.6s' }} />
+          </g>
+        </svg>
       </div>
       
       {/* Dynamic Particle System */}
