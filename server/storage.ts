@@ -101,7 +101,7 @@ export class DatabaseStorage implements IStorage {
   async approveReview(id: number): Promise<void> {
     await db
       .update(reviews)
-      .set({ isApproved: true })
+      .set({ isApproved: true } as any)
       .where(eq(reviews.id, id));
   }
 
@@ -145,7 +145,7 @@ export class DatabaseStorage implements IStorage {
   async markMessageAsRead(id: number): Promise<void> {
     await db
       .update(contactMessages)
-      .set({ isRead: true })
+      .set({ isRead: true } as any)
       .where(eq(contactMessages.id, id));
   }
 

@@ -83,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const validatedData = insertCertificateSchema.parse(certificateData);
-      const certificate = await storage.createCertificate(validatedData);
+      const certificate = await storage.createCertificate(validatedData as any);
       res.json(certificate);
     } catch (error) {
       console.error("Error creating certificate:", error);
@@ -143,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews", async (req, res) => {
     try {
       const validatedData = insertReviewSchema.parse(req.body);
-      const review = await storage.createReview(validatedData);
+      const review = await storage.createReview(validatedData as any);
       res.json(review);
     } catch (error) {
       console.error("Error creating review:", error);
@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact", async (req, res) => {
     try {
       const validatedData = insertContactMessageSchema.parse(req.body);
-      const message = await storage.createContactMessage(validatedData);
+      const message = await storage.createContactMessage(validatedData as any);
       res.json(message);
     } catch (error) {
       console.error("Error creating contact message:", error);
@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const validatedData = insertProjectSchema.parse(projectData);
-      const project = await storage.createProject(validatedData);
+      const project = await storage.createProject(validatedData as any);
       res.json(project);
     } catch (error) {
       console.error("Error creating project:", error);
