@@ -101,7 +101,7 @@ export class DatabaseStorage implements IStorage {
   async approveReview(id: number): Promise<void> {
     await db
       .update(reviews)
-      .set({})
+      .set({ isApproved: true })
       .where(eq(reviews.id, id));
   }
 
@@ -121,11 +121,7 @@ export class DatabaseStorage implements IStorage {
   async createReview(review: InsertReview): Promise<Review> {
     const [newReview] = await db
       .insert(reviews)
-      .values({
-        name: review.name,
-        rating: review.rating,
-        comment: review.comment,
-      })
+      .values(review)
       .returning();
     return newReview;
   }
@@ -149,7 +145,7 @@ export class DatabaseStorage implements IStorage {
   async markMessageAsRead(id: number): Promise<void> {
     await db
       .update(contactMessages)
-      .set({})
+      .set({ isRead: true })
       .where(eq(contactMessages.id, id));
   }
 
