@@ -111,7 +111,10 @@ export class DatabaseStorage implements IStorage {
   async createReview(review: InsertReview): Promise<Review> {
     const [newReview] = await db
       .insert(reviews)
-      .values(review)
+      .values({
+        ...review,
+        isApproved: true // Auto-approve reviews so they appear publicly for everyone
+      })
       .returning();
     return newReview;
   }

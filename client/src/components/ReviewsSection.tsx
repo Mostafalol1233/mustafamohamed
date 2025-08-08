@@ -15,7 +15,7 @@ export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
 
-  const { data: reviews = [], isLoading } = useQuery({
+  const { data: reviews = [], isLoading } = useQuery<Review[]>({
     queryKey: ["/api/reviews"],
   });
 
@@ -27,7 +27,7 @@ export default function ReviewsSection() {
       queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
       toast({
         title: "Thank you!",
-        description: "Your review has been submitted and is pending approval.",
+        description: "Your review has been published and is now visible to everyone!",
       });
       setRating(0);
     },
