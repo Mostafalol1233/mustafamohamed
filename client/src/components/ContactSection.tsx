@@ -148,12 +148,12 @@ export default function ContactSection() {
                   <div>
                     <h4 className="font-semibold text-primary">Linktree</h4>
                     <a 
-                      href="https://linktr.ee/Mustafa-bemo"
+                      href="https://linktr.ee/Mustafa_Bemo"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                     >
-                      linktr.ee/Mustafa-bemo
+                      linktr.ee/Mustafa_Bemo
                     </a>
                   </div>
                 </div>
