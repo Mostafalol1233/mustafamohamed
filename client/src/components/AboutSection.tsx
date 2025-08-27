@@ -1,4 +1,4 @@
-import mustafaImg from "@assets/image_1756330235204.png";
+import mrMohammedImg from "@assets/mr-mohammed.png";
 
 export default function AboutSection() {
   return (
@@ -14,7 +14,7 @@ export default function AboutSection() {
         <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
           <div className="flex justify-center lg:justify-end">
             <img 
-              src={mustafaImg}
+              src={mrMohammedImg}
               alt="مصطفى أحمد - مطور مواقع ومحتوى إبداعي" 
               className="rounded-2xl shadow-lg w-80 h-auto object-cover"
             />
