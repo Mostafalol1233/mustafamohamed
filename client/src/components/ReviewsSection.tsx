@@ -7,6 +7,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import StarRating from "@/components/StarRating";
 
+// Import customer images
+import sarahImage from "@/assets/customer-sarah.png";
+import emilyImage from "@/assets/customer-emily.png";
+
 export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
@@ -103,6 +107,12 @@ export default function ReviewsSection() {
       .slice(0, 2);
   };
 
+  const getCustomerImage = (name: string) => {
+    if (name === "Sarah Johnson") return sarahImage;
+    if (name === "Emily Rodriguez") return emilyImage;
+    return null; // Return null for male customers to use initials
+  };
+
   return (
     <section id="reviews" className="section-padding gradient-bg">
       <div className="container-max">
@@ -172,9 +182,17 @@ export default function ReviewsSection() {
             <Card key={review.id} className="bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
-                    {getInitials(review.name)}
-                  </div>
+                  {getCustomerImage(review.name) ? (
+                    <img 
+                      src={getCustomerImage(review.name)!} 
+                      alt={review.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-primary/20"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
+                      {getInitials(review.name)}
+                    </div>
+                  )}
                   <div className="flex-1">
                     <h4 className="font-semibold text-primary">{review.name}</h4>
                     <div className="flex items-center space-x-2">
