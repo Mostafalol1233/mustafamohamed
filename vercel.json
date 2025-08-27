@@ -3,14 +3,11 @@
   "builds": [
     {
       "src": "server/index.ts",
-      "use": "@vercel/node@3.0.0",
-      "config": {
-        "maxDuration": 30
-      }
+      "use": "@vercel/node@2.15.0"
     },
     {
       "src": "package.json",
-      "use": "@vercel/static-build@2.0.0",
+      "use": "@vercel/static-build@1.3.0",
       "config": {
         "buildCommand": "npm run build",
         "outputDirectory": "dist/public"
@@ -26,5 +23,10 @@
       "src": "/(.*)",
       "dest": "/dist/public/$1"
     }
-  ]
+  ],
+  "functions": {
+    "server/index.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

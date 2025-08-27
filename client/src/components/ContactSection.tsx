@@ -40,10 +40,11 @@ export default function ContactSection() {
               style={{ objectPosition: 'center 20%' }}
             />
             <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/30 to-transparent"></div>
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl px-8 py-4 shadow-xl border-2 border-primary/20">
-              <h3 className="text-2xl font-bold text-primary">Mustafa Mohamed</h3>
-              <p className="text-muted-foreground">Full-Stack Developer & Content Strategist</p>
-            </div>
+          </div>
+          
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-primary">Mustafa Mohamed</h3>
+            <p className="text-muted-foreground">Full-Stack Developer & Content Strategist</p>
           </div>
           
           <div className="mt-12">
