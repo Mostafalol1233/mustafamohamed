@@ -26,67 +26,12 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Block Replit scripts and console messages -->
+    <!-- Protection System -->
     <script>
-      // Block Replit console messages
-      const originalConsoleLog = console.log;
-      const originalConsoleWarn = console.warn;
-      const originalConsoleError = console.error;
+      !function(){var e=console.log,o=console.warn,n=console.error;console.log=function(){for(var t=[],r=0;r<arguments.length;r++)t[r]=arguments[r];var c=t.join(" ");c.includes("replit")||c.includes("Replit")||c.includes("LaunchDarkly")||c.includes("stallwart")||c.includes("join.replit.com")||e.apply(console,t)},console.warn=function(){for(var e=[],t=0;t<arguments.length;t++)e[t]=arguments[t];var r=e.join(" ");r.includes("replit")||r.includes("Replit")||r.includes("Content-Security-Policy")||r.includes("Unrecognized feature")||o.apply(console,e)},console.error=function(){for(var e=[],o=0;o<arguments.length;o++)e[o]=arguments[o];var t=e.join(" ");t.includes("replit")||t.includes("Replit")||t.includes("Content-Security-Policy")||n.apply(console,e)},window.addEventListener("beforeinstallprompt",function(e){e.preventDefault()}),document.addEventListener("DOMContentLoaded",function(){document.querySelectorAll('[src*="replit"], [href*="replit"], [class*="replit"], [id*="replit"]').forEach(function(e){return e.remove()}),document.querySelectorAll('script[src*="cdn.replit.com"], script[src*="replit.com"]').forEach(function(e){return e.remove()})});var t=window.fetch;window.fetch=function(){for(var e=[],o=0;o<arguments.length;o++)e[o]=arguments[o];var n=e[0];return"string"==typeof n&&(n.includes("replit.com")||n.includes("cdn.replit"))?Promise.reject(new Error("Blocked")):t.apply(this,e)}}();
       
-      console.log = function(...args) {
-        const message = args.join(' ');
-        if (message.includes('replit') || message.includes('Replit') || 
-            message.includes('LaunchDarkly') || message.includes('stallwart') ||
-            message.includes('join.replit.com')) {
-          return;
-        }
-        originalConsoleLog.apply(console, args);
-      };
-      
-      console.warn = function(...args) {
-        const message = args.join(' ');
-        if (message.includes('replit') || message.includes('Replit') ||
-            message.includes('Content-Security-Policy') || message.includes('Unrecognized feature')) {
-          return;
-        }
-        originalConsoleWarn.apply(console, args);
-      };
-      
-      console.error = function(...args) {
-        const message = args.join(' ');
-        if (message.includes('replit') || message.includes('Replit') ||
-            message.includes('Content-Security-Policy')) {
-          return;
-        }
-        originalConsoleError.apply(console, args);
-      };
-      
-      // Block beforeinstallprompt events
-      window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        return false;
-      });
-      
-      // Remove Replit elements when DOM loads
-      document.addEventListener('DOMContentLoaded', function() {
-        // Remove any elements containing replit
-        const replitElements = document.querySelectorAll('[src*="replit"], [href*="replit"], [class*="replit"], [id*="replit"]');
-        replitElements.forEach(el => el.remove());
-        
-        // Remove specific replit scripts
-        const scripts = document.querySelectorAll('script[src*="cdn.replit.com"], script[src*="replit.com"]');
-        scripts.forEach(script => script.remove());
-      });
-      
-      // Override fetch to block replit requests
-      const originalFetch = window.fetch;
-      window.fetch = function(...args) {
-        const url = args[0];
-        if (typeof url === 'string' && (url.includes('replit.com') || url.includes('cdn.replit'))) {
-          return Promise.reject(new Error('Blocked'));
-        }
-        return originalFetch.apply(this, args);
-      };
+      // Protection
+      !function(){var e=!1,t=function(){e||(e=!0,document.body.innerHTML="<div style='display:flex;align-items:center;justify-content:center;height:100vh;font-family:Arial;background:#000;color:#ff6b6b;text-align:center;'><div><h1>⚠️ تحذير أمني</h1><p>تم اكتشاف محاولة فحص الكود</p><p>يرجى إغلاق أدوات المطور</p></div></div>")};document.addEventListener("keydown",function(e){(e.ctrlKey&&e.shiftKey&&(73===e.keyCode||74===e.keyCode)||123===e.keyCode||e.ctrlKey&&85===e.keyCode)&&(e.preventDefault(),t())}),document.addEventListener("contextmenu",function(e){e.preventDefault()})}();
     </script>
   </body>
 </html>

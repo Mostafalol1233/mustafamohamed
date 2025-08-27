@@ -24,11 +24,34 @@ export default function ContactSection() {
   return (
     <section id="contact" className="section-padding bg-card">
       <div className="container-max">
+        {/* Profile Hero Section */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Let's Work Together</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to bring your project to life? Let's discuss how I can help you achieve your goals.
-          </p>
+          <div 
+            className="relative inline-block select-none mx-auto mb-8"
+            onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
+          >
+            <img 
+              src={profileImage}
+              alt="Mustafa Mohamed - Full Stack Developer" 
+              className="w-60 h-60 md:w-80 md:h-80 object-cover rounded-full shadow-2xl pointer-events-none border-8 border-white mx-auto"
+              draggable="false"
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ objectPosition: 'center 20%' }}
+            />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/30 to-transparent"></div>
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl px-8 py-4 shadow-xl border-2 border-primary/20">
+              <h3 className="text-2xl font-bold text-primary">Mustafa Mohamed</h3>
+              <p className="text-muted-foreground">Full-Stack Developer & Content Strategist</p>
+            </div>
+          </div>
+          
+          <div className="mt-12">
+            <h2 className="text-4xl font-bold text-primary mb-4">Let's Work Together</h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Ready to bring your project to life? Let's discuss how I can help you achieve your goals.
+            </p>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -160,24 +183,15 @@ export default function ContactSection() {
               </div>
             </div>
 
-            {/* Profile Image with Protection */}
-            <div 
-              className="relative select-none"
-              onContextMenu={(e) => e.preventDefault()}
-              onDragStart={(e) => e.preventDefault()}
-            >
-              <img 
-                src={profileImage}
-                alt="Mustafa Mohamed - Full Stack Developer" 
-                className="w-full h-64 object-cover rounded-2xl shadow-lg pointer-events-none"
-                draggable="false"
-                onContextMenu={(e) => e.preventDefault()}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl"></div>
-              <div className="absolute bottom-6 left-6 text-white">
-                <h4 className="text-xl font-bold">Mustafa Mohamed</h4>
-                <p className="text-white/90">Full-Stack Developer & Content Strategist</p>
+            {/* Motivational Quote */}
+            <div className="bg-primary/10 rounded-2xl p-8 text-center">
+              <div className="mb-4">
+                <i className="fas fa-quote-left text-3xl text-primary opacity-60"></i>
               </div>
+              <blockquote className="text-lg italic text-primary font-medium mb-4">
+                "Creating digital experiences that make a difference, one project at a time."
+              </blockquote>
+              <cite className="text-muted-foreground">- Mustafa Mohamed</cite>
             </div>
           </div>
         </div>
