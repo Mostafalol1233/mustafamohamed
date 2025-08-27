@@ -29,7 +29,6 @@ export default function Home() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2">
-                <li><a href="#about" className="text-gray-300 hover:text-accent transition-colors">About</a></li>
                 <li><a href="#certifications" className="text-gray-300 hover:text-accent transition-colors">Certifications</a></li>
                 <li><a href="#portfolio" className="text-gray-300 hover:text-accent transition-colors">Portfolio</a></li>
                 <li><a href="#contact" className="text-gray-300 hover:text-accent transition-colors">Contact</a></li>
