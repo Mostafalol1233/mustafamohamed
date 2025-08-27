@@ -23,7 +23,7 @@ export default function AboutSection() {
             <h3 className="text-3xl font-bold text-primary">مصطفى أحمد</h3>
             <h4 className="text-2xl font-semibold text-accent">مطور مواقع ومحتوى إبداعي</h4>
             <p className="text-lg text-foreground leading-relaxed">
-              مطور متكامل متخصص في تطوير المواقع والتطبيقات الحديثة مع خبرة في استراتيجية المحتوى. أحب أن أحول الأفكار إلى حلول رقمية مبتكرة تجمع بين الجودة التقنية العالية والتصميم المتميز.
+              أعمل على تحويل الأفكار الإبداعية إلى مواقع وتطبيقات عملية ومميزة. أجمع بين الخبرة التقنية والحس الإبداعي لإنتاج حلول رقمية تلبي احتياجات العملاء وتحقق أهدافهم بفعالية.
             </p>
             <div className="space-y-4">
               <div className="flex items-center space-x-3 space-x-reverse">
