@@ -11,7 +11,7 @@ export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
 
-  // Mixed Arabic and English reviews with local storage
+  // 4 selected reviews with mixed Arabic and English
   const staticReviews = [
     {
       id: 1,
@@ -24,12 +24,12 @@ export default function ReviewsSection() {
     },
     {
       id: 2,
-      name: "Ahmed Hassan",
-      email: "ahmed.hassan@startup.sa",
+      name: "Michael Chen",
+      email: "m.chen@business.net",
       rating: 5,
-      comment: "تجربة ممتازة مع مصطفى! طور لنا منصة تجارة إلكترونية شاملة مع نظام دفع آمن. دقيق في المواعيد ومتفهم للمتطلبات.",
+      comment: "أسلوب عمل محترف ونتائج مميزة. طور لنا نظام إدارة مخصص حسّن من كفاءة العمل بشكل كبير. سرعة في التنفيذ وجودة عالية.",
       isApproved: true,
-      createdAt: "2024-08-10T14:20:00Z",
+      createdAt: "2024-07-28T16:45:00Z",
     },
     {
       id: 3,
@@ -42,48 +42,12 @@ export default function ReviewsSection() {
     },
     {
       id: 4,
-      name: "Michael Chen",
-      email: "m.chen@business.net",
-      rating: 5,
-      comment: "أسلوب عمل محترف ونتائج مميزة. طور لنا نظام إدارة مخصص حسّن من كفاءة العمل بشكل كبير. سرعة في التنفيذ وجودة عالية.",
-      isApproved: true,
-      createdAt: "2024-07-28T16:45:00Z",
-    },
-    {
-      id: 5,
-      name: "Lisa Anderson",
-      email: "lisa.anderson@edu.com",
-      rating: 5,
-      comment: "تعاونا مع مصطفى في تطوير منصة تعليمية إلكترونية. خبرته في React وNode.js واضحة جداً. المنصة تعمل بسلاسة والطلاب يحبونها.",
-      isApproved: true,
-      createdAt: "2024-07-20T11:30:00Z",
-    },
-    {
-      id: 6,
       name: "David Wilson",
       email: "david.wilson@media.co",
       rating: 5,
       comment: "خبرة مصطفى في السوقين العربي والإنجليزي كانت لا تقدر بثمن. استراتيجية المحتوى ثنائية اللغة وتطوير الويب RTL تم تنفيذهما بشكل مثالي.",
       isApproved: true,
       createdAt: "2024-07-12T08:20:00Z",
-    },
-    {
-      id: 7,
-      name: "Jennifer Adams",
-      email: "jennifer.adams@startup.com",
-      rating: 5,
-      comment: "مصطفى مطور شامل بكل معنى الكلمة. يفهم متطلبات العميل بسرعة وينفذ بدقة. موقعنا الإلكتروني أصبح أسرع وأجمل بعد عمله عليه.",
-      isApproved: true,
-      createdAt: "2024-07-05T14:15:00Z",
-    },
-    {
-      id: 8,
-      name: "Robert Thompson",
-      email: "robert.thompson@consulting.com",
-      rating: 5,
-      comment: "تجربة رائعة! مصطفى طور لنا تطبيق ويب لإدارة المشاريع بتقنيات حديثة. واجه التحديات التقنية بمهارة والنتيجة النهائية فاقت التوقعات.",
-      isApproved: true,
-      createdAt: "2024-06-28T11:40:00Z",
     }
   ];
 
