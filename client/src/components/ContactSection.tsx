@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import profileImage from "@assets/WhatsApp Image 2025-08-27 at 11.48.04 PM_1756328057500.jpeg";
+import profileImage from "@assets/image_1756332525184.png";
 
 export default function ContactSection() {
   const { toast } = useToast();
