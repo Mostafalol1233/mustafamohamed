@@ -11,15 +11,15 @@ export default function AboutSection() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          <div className="order-2 lg:order-1">
+        <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
+          <div className="flex justify-center lg:justify-end">
             <img 
               src={mrMohammedImg}
               alt="مصطفى أحمد - مطور مواقع ومحتوى إبداعي" 
-              className="rounded-2xl shadow-lg w-full h-auto"
+              className="rounded-2xl shadow-lg w-80 h-auto object-cover"
             />
           </div>
-          <div className="space-y-6 order-1 lg:order-2">
+          <div className="space-y-6">
             <h3 className="text-3xl font-bold text-primary">مصطفى أحمد</h3>
             <h4 className="text-2xl font-semibold text-accent">مطور مواقع ومحتوى إبداعي</h4>
             <p className="text-lg text-foreground leading-relaxed">
