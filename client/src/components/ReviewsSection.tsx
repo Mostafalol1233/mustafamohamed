@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import StarRating from "@/components/StarRating";
+import profileImg from "@assets/image_1756332525184.png";
 
 export default function ReviewsSection() {
   const { toast } = useToast();
@@ -173,7 +174,11 @@ export default function ReviewsSection() {
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
-                    {getInitials(review.name)}
+                    <img 
+                      src={profileImg}
+                      alt={review.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-primary">{review.name}</h4>
@@ -196,22 +201,22 @@ export default function ReviewsSection() {
         {/* Reviews Summary */}
         <div className="mt-16 text-center">
           <div className="bg-card rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-primary mb-4">رضا العملاء</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">Customer Satisfaction</h3>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <div className="text-3xl font-bold text-yellow-500 mb-2">5.0</div>
                 <div className="text-lg flex justify-center mb-1">
                   {renderStars(5)}
                 </div>
-                <div className="text-sm text-muted-foreground">متوسط التقييم</div>
+                <div className="text-sm text-muted-foreground">Average Rating</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">رضا العملاء</div>
+                <div className="text-sm text-muted-foreground">Customer Satisfaction</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">{staticReviews.length}+</div>
-                <div className="text-sm text-muted-foreground">عميل راضي</div>
+                <div className="text-sm text-muted-foreground">Happy Clients</div>
               </div>
             </div>
           </div>
