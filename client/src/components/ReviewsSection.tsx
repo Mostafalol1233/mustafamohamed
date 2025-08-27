@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import StarRating from "@/components/StarRating";
-import profileImg from "@assets/image_1756332525184.png";
 
 export default function ReviewsSection() {
   const { toast } = useToast();
@@ -174,11 +173,7 @@ export default function ReviewsSection() {
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold">
-                    <img 
-                      src={profileImg}
-                      alt={review.name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
+                    {getInitials(review.name)}
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-primary">{review.name}</h4>

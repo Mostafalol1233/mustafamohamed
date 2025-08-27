@@ -1,0 +1,24 @@
+[vite] connecting...
+[vite] connected.
+[Vercel Web Analytics] Debug mode is enabled by default in development. No requests will be sent to the server.
+[vite] hot updated: /src/components/ReviewsSection.tsx
+[vite] hot updated: /src/index.css?v=OFnrx2gg86TAlocmrWQfW
+[vite] hot updated: /src/components/ReviewsSection.tsx
+[vite] hot updated: /src/index.css?v=OFnrx2gg86TAlocmrWQfW
+profileImg is not defined
+profileImg is not defined
+profileImg is not defined
+[vite] hot updated: /src/components/AboutSection.tsx
+[vite] hot updated: /src/index.css?v=OFnrx2gg86TAlocmrWQfW
+profileImg is not defined
+profileImg is not defined
+at https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/src/components/ReviewsSection.tsx?t=1756332693636:286:20
+at Array.map (<anonymous>)
+at ReviewsSection (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/src/components/ReviewsSection.tsx?t=1756332693636:278:205)
+at renderWithHooks (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:11548:26)
+at mountIndeterminateComponent (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:14926:21)
+at beginWork (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:15914:22)
+at HTMLUnknownElement.callCallback2 (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:3674:22)
+at Object.invokeGuardedCallbackDev (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:3699:24)
+at invokeGuardedCallback (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:3733:39)
+at beginWork$1 (https://600cbed8-d939-4303-9ced-858521a1886c-00-1h12ba4slilnn.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WERSD76P.js?v=9f6d0916:19765:15)
