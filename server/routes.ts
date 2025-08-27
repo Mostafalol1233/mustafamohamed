@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 import { authenticateAdmin, requireAdminAuth } from "./adminAuth";
+import session from "express-session";
 import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -42,21 +42,27 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Session middleware for admin auth
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
 
   // Serve uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+  // Auth routes - simplified for admin only
+  app.get('/api/auth/user', (req: any, res) => {
+    if ((req.session as any)?.adminAuthenticated) {
+      res.json({ isAuthenticated: true, isAdmin: true });
+    } else {
+      res.status(401).json({ message: "Unauthorized" });
     }
   });
 
@@ -71,7 +77,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/certificates", isAuthenticated, upload.single("image"), async (req, res) => {
+  app.post("/api/certificates", requireAdminAuth, upload.single("image"), async (req, res) => {
     try {
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
       
@@ -91,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/certificates/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/certificates/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteCertificate(id);
@@ -130,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/reviews/all", isAuthenticated, async (req, res) => {
+  app.get("/api/reviews/all", requireAdminAuth, async (req, res) => {
     try {
       const reviews = await storage.getAllReviews();
       res.json(reviews);
@@ -151,7 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/reviews/:id/approve", isAuthenticated, async (req, res) => {
+  app.patch("/api/reviews/:id/approve", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.approveReview(id);
@@ -162,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/reviews/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/reviews/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteReview(id);
@@ -185,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/contact", isAuthenticated, async (req, res) => {
+  app.get("/api/contact", requireAdminAuth, async (req, res) => {
     try {
       const messages = await storage.getContactMessages();
       res.json(messages);
@@ -195,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/contact/:id/read", isAuthenticated, async (req, res) => {
+  app.patch("/api/contact/:id/read", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.markMessageAsRead(id);
@@ -217,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/all", isAuthenticated, async (req, res) => {
+  app.get("/api/projects/all", requireAdminAuth, async (req, res) => {
     try {
       const projects = await storage.getAllProjects();
       res.json(projects);
@@ -227,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", isAuthenticated, upload.single("image"), async (req, res) => {
+  app.post("/api/projects", requireAdminAuth, upload.single("image"), async (req, res) => {
     try {
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
       
@@ -250,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/projects/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/projects/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteProject(id);
