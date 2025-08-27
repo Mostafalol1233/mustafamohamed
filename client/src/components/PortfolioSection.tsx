@@ -1,6 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Project } from "@shared/schema";
 import { DragonConsole } from "./DragonConsole";
 import ecoEatsImage from "@assets/eco-eats-preview.png";
 import bmoToolsImage from "@assets/bmo-tools-preview.png";
@@ -10,14 +8,11 @@ import ahmedHellyImage from "@assets/image_1748448070181.png";
 import diaaEldenImage from "@assets/diaa-elden-shop.png";
 import mrMohammedImage from "@assets/mr-mohammed.png";
 import bemoraNewImage from "@assets/bemora-new.png";
+import oneTeamImage from "@assets/image_1756325502515.png";
 
 function PortfolioSection() {
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-  });
-
-  // Real projects data with all 9 projects as requested
-  const realProjects = [
+  // Static projects data - all data is now hardcoded to avoid database dependencies
+  const staticProjects = [
     {
       id: 1,
       title: "BRAVEZM Gaming",
@@ -77,7 +72,7 @@ function PortfolioSection() {
       id: 6,
       title: "OneTeam",
       description: "HR company platform for workforce management and team collaboration with comprehensive employee management features.",
-      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      imageUrl: oneTeamImage,
       technologies: ["Vue.js", "Laravel", "HR Management", "MySQL"],
       liveUrl: "https://oneteamss.vercel.app/",
       githubUrl: "https://github.com/mustafa-mohamed",
@@ -119,7 +114,7 @@ function PortfolioSection() {
     },
   ];
 
-  const displayProjects = projects.length > 0 ? projects : realProjects;
+  const displayProjects = staticProjects;
 
   return (
     <section id="portfolio" className="section-padding bg-card">
@@ -141,7 +136,7 @@ function PortfolioSection() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayProjects.map((project: Project | typeof realProjects[0]) => (
+          {displayProjects.map((project) => (
             <Card key={project.id} className="group bg-muted overflow-hidden card-hover">
               {project.imageUrl && (
                 <img 
