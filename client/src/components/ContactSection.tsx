@@ -160,12 +160,18 @@ export default function ContactSection() {
               </div>
             </div>
 
-            {/* Profile Image */}
-            <div className="relative">
+            {/* Profile Image with Protection */}
+            <div 
+              className="relative select-none"
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+            >
               <img 
                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=600"
                 alt="Mustafa Mohamed - Full Stack Developer" 
-                className="w-full h-64 object-cover rounded-2xl shadow-lg"
+                className="w-full h-64 object-cover rounded-2xl shadow-lg pointer-events-none"
+                draggable="false"
+                onContextMenu={(e) => e.preventDefault()}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-2xl"></div>
               <div className="absolute bottom-6 left-6 text-white">
@@ -176,30 +182,30 @@ export default function ContactSection() {
           </div>
         </div>
 
-        {/* Additional Contact Info */}
+        {/* Additional Contact Info with Animation */}
         <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
-          <div className="bg-muted rounded-2xl p-6">
-            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
+            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-foreground group-hover:text-accent transition-colors duration-300">
               <i className="fas fa-clock text-2xl"></i>
             </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Response Time</h4>
-            <p className="text-muted-foreground">Usually within 24 hours</p>
+            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Response Time</h4>
+            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Usually within 24 hours</p>
           </div>
           
-          <div className="bg-muted rounded-2xl p-6">
-            <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
+            <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-foreground group-hover:text-primary transition-colors duration-300">
               <i className="fas fa-calendar text-2xl"></i>
             </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Availability</h4>
-            <p className="text-muted-foreground">Currently accepting new projects</p>
+            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Availability</h4>
+            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Currently accepting new projects</p>
           </div>
           
-          <div className="bg-muted rounded-2xl p-6">
-            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
+            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-foreground group-hover:text-accent transition-colors duration-300">
               <i className="fas fa-handshake text-2xl"></i>
             </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Consultation</h4>
-            <p className="text-muted-foreground">Free initial consultation</p>
+            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Consultation</h4>
+            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Free initial consultation</p>
           </div>
         </div>
       </div>

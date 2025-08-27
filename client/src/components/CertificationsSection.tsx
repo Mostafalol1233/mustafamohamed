@@ -6,8 +6,8 @@ export default function CertificationsSection() {
   const staticCertificates = [
     {
       id: "cert-1",
-      title: "شهادة ALX AI Starter Kit",
-      description: "شهادة متقدمة في أساسيات الذكاء الاصطناعي وتطبيقاته من برنامج ALX، تغطي التعلم الآلي والتعلم العميق واستراتيجيات تطبيق الذكاء الاصطناعي",
+      title: "ALX AI Starter Kit Certificate",
+      description: "Advanced AI fundamentals covering machine learning and deep learning applications.",
       issuer: "ALX Africa",
       issueDate: "2024",
       imageUrl: certificateImage,
@@ -18,8 +18,8 @@ export default function CertificationsSection() {
     },
     {
       id: "cert-2", 
-      title: "تطوير المواقع Full-Stack",
-      description: "شهادة شاملة في تقنيات تطوير المواقع الحديثة بما في ذلك React وNode.js وإدارة قواعد البيانات واستراتيجيات النشر",
+      title: "Full-Stack Web Development",
+      description: "Modern web development with React, Node.js, and database management.",
       issuer: "Meta (Facebook)",
       issueDate: "2023",
       imageUrl: null,
@@ -30,8 +30,8 @@ export default function CertificationsSection() {
     },
     {
       id: "cert-3",
-      title: "استراتيجية المحتوى والتسويق الرقمي", 
-      description: "شهادة مهنية في إنشاء المحتوى وتحسين محركات البحث والتسويق عبر وسائل التواصل الاجتماعي وإدارة العلامة التجارية الرقمية",
+      title: "Content Strategy & Digital Marketing", 
+      description: "Professional content creation, SEO optimization, and digital brand management.",
       issuer: "Google Digital Marketing",
       issueDate: "2023",
       imageUrl: null,
@@ -42,8 +42,8 @@ export default function CertificationsSection() {
     },
     {
       id: "cert-4",
-      title: "JavaScript و TypeScript المتقدم",
-      description: "شهادة متخصصة تغطي مفاهيم JavaScript المتقدمة وتطبيق TypeScript وأنماط التطوير الحديثة",
+      title: "Advanced JavaScript & TypeScript",
+      description: "Advanced JavaScript concepts and TypeScript implementation patterns.",
       issuer: "Microsoft",
       issueDate: "2022", 
       imageUrl: null,
@@ -54,8 +54,8 @@ export default function CertificationsSection() {
     },
     {
       id: "cert-5",
-      title: "أساسيات الحوسبة السحابية",
-      description: "شهادة AWS ونشر وإدارة البنية التحتية السحابية تغطي العمارة القابلة للتوسع وأفضل الممارسات",
+      title: "Cloud Computing Fundamentals",
+      description: "AWS cloud infrastructure deployment and scalable architecture best practices.",
       issuer: "Amazon Web Services",
       issueDate: "2022",
       imageUrl: null,
@@ -66,38 +66,14 @@ export default function CertificationsSection() {
     },
     {
       id: "cert-6",
-      title: "تصميم وإدارة قواعد البيانات",
-      description: "شهادة مهنية في تصميم قواعد البيانات والتحسين والإدارة مع التركيز على الأداء والأمان",
+      title: "Database Design & Management",
+      description: "Professional database design, optimization and performance management.",
       issuer: "Oracle Corporation",
       issueDate: "2021",
       imageUrl: null,
       category: "Database Management", 
       verified: true,
       credentialId: "ORACLE-DB-2021-987",
-      isVisible: true,
-    },
-    {
-      id: "cert-7",
-      title: "أمان تطبيقات الويب",
-      description: "شهادة متخصصة في أمان تطبيقات الويب وحماية البيانات واختبار الاختراق الأخلاقي",
-      issuer: "EC-Council",
-      issueDate: "2021",
-      imageUrl: null,
-      category: "Cybersecurity",
-      verified: true,
-      credentialId: "EC-WAS-2021-159",
-      isVisible: true,
-    },
-    {
-      id: "cert-8",
-      title: "إدارة المشاريع الرقمية",
-      description: "شهادة PMP في إدارة المشاريع الرقمية والمنهجيات الحديثة مثل Agile وScrum",
-      issuer: "Project Management Institute",
-      issueDate: "2020",
-      imageUrl: null,
-      category: "Project Management",
-      verified: true,
-      credentialId: "PMI-PMP-2020-753",
       isVisible: true,
     }
   ];
@@ -114,16 +90,22 @@ export default function CertificationsSection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {staticCertificates.map((certificate) => (
-            <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
               <div className="p-0">
                 <div className="relative">
                   {certificate.id === "cert-1" ? (
-                    // ALX AI Certificate with actual image
-                    <div className="relative">
+                    // ALX AI Certificate with actual image and protection
+                    <div 
+                      className="relative select-none"
+                      onContextMenu={(e) => e.preventDefault()}
+                      onDragStart={(e) => e.preventDefault()}
+                    >
                       <img 
                         src={certificate.imageUrl}
                         alt="ALX AI Starter Kit Certificate" 
-                        className="w-full h-40 object-cover"
+                        className="w-full h-40 object-cover pointer-events-none"
+                        draggable="false"
+                        onContextMenu={(e) => e.preventDefault()}
                       />
                     </div>
                   ) : (
