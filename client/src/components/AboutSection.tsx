@@ -43,37 +43,21 @@ export default function AboutSection() {
         </div>
 
         {/* Skills Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="text-center p-6 bg-muted rounded-2xl card-hover">
-            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-code text-2xl"></i>
-            </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Frontend Development</h4>
-            <p className="text-muted-foreground">React, Vue.js, HTML5, CSS3, JavaScript ES6+</p>
-          </div>
-
-          <div className="text-center p-6 bg-muted rounded-2xl card-hover">
-            <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-server text-2xl"></i>
-            </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Backend Development</h4>
-            <p className="text-muted-foreground">Node.js, Python, PHP, MySQL, MongoDB</p>
-          </div>
-
+        <div className="grid md:grid-cols-2 gap-8">
           <div className="text-center p-6 bg-muted rounded-2xl card-hover">
             <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-pen-nib text-2xl"></i>
             </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">Content Strategy</h4>
-            <p className="text-muted-foreground">SEO, Copywriting, Digital Marketing, Brand Storytelling</p>
+            <h4 className="text-xl font-semibold text-primary mb-2">استراتيجية المحتوى</h4>
+            <p className="text-muted-foreground">تحسين محركات البحث، كتابة المحتوى، التسويق الرقمي، بناء الهوية التجارية</p>
           </div>
 
           <div className="text-center p-6 bg-muted rounded-2xl card-hover">
             <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-brain text-2xl"></i>
             </div>
-            <h4 className="text-xl font-semibold text-primary mb-2">AI Integration</h4>
-            <p className="text-muted-foreground">Machine Learning, AI APIs, Automation, Smart Solutions</p>
+            <h4 className="text-xl font-semibold text-primary mb-2">تطبيقات الذكاء الاصطناعي</h4>
+            <p className="text-muted-foreground">التعلم الآلي، واجهات برمجة الذكاء الاصطناعي، الأتمتة، الحلول الذكية</p>
           </div>
         </div>
       </div>
