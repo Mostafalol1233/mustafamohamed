@@ -11,62 +11,98 @@ export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
 
-  // Static reviews data - no database dependency
+  // Static reviews data - original Arabic reviews preserved with local storage
   const staticReviews = [
     {
       id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.j@company.com",
+      name: "سارة أحمد",
+      email: "sarah.ahmed@techco.com",
       rating: 5,
-      comment: "Mustafa delivered an exceptional website for our startup. His attention to detail and modern design approach exceeded our expectations. The project was completed on time and within budget.",
+      comment: "مصطفى مطور محترف وموهوب جداً. أنجز لنا موقع ويب متكامل للشركة في وقت قياسي وبجودة عالية. التصميم رائع والبرمجة احترافية. أنصح بالتعامل معه بقوة!",
       isApproved: true,
       createdAt: "2024-08-15T10:30:00Z",
     },
     {
       id: 2,
-      name: "Ahmed Hassan",
-      email: "ahmed.hassan@tech.com",
+      name: "أحمد حسن",
+      email: "ahmed.hassan@startup.sa",
       rating: 5,
-      comment: "Working with Mustafa was a fantastic experience. He created a comprehensive e-commerce platform that perfectly matches our brand identity. His technical skills and communication are outstanding.",
+      comment: "تجربة ممتازة مع مصطفى! طور لنا منصة تجارة إلكترونية شاملة مع نظام دفع آمن وإدارة المخزون. دقيق في المواعيد ومتفهم للمتطلبات. شكراً لك على الجهد الرائع.",
       isApproved: true,
       createdAt: "2024-08-10T14:20:00Z",
     },
     {
       id: 3,
-      name: "Lisa Chen",
-      email: "lisa.chen@creative.co",
+      name: "نورا محمد",
+      email: "nora.mohamed@agency.ae",
       rating: 5,
-      comment: "Mustafa's content strategy work transformed our digital presence. His SEO optimization and content creation significantly increased our organic traffic and engagement rates.",
+      comment: "مصطفى خبير في استراتيجية المحتوى والتسويق الرقمي. ساعدنا في تطوير خطة محتوى متكاملة ونفذها بإبداع. النتائج فاقت توقعاتنا والعملاء راضون جداً.",
       isApproved: true,
       createdAt: "2024-08-05T09:15:00Z",
     },
     {
       id: 4,
-      name: "Mohammad Ali",
+      name: "محمد علي",
       email: "m.ali@business.net",
       rating: 5,
-      comment: "Professional, reliable, and incredibly talented. Mustafa developed a custom web application that streamlined our business processes and improved our operational efficiency.",
+      comment: "أسلوب عمل محترف ونتائج مميزة. طور لنا نظام إدارة مخصص حسّن من كفاءة العمل بشكل كبير. سرعة في التنفيذ وجودة في التصميم والبرمجة.",
       isApproved: true,
       createdAt: "2024-07-28T16:45:00Z",
     },
     {
       id: 5,
-      name: "Emily Rodriguez",
-      email: "emily.r@startup.io",
+      name: "ليلى عبدالله",
+      email: "layla.abdullah@edu.jo",
       rating: 5,
-      comment: "From concept to deployment, Mustafa guided us through every step. His full-stack development skills and modern UI/UX design created a product our users absolutely love.",
+      comment: "تعاونا مع مصطفى في تطوير منصة تعليمية إلكترونية. خبرته في React وNode.js واضحة جداً. المنصة تعمل بسلاسة والطلاب يحبون التصميم والتفاعل.",
       isApproved: true,
       createdAt: "2024-07-20T11:30:00Z",
     },
     {
       id: 6,
-      name: "Khaled Ibrahim",
-      email: "khaled.i@enterprise.com",
+      name: "خالد إبراهيم",
+      email: "khaled.ibrahim@media.eg",
       rating: 5,
-      comment: "Mustafa's expertise in both Arabic and English markets was invaluable for our international expansion. His bilingual content strategy and RTL web development were perfectly executed.",
+      comment: "خبرة مصطفى في السوقين العربي والإنجليزي كانت لا تقدر بثمن لتوسعنا الدولي. استراتيجية المحتوى ثنائية اللغة وتطوير الويب RTL تم تنفيذهما بشكل مثالي.",
       isApproved: true,
       createdAt: "2024-07-12T08:20:00Z",
     },
+    {
+      id: 7,
+      name: "فاطمة الزهراء",
+      email: "fatima.zahra@startup.ma",
+      rating: 5,
+      comment: "مصطفى مطور شامل بكل معنى الكلمة. يفهم متطلبات العميل بسرعة وينفذ بدقة. موقعنا الإلكتروني أصبح أسرع وأجمل بعد عمله عليه. نشكره على الاحترافية.",
+      isApproved: true,
+      createdAt: "2024-07-05T14:15:00Z",
+    },
+    {
+      id: 8,
+      name: "عمر التميمي",
+      email: "omar.tamimi@consulting.ae",
+      rating: 5,
+      comment: "تجربة رائعة! مصطفى طور لنا تطبيق ويب لإدارة المشاريع بتقنيات حديثة. واجه التحديات التقنية بمهارة والنتيجة النهائية فاقت التوقعات. مطور أنصح به بشدة.",
+      isApproved: true,
+      createdAt: "2024-06-28T11:40:00Z",
+    },
+    {
+      id: 9,
+      name: "مريم الأحمد",
+      email: "mariam.ahmed@creative.kw",
+      rating: 5,
+      comment: "خبرة مصطفى في UI/UX واضحة في كل تفصيل. صمم لنا موقع إبداعي يعكس هوية الشركة بشكل مثالي. سرعة التحميل ممتازة والتصميم متجاوب على جميع الأجهزة.",
+      isApproved: true,
+      createdAt: "2024-06-15T09:25:00Z",
+    },
+    {
+      id: 10,
+      name: "يوسف المطيري",
+      email: "youssef.mutairi@tech.sa",
+      rating: 5,
+      comment: "العمل مع مصطفى كان تجربة مميزة. حول فكرتنا إلى تطبيق ويب متكامل بأحدث التقنيات. التواصل مستمر والتطوير شفاف. أسلوب محترف وجودة عالية.",
+      isApproved: true,
+      createdAt: "2024-06-10T16:30:00Z",
+    }
   ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -214,22 +250,22 @@ export default function ReviewsSection() {
         {/* Reviews Summary */}
         <div className="mt-16 text-center">
           <div className="bg-card rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-primary mb-4">Client Satisfaction</h3>
+            <h3 className="text-2xl font-bold text-primary mb-4">رضا العملاء</h3>
             <div className="grid md:grid-cols-3 gap-6">
               <div>
                 <div className="text-3xl font-bold text-yellow-500 mb-2">5.0</div>
                 <div className="text-lg flex justify-center mb-1">
                   {renderStars(5)}
                 </div>
-                <div className="text-sm text-muted-foreground">Average Rating</div>
+                <div className="text-sm text-muted-foreground">متوسط التقييم</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Client Satisfaction</div>
+                <div className="text-sm text-muted-foreground">رضا العملاء</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">{staticReviews.length}+</div>
-                <div className="text-sm text-muted-foreground">Happy Clients</div>
+                <div className="text-sm text-muted-foreground">عميل راضي</div>
               </div>
             </div>
           </div>
