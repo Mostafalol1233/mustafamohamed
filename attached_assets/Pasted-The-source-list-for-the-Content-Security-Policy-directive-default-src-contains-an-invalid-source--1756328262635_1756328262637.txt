@@ -1,0 +1,82 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+16The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+16The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+stallwart.build.js:1 stallwart: failed ping 1
+ProfessionalPortfolio:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+ProfessionalPortfolio:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+ProfessionalPortfolio:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+_app-a2c290ddf1970192.js:38 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-a2c290ddf1970192.js:38 [LaunchDarkly] LaunchDarkly client initialized
+ProfessionalPortfolio:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+5[GroupMarkerNotSet(crbug.com/242999)!:A0B0260054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+ProfessionalPortfolio:1 [GroupMarkerNotSet(crbug.com/242999)!:A010270054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+8Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'battery'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+framework-7058bdd505236e1b.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-7058bdd505236e1b.js:1Understand this warning
+attached_assets/image_1756325502515.png:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+5[GroupMarkerNotSet(crbug.com/242999)!:A0E0260054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+ProfessionalPortfolio:1 [GroupMarkerNotSet(crbug.com/242999)!:A010270054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+stallwart.build.js:1 stallwart: failed ping 1
+ProfessionalPortfolio:1 [GroupMarkerNotSet(crbug.com/242999)!:A010270054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+ProfessionalPortfolio:1 [GroupMarkerNotSet(crbug.com/242999)!:A010270054780000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.Understand this warning
+stallwart.build.js:1 stallwart: failed ping 1
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Argf%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+Console.js:61 [Vercel Web Analytics] Debug mode is enabled by default in development. No requests will be sent to the server.
+Console.js:61 [Vercel Web Analytics] [pageview] https://e9b5b6f7-e61c-4930-b3fd-9d2df2bd36ac-00-3abp9i4e8rv7a.janeway.replit.dev/ Object
+e9b5b6f7-e61c-4930-b3fd-9d2df2bd36ac-00-3abp9i4e8rv7a.janeway.replit.dev/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+2stallwart.build.js:1 stallwart: failed ping 1
