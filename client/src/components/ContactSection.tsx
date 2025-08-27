@@ -89,36 +89,72 @@ export default function ContactSection() {
 
           {/* Contact Information */}
           <div className="space-y-8">
-            <div className="bg-primary text-primary-foreground rounded-2xl p-8">
-              <h3 className="text-2xl font-semibold mb-6">Get in Touch</h3>
+            <div className="bg-muted rounded-2xl p-8">
+              <h3 className="text-2xl font-semibold text-primary mb-6">Get in Touch</h3>
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-accent text-accent-foreground rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-500 text-white rounded-lg flex items-center justify-center">
                     <i className="fas fa-envelope text-xl"></i>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Email</h4>
-                    <p className="text-primary-foreground/80">overthegardenwall317@gmail.com</p>
+                    <h4 className="font-semibold text-primary">Email</h4>
+                    <a 
+                      href="mailto:overthegardenwall317@gmail.com"
+                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      overthegardenwall317@gmail.com
+                    </a>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-accent text-accent-foreground rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-400 text-white rounded-lg flex items-center justify-center">
                     <i className="fab fa-twitter text-xl"></i>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Twitter</h4>
-                    <p className="text-primary-foreground/80">@Bemora_BEMO</p>
+                    <h4 className="font-semibold text-primary">Twitter</h4>
+                    <a 
+                      href="https://twitter.com/Bemora_BEMO"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      @Bemora_BEMO
+                    </a>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-accent text-accent-foreground rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-red-500 text-white rounded-lg flex items-center justify-center">
                     <i className="fab fa-youtube text-xl"></i>
                   </div>
                   <div>
-                    <h4 className="font-semibold">YouTube</h4>
-                    <p className="text-primary-foreground/80">@Bemora-site</p>
+                    <h4 className="font-semibold text-primary">YouTube</h4>
+                    <a 
+                      href="https://youtube.com/@Bemora-site"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      @Bemora-site
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center">
+                    <i className="fas fa-link text-xl"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-primary">Linktree</h4>
+                    <a 
+                      href="https://linktr.ee/Mustafa-bemo"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                    >
+                      linktr.ee/Mustafa-bemo
+                    </a>
                   </div>
                 </div>
               </div>
