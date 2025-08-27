@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-// Using a professional contact image URL instead of local asset
+import profileImage from "@assets/WhatsApp Image 2025-08-27 at 11.48.04 PM_1756328057500.jpeg";
 
 export default function ContactSection() {
   const { toast } = useToast();
@@ -167,7 +167,7 @@ export default function ContactSection() {
               onDragStart={(e) => e.preventDefault()}
             >
               <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&h=600"
+                src={profileImage}
                 alt="Mustafa Mohamed - Full Stack Developer" 
                 className="w-full h-64 object-cover rounded-2xl shadow-lg pointer-events-none"
                 draggable="false"
