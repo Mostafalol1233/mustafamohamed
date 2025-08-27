@@ -11,29 +11,29 @@ export default function AboutSection() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
-          <div className="flex justify-center lg:justify-end">
+        <div className="flex flex-col items-center mb-16">
+          <div className="mb-6">
             <img 
               src={mrMohammedImg}
               alt="مصطفى أحمد - مطور مواقع ومحتوى إبداعي" 
-              className="rounded-2xl shadow-lg w-80 h-auto object-cover"
+              className="rounded-2xl shadow-lg w-80 h-auto object-cover mx-auto"
             />
           </div>
-          <div className="space-y-6">
+          <div className="text-center space-y-6 max-w-4xl">
             <h3 className="text-3xl font-bold text-primary">مصطفى أحمد</h3>
             <p className="text-lg text-foreground leading-relaxed">
               أعمل على تحويل الأفكار الإبداعية إلى مواقع وتطبيقات عملية ومميزة. أجمع بين الخبرة التقنية والحس الإبداعي لإنتاج حلول رقمية تلبي احتياجات العملاء وتحقق أهدافهم بفعالية.
             </p>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3 space-x-reverse">
+            <div className="grid md:grid-cols-3 gap-6 mt-8">
+              <div className="flex items-center justify-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
                 <span className="text-foreground">أكثر من 5 سنوات خبرة في تطوير المواقع</span>
               </div>
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center justify-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
                 <span className="text-foreground">معتمد في الذكاء الاصطناعي والتقنيات الحديثة</span>
               </div>
-              <div className="flex items-center space-x-3 space-x-reverse">
+              <div className="flex items-center justify-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
                 <span className="text-foreground">خبير في استراتيجية المحتوى والتسويق الرقمي</span>
               </div>
