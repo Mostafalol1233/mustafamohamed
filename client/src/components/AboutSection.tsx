@@ -1,39 +1,42 @@
+import mrMohammedImg from "@assets/mr-mohammed.png";
+
 export default function AboutSection() {
   return (
-    <section id="about" className="section-padding bg-card">
+    <section id="about" className="section-padding bg-card" dir="rtl">
       <div className="container-max">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">About Me</h2>
+          <h2 className="text-4xl font-bold text-primary mb-4">نبذة عني</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Passionate about creating digital experiences that make a difference
+            شغوف بإنشاء تجارب رقمية تحدث فارقاً حقيقياً في حياة الناس
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
-          <div>
+          <div className="order-2 lg:order-1">
             <img 
-              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-              alt="Modern creative workspace" 
+              src={mrMohammedImg}
+              alt="مصطفى أحمد - مطور مواقع ومحتوى إبداعي" 
               className="rounded-2xl shadow-lg w-full h-auto"
             />
           </div>
-          <div className="space-y-6">
-            <h3 className="text-3xl font-bold text-primary">Transforming Ideas into Digital Reality</h3>
+          <div className="space-y-6 order-1 lg:order-2">
+            <h3 className="text-3xl font-bold text-primary">مصطفى أحمد</h3>
+            <h4 className="text-2xl font-semibold text-accent">مطور مواقع ومحتوى إبداعي</h4>
             <p className="text-lg text-foreground leading-relaxed">
-              As a full-stack developer with a passion for content strategy, I bridge the gap between technical excellence and compelling storytelling. My approach combines cutting-edge development practices with user-centered design principles.
+              مطور متكامل متخصص في تطوير المواقع والتطبيقات الحديثة مع خبرة في استراتيجية المحتوى. أحب أن أحول الأفكار إلى حلول رقمية مبتكرة تجمع بين الجودة التقنية العالية والتصميم المتميز.
             </p>
             <div className="space-y-4">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">5+ years of web development experience</span>
+                <span className="text-foreground">أكثر من 5 سنوات خبرة في تطوير المواقع</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">Certified in AI and modern web technologies</span>
+                <span className="text-foreground">معتمد في الذكاء الاصطناعي والتقنيات الحديثة</span>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 space-x-reverse">
                 <div className="w-3 h-3 bg-accent rounded-full"></div>
-                <span className="text-foreground">Content strategy and digital marketing expertise</span>
+                <span className="text-foreground">خبير في استراتيجية المحتوى والتسويق الرقمي</span>
               </div>
             </div>
           </div>
