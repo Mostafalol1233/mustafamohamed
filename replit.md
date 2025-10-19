@@ -199,11 +199,12 @@ A professional portfolio website for Mustafa Mohamed showcasing personal achieve
 - **Admin dashboard complete** with all management features
 - Authentication system working with session management
 - All API endpoints secured with admin authentication
-- Portfolio displays 9 projects with proper styling
+- Portfolio displays 12 projects with proper styling
 - Modern certificate design implemented
 - Interactive dragon console with realistic design
 - All features tested and verified by architect
-- Ready for production deployment
+- **Deployment ready** - See DEPLOYMENT_GUIDE_AR.md for instructions
+- **Note:** Vercel not compatible with this stack - Use Render.com, Railway.app, or Netlify instead
 
 ## Admin Access
 - URL: `/admin` (redirects to `/admin/login` if not authenticated)
