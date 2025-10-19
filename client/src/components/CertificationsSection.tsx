@@ -1,8 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import certificateImage from "@assets/113-alx-ai-starter-kit-certificate-mustafa-muhammad.png";
+import { useQuery } from "@tanstack/react-query";
+import type { Certificate } from "@shared/schema";
 
 export default function CertificationsSection() {
-  // Static certificates data - no database dependency
+  // Fetch certificates from database
+  const { data: dbCertificates = [], isLoading } = useQuery<Certificate[]>({
+    queryKey: ["/api/certificates"],
+  });
+
+  // Static certificates data as fallback
   const staticCertificates = [
     {
       id: "cert-1",
@@ -78,6 +85,25 @@ export default function CertificationsSection() {
     }
   ];
 
+  // Combine static certificates with database certificates
+  const allCertificates = [
+    ...staticCertificates,
+    ...dbCertificates
+      .filter(cert => cert.isVisible)
+      .map(cert => ({
+        id: `db-${cert.id}`,
+        title: cert.title,
+        description: cert.description || "Professional certification",
+        issuer: "Professional Institution",
+        issueDate: cert.issueDate || "Recent",
+        imageUrl: cert.imageUrl || null,
+        category: "Professional Development",
+        verified: true,
+        credentialId: `CERT-${cert.id}`,
+        isVisible: true,
+      }))
+  ];
+
   return (
     <section id="certifications" className="section-padding gradient-bg">
       <div className="container-max">
@@ -88,8 +114,13 @@ export default function CertificationsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {staticCertificates.map((certificate) => (
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {allCertificates.map((certificate) => (
             <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
               <div className="p-0">
                 <div className="relative">
@@ -138,8 +169,9 @@ export default function CertificationsSection() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Professional Summary */}
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
@@ -152,7 +184,7 @@ export default function CertificationsSection() {
             </p>
             <div className="grid md:grid-cols-3 gap-6 mt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">6+</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">{allCertificates.length}+</div>
                 <div className="text-sm text-gray-600">Professional Certifications</div>
               </div>
               <div className="text-center">
