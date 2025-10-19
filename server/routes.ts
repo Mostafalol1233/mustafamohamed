@@ -54,6 +54,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }));
 
+  // Disable caching for API routes to ensure fresh data
+  app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+  });
+
   // Serve uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
@@ -79,7 +87,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/certificates", requireAdminAuth, upload.single("image"), async (req, res) => {
     try {
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      // Support both file upload and URL input
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      } else if (req.body.imageUrl && req.body.imageUrl.trim()) {
+        imageUrl = req.body.imageUrl.trim();
+      }
       
       const certificateData = {
         title: req.body.title,
@@ -235,7 +249,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", requireAdminAuth, upload.single("image"), async (req, res) => {
     try {
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      // Support both file upload and URL input
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      } else if (req.body.imageUrl && req.body.imageUrl.trim()) {
+        imageUrl = req.body.imageUrl.trim();
+      }
       
       let technologies = [];
       if (req.body.technologies) {
@@ -283,7 +303,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/projects/:id", requireAdminAuth, upload.single("image"), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+      
+      // Support both file upload and URL input
+      let imageUrl = undefined;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      } else if (req.body.imageUrl && req.body.imageUrl.trim()) {
+        imageUrl = req.body.imageUrl.trim();
+      }
       
       let technologies = undefined;
       if (req.body.technologies !== undefined) {
@@ -307,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVisible: req.body.isVisible !== undefined ? req.body.isVisible === 'true' : undefined
       };
 
-      if (imageUrl) {
+      if (imageUrl !== undefined) {
         projectData.imageUrl = imageUrl;
       }
 
