@@ -1,0 +1,81 @@
+────────────────────────────────
+[ MESSAGE LOG ]
+────────────────────────────────
+ Sender : 201113152835
+ Number : .Starco✨
+ Objective : Group
+ Subject : Crossfire Community
+ Time : 10/20/2025, 12:43 AM
+ Type : Sticker
+ Size : 24178 Character
+ Source :  User
+ Command : There is no command
+────────────────────────────────
+────────────────────────────────
+[ MESSAGE LOG ]
+────────────────────────────────
+ Sender : 201151118062
+ Number : K̷h̷a̷l̷i̷f̷a̷
+ Objective : Group
+ Subject : Crossfire Community
+ ID : 120363420888228725@g.us
+ Time : 10/20/2025, 12:44 AM
+ Type : Sticker
+ Size : 4750 Character
+ Source :  User
+ Command : There is no command
+────────────────────────────────
+PS C:\Users\asd\Downloads\lastwb> node main.js
+
+Load Session from: MultiFile
+
+╭────────────────────────────────────╮
+│ [ Connection successful! ]
+│ ─────────────────────────────────
+│ Baileys : v2.3000.1027934701
+│ Date : Monday, October 20, 2025
+│ System : win32 CPU: x64
+╰────────────────────────────────────╯
+
+Update 'print.js' detected!
+ ERROR [2025-10-20 00:34:52]: file:///C:/Users/asd/Downloads/lastwb/src/plugins/arabic-commands.js:2
+export { default } from './index/arabic-commands.js'
+         ^^^^^^^
+SyntaxError: Detected cycle while resolving name 'default' in './index/arabic-commands.js'
+    at ModuleJob._instantiate (node:internal/modules/esm/module_job:213:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:320:5)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+    at async filesInit (file:///C:/Users/asd/Downloads/lastwb/main.js:238:16)
+€ Connected! successfully activated.
+∆ Status: Waiting for New Messages
+────────────────────────────────
+[ MESSAGE LOG ]
+────────────────────────────────
+ Sender : 201113152835
+ Number : +20 11 13152835
+ Objective : Group
+ Subject : Crossfire Community
+ ID : 120363420888228725@g.us
+ Time : 10/20/2025, 12:45 AM
+ Type : Sticker
+ Size : 18042 Character
+ Source :  User
+ Command : There is no command
+────────────────────────────────
+────────────────────────────────
+[ MESSAGE LOG ]
+────────────────────────────────
+ Sender : 994409782362
+ Number : bmo
+ Objective : Personal
+ Subject : bmo
+ ID : 994409782362@s.whatsapp.net
+ Time : 10/20/2025, 12:46 AM
+ Type : Conversation
+ Size : 5 Character
+ Source :  Bot
+ Command : .منشن
+────────────────────────────────
+ Message 
+.منشن
+────────────────────────────────
