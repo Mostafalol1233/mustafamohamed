@@ -20,14 +20,77 @@ import {
   EyeOff,
   TrendingUp,
   MessageSquare,
-  Users
+  Users,
+  Plus,
+  Edit
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Review, ContactMessage, Project, Certificate, Notification } from "@shared/schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { insertProjectSchema, insertCertificateSchema, insertNotificationSchema } from "@shared/schema";
+
+// Extended schemas with URL validation
+const projectFormSchema = insertProjectSchema.extend({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  liveUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
+  githubUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
+  imageUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
+  technologiesInput: z.string().optional(),
+}).transform((data) => ({
+  ...data,
+  technologies: data.technologiesInput ? data.technologiesInput.split(',').map(t => t.trim()).filter(Boolean) : [],
+}));
+
+const certificateFormSchema = insertCertificateSchema.extend({
+  title: z.string().min(1, "Title is required"),
+  imageUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
+});
+
+const notificationFormSchema = insertNotificationSchema.extend({
+  title: z.string().min(1, "Title is required"),
+  message: z.string().min(1, "Message is required"),
+  type: z.enum(["info", "warning", "success", "error"]),
+});
 
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  
+  // Dialog state
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
+  const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
 
   // Check authentication
   const { data: authData, isLoading: authLoading } = useQuery<{ isAuthenticated: boolean; isAdmin: boolean }>({
@@ -68,6 +131,41 @@ export default function AdminDashboard() {
     enabled: authData?.isAuthenticated,
   });
 
+  // Forms
+  const projectForm = useForm<z.infer<typeof projectFormSchema>>({
+    resolver: zodResolver(projectFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      technologiesInput: "",
+      liveUrl: "",
+      githubUrl: "",
+      imageUrl: "",
+      isVisible: true,
+    },
+  });
+
+  const certificateForm = useForm<z.infer<typeof certificateFormSchema>>({
+    resolver: zodResolver(certificateFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      issueDate: "",
+      imageUrl: "",
+      isVisible: true,
+    },
+  });
+
+  const notificationForm = useForm<z.infer<typeof notificationFormSchema>>({
+    resolver: zodResolver(notificationFormSchema),
+    defaultValues: {
+      title: "",
+      message: "",
+      type: "info",
+      isActive: true,
+    },
+  });
+
   // Mutations
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -79,6 +177,98 @@ export default function AdminDashboard() {
         description: "Logged out successfully!",
       });
       setLocation("/admin/login");
+    },
+  });
+
+  const createProjectMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("POST", "/api/projects", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
+      toast({
+        title: "Success",
+        description: "Project created successfully!",
+      });
+      setProjectDialogOpen(false);
+      projectForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create project",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      await apiRequest("PATCH", `/api/projects/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
+      toast({
+        title: "Success",
+        description: "Project updated successfully!",
+      });
+      setProjectDialogOpen(false);
+      setEditingProject(null);
+      projectForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update project",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createCertificateMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("POST", "/api/certificates", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/certificates"] });
+      toast({
+        title: "Success",
+        description: "Certificate created successfully!",
+      });
+      setCertificateDialogOpen(false);
+      certificateForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create certificate",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createNotificationMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("POST", "/api/notifications", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/all"] });
+      toast({
+        title: "Success",
+        description: "Notification created successfully!",
+      });
+      setNotificationDialogOpen(false);
+      notificationForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create notification",
+        variant: "destructive",
+      });
     },
   });
 
@@ -198,6 +388,53 @@ export default function AdminDashboard() {
         }`}
       />
     ));
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project);
+    projectForm.reset({
+      title: project.title,
+      description: project.description,
+      technologiesInput: project.technologies?.join(", ") || "",
+      liveUrl: project.liveUrl || "",
+      githubUrl: project.githubUrl || "",
+      imageUrl: project.imageUrl || "",
+      isVisible: project.isVisible ?? true,
+    });
+    setProjectDialogOpen(true);
+  };
+
+  const handleProjectSubmit = (values: z.infer<typeof projectFormSchema>) => {
+    const data = {
+      title: values.title,
+      description: values.description,
+      technologies: values.technologies,
+      liveUrl: values.liveUrl || undefined,
+      githubUrl: values.githubUrl || undefined,
+      imageUrl: values.imageUrl || undefined,
+      isVisible: values.isVisible,
+    };
+
+    if (editingProject) {
+      updateProjectMutation.mutate({ id: editingProject.id, data });
+    } else {
+      createProjectMutation.mutate(data);
+    }
+  };
+
+  const handleCertificateSubmit = (values: z.infer<typeof certificateFormSchema>) => {
+    const data = {
+      title: values.title,
+      description: values.description || undefined,
+      issueDate: values.issueDate || undefined,
+      imageUrl: values.imageUrl || undefined,
+      isVisible: values.isVisible,
+    };
+    createCertificateMutation.mutate(data);
+  };
+
+  const handleNotificationSubmit = (values: z.infer<typeof notificationFormSchema>) => {
+    createNotificationMutation.mutate(values);
   };
 
   // Calculate statistics
@@ -547,13 +784,36 @@ export default function AdminDashboard() {
           <TabsContent value="projects">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FolderGit2 className="w-5 h-5 mr-2 text-purple-500" />
-                  Projects Management
-                </CardTitle>
-                <CardDescription>
-                  Manage portfolio projects ({projects.length} total, {stats.visibleProjects} visible)
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <FolderGit2 className="w-5 h-5 mr-2 text-purple-500" />
+                      Projects Management
+                    </CardTitle>
+                    <CardDescription>
+                      Manage portfolio projects ({projects.length} total, {stats.visibleProjects} visible)
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setEditingProject(null);
+                      projectForm.reset({
+                        title: "",
+                        description: "",
+                        technologiesInput: "",
+                        liveUrl: "",
+                        githubUrl: "",
+                        imageUrl: "",
+                        isVisible: true,
+                      });
+                      setProjectDialogOpen(true);
+                    }}
+                    data-testid="button-create-project"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -564,47 +824,70 @@ export default function AdminDashboard() {
                       <div key={project.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-project-${project.id}`}>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-semibold" data-testid={`text-project-title-${project.id}`}>{project.title}</h4>
-                              <Badge variant={project.isVisible ? "default" : "secondary"} data-testid={`badge-project-status-${project.id}`}>
-                                {project.isVisible ? <Eye className="w-3 h-3 mr-1" /> : <EyeOff className="w-3 h-3 mr-1" />}
-                                {project.isVisible ? "Visible" : "Hidden"}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                            <h4 className="font-semibold" data-testid={`text-project-title-${project.id}`}>{project.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1" data-testid={`text-project-description-${project.id}`}>{project.description}</p>
                             {project.technologies && project.technologies.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {project.technologies.map((tech, i) => (
-                                  <Badge key={i} variant="outline" className="text-xs">
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {project.technologies.map((tech, idx) => (
+                                  <Badge key={idx} variant="secondary" data-testid={`badge-project-tech-${project.id}-${idx}`}>
                                     {tech}
                                   </Badge>
                                 ))}
                               </div>
                             )}
-                            <div className="flex gap-2 mt-2 text-xs text-gray-500">
+                            <div className="flex items-center space-x-2 mt-2">
+                              <Badge variant={project.isVisible ? "default" : "secondary"} data-testid={`badge-project-visibility-${project.id}`}>
+                                {project.isVisible ? <><Eye className="w-3 h-3 mr-1" />Visible</> : <><EyeOff className="w-3 h-3 mr-1" />Hidden</>}
+                              </Badge>
                               {project.liveUrl && (
-                                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" data-testid={`link-project-live-${project.id}`}>
-                                  🔗 Live Demo
+                                <a
+                                  href={project.liveUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                  data-testid={`link-project-live-${project.id}`}
+                                >
+                                  Live Demo
                                 </a>
                               )}
                               {project.githubUrl && (
-                                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:underline" data-testid={`link-project-github-${project.id}`}>
-                                  📂 GitHub
+                                <a
+                                  href={project.githubUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline"
+                                  data-testid={`link-project-github-${project.id}`}
+                                >
+                                  GitHub
                                 </a>
                               )}
                             </div>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteProjectMutation.mutate(project.id)}
-                            disabled={deleteProjectMutation.isPending}
-                            data-testid={`button-delete-project-${project.id}`}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditProject(project)}
+                              data-testid={`button-edit-project-${project.id}`}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteProjectMutation.mutate(project.id)}
+                              disabled={deleteProjectMutation.isPending}
+                              data-testid={`button-delete-project-${project.id}`}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
                         </div>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(project.createdAt!)}
+                        </p>
                       </div>
                     ))
                   )}
@@ -617,13 +900,33 @@ export default function AdminDashboard() {
           <TabsContent value="certificates">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Award className="w-5 h-5 mr-2 text-orange-500" />
-                  Certificates Management
-                </CardTitle>
-                <CardDescription>
-                  Manage professional certificates ({certificates.length} total)
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Award className="w-5 h-5 mr-2 text-orange-500" />
+                      Certificates Management
+                    </CardTitle>
+                    <CardDescription>
+                      Manage certifications and achievements ({certificates.length} total)
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      certificateForm.reset({
+                        title: "",
+                        description: "",
+                        issueDate: "",
+                        imageUrl: "",
+                        isVisible: true,
+                      });
+                      setCertificateDialogOpen(true);
+                    }}
+                    data-testid="button-create-certificate"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -634,19 +937,22 @@ export default function AdminDashboard() {
                       <div key={cert.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-certificate-${cert.id}`}>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-semibold" data-testid={`text-certificate-title-${cert.id}`}>{cert.title}</h4>
-                              <Badge variant={cert.isVisible ? "default" : "secondary"} data-testid={`badge-certificate-status-${cert.id}`}>
-                                {cert.isVisible ? "Visible" : "Hidden"}
+                            <h4 className="font-semibold" data-testid={`text-certificate-title-${cert.id}`}>{cert.title}</h4>
+                            {cert.description && (
+                              <p className="text-sm text-gray-600 mt-1" data-testid={`text-certificate-description-${cert.id}`}>
+                                {cert.description}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-2 mt-2">
+                              {cert.issueDate && (
+                                <p className="text-xs text-gray-500" data-testid={`text-certificate-date-${cert.id}`}>
+                                  Issued: {cert.issueDate}
+                                </p>
+                              )}
+                              <Badge variant={cert.isVisible ? "default" : "secondary"} data-testid={`badge-certificate-visibility-${cert.id}`}>
+                                {cert.isVisible ? <><Eye className="w-3 h-3 mr-1" />Visible</> : <><EyeOff className="w-3 h-3 mr-1" />Hidden</>}
                               </Badge>
                             </div>
-                            {cert.description && <p className="text-sm text-gray-600 mt-1">{cert.description}</p>}
-                            {cert.issueDate && (
-                              <p className="text-xs text-gray-500 mt-1">Issued: {cert.issueDate}</p>
-                            )}
-                            {cert.imageUrl && (
-                              <img src={cert.imageUrl} alt={cert.title} className="mt-2 max-w-xs rounded border" />
-                            )}
                           </div>
                           <Button
                             size="sm"
@@ -671,59 +977,88 @@ export default function AdminDashboard() {
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Bell className="w-5 h-5 mr-2 text-red-500" />
-                  Notifications Management
-                </CardTitle>
-                <CardDescription>
-                  Manage site-wide notifications ({notifications.length} total, {stats.activeNotifications} active)
-                </CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Bell className="w-5 h-5 mr-2 text-red-500" />
+                      Notifications Management
+                    </CardTitle>
+                    <CardDescription>
+                      Manage site-wide notifications ({notifications.length} total, {stats.activeNotifications} active)
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      notificationForm.reset({
+                        title: "",
+                        message: "",
+                        type: "info",
+                        isActive: true,
+                      });
+                      setNotificationDialogOpen(true);
+                    }}
+                    data-testid="button-create-notification"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {notifications.length === 0 ? (
                     <p className="text-gray-500 text-center py-8" data-testid="text-no-notifications">No notifications found</p>
                   ) : (
-                    notifications.map((notif) => (
-                      <div key={notif.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-notification-${notif.id}`}>
+                    notifications.map((notification) => (
+                      <div key={notification.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-notification-${notification.id}`}>
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <h4 className="font-semibold" data-testid={`text-notification-title-${notif.id}`}>{notif.title}</h4>
-                              <Badge variant={notif.isActive ? "default" : "secondary"} data-testid={`badge-notification-status-${notif.id}`}>
-                                {notif.isActive ? "Active" : "Inactive"}
+                              <h4 className="font-semibold" data-testid={`text-notification-title-${notification.id}`}>{notification.title}</h4>
+                              <Badge variant={
+                                notification.type === "error" ? "destructive" :
+                                notification.type === "warning" ? "secondary" :
+                                notification.type === "success" ? "default" :
+                                "outline"
+                              } data-testid={`badge-notification-type-${notification.id}`}>
+                                {notification.type}
                               </Badge>
-                              <Badge variant="outline">{notif.type}</Badge>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              Created: {formatDate(notif.createdAt!)}
+                            <p className="text-sm text-gray-600 mt-1" data-testid={`text-notification-message-${notification.id}`}>
+                              {notification.message}
                             </p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <Badge variant={notification.isActive ? "default" : "secondary"} data-testid={`badge-notification-status-${notification.id}`}>
+                                {notification.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => toggleNotificationMutation.mutate({
+                                  id: notification.id,
+                                  isActive: !notification.isActive
+                                })}
+                                disabled={toggleNotificationMutation.isPending}
+                                data-testid={`button-toggle-notification-${notification.id}`}
+                              >
+                                {notification.isActive ? "Deactivate" : "Activate"}
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => toggleNotificationMutation.mutate({ 
-                                id: notif.id, 
-                                isActive: !notif.isActive 
-                              })}
-                              disabled={toggleNotificationMutation.isPending}
-                              data-testid={`button-toggle-notification-${notif.id}`}
-                            >
-                              {notif.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteNotificationMutation.mutate(notif.id)}
-                              disabled={deleteNotificationMutation.isPending}
-                              data-testid={`button-delete-notification-${notif.id}`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                            disabled={deleteNotificationMutation.isPending}
+                            data-testid={`button-delete-notification-${notification.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </Button>
                         </div>
+                        <p className="text-xs text-gray-400">
+                          {formatDate(notification.createdAt!)}
+                        </p>
                       </div>
                     ))
                   )}
@@ -733,6 +1068,358 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Project Dialog */}
+      <Dialog open={projectDialogOpen} onOpenChange={(open) => {
+        setProjectDialogOpen(open);
+        if (!open) {
+          setEditingProject(null);
+          projectForm.reset();
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-project">
+          <DialogHeader>
+            <DialogTitle data-testid="text-project-dialog-title">
+              {editingProject ? "Edit Project" : "Create New Project"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingProject ? "Update the project details below." : "Fill in the project details below."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...projectForm}>
+            <form onSubmit={projectForm.handleSubmit(handleProjectSubmit)} className="space-y-4">
+              <FormField
+                control={projectForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Project Title" {...field} data-testid="input-project-title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Project Description" {...field} data-testid="input-project-description" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="technologiesInput"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Technologies</FormLabel>
+                    <FormControl>
+                      <Input placeholder="React, TypeScript, Node.js (comma-separated)" {...field} data-testid="input-project-technologies" />
+                    </FormControl>
+                    <FormDescription>
+                      Enter technologies separated by commas
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="liveUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Live URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com" {...field} data-testid="input-project-liveurl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="githubUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GitHub URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://github.com/user/repo" {...field} data-testid="input-project-githuburl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-project-imageurl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={projectForm.control}
+                name="isVisible"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-project-visible"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Visible on Portfolio</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setProjectDialogOpen(false)}
+                  data-testid="button-cancel-project"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
+                  data-testid="button-submit-project"
+                >
+                  {createProjectMutation.isPending || updateProjectMutation.isPending ? "Saving..." : editingProject ? "Update" : "Create"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Certificate Dialog */}
+      <Dialog open={certificateDialogOpen} onOpenChange={(open) => {
+        setCertificateDialogOpen(open);
+        if (!open) certificateForm.reset();
+      }}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-certificate">
+          <DialogHeader>
+            <DialogTitle data-testid="text-certificate-dialog-title">Create New Certificate</DialogTitle>
+            <DialogDescription>
+              Fill in the certificate details below.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...certificateForm}>
+            <form onSubmit={certificateForm.handleSubmit(handleCertificateSubmit)} className="space-y-4">
+              <FormField
+                control={certificateForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Certificate Title" {...field} data-testid="input-certificate-title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={certificateForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Certificate Description" {...field} value={field.value || ""} data-testid="input-certificate-description" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={certificateForm.control}
+                name="issueDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Issue Date</FormLabel>
+                    <FormControl>
+                      <Input placeholder="January 2024" {...field} value={field.value || ""} data-testid="input-certificate-issuedate" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={certificateForm.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/certificate.jpg" {...field} value={field.value || ""} data-testid="input-certificate-imageurl" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={certificateForm.control}
+                name="isVisible"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-certificate-visible"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Visible on Portfolio</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCertificateDialogOpen(false)}
+                  data-testid="button-cancel-certificate"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createCertificateMutation.isPending}
+                  data-testid="button-submit-certificate"
+                >
+                  {createCertificateMutation.isPending ? "Creating..." : "Create"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notification Dialog */}
+      <Dialog open={notificationDialogOpen} onOpenChange={(open) => {
+        setNotificationDialogOpen(open);
+        if (!open) notificationForm.reset();
+      }}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-notification">
+          <DialogHeader>
+            <DialogTitle data-testid="text-notification-dialog-title">Create New Notification</DialogTitle>
+            <DialogDescription>
+              Fill in the notification details below.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...notificationForm}>
+            <form onSubmit={notificationForm.handleSubmit(handleNotificationSubmit)} className="space-y-4">
+              <FormField
+                control={notificationForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Notification Title" {...field} data-testid="input-notification-title" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={notificationForm.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Message</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Notification Message" {...field} data-testid="input-notification-message" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={notificationForm.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-notification-type">
+                          <SelectValue placeholder="Select notification type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="info" data-testid="option-notification-type-info">Info</SelectItem>
+                        <SelectItem value="warning" data-testid="option-notification-type-warning">Warning</SelectItem>
+                        <SelectItem value="success" data-testid="option-notification-type-success">Success</SelectItem>
+                        <SelectItem value="error" data-testid="option-notification-type-error">Error</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={notificationForm.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-notification-active"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Active</FormLabel>
+                      <FormDescription>
+                        Active notifications will be displayed on the site
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setNotificationDialogOpen(false)}
+                  data-testid="button-cancel-notification"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createNotificationMutation.isPending}
+                  data-testid="button-submit-notification"
+                >
+                  {createNotificationMutation.isPending ? "Creating..." : "Create"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
