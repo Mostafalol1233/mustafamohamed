@@ -131,6 +131,17 @@ export default function AdminDashboard() {
     enabled: authData?.isAuthenticated,
   });
 
+  const { data: analyticsSummary } = useQuery<{
+    totalViews: number;
+    totalProjects: number;
+    totalReviews: number;
+    totalContacts: number;
+    recentActivity: any[];
+  }>({
+    queryKey: ["/api/admin/analytics/summary"],
+    enabled: authData?.isAuthenticated,
+  });
+
   // Forms
   const projectForm = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
@@ -486,7 +497,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto" data-testid="tabs-navigation">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 lg:w-auto" data-testid="tabs-navigation">
             <TabsTrigger value="overview" data-testid="tab-overview">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Overview
@@ -510,6 +521,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="notifications" data-testid="tab-notifications">
               <Bell className="w-4 h-4 mr-2" />
               Notifications
+            </TabsTrigger>
+            <TabsTrigger value="analytics" data-testid="tab-analytics">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -1065,6 +1080,85 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-teal-500" />
+                    Analytics Overview
+                  </CardTitle>
+                  <CardDescription>
+                    Visitor engagement and site statistics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Total Page Views</div>
+                      <div className="text-2xl font-bold" data-testid="text-analytics-views">
+                        {analyticsSummary?.totalViews || 0}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Active Projects</div>
+                      <div className="text-2xl font-bold" data-testid="text-analytics-projects">
+                        {analyticsSummary?.totalProjects || 0}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Approved Reviews</div>
+                      <div className="text-2xl font-bold" data-testid="text-analytics-reviews">
+                        {analyticsSummary?.totalReviews || 0}
+                      </div>
+                    </div>
+                    <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-1">Contact Submissions</div>
+                      <div className="text-2xl font-bold" data-testid="text-analytics-contacts">
+                        {analyticsSummary?.totalContacts || 0}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>
+                    Latest visitor interactions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!analyticsSummary?.recentActivity || analyticsSummary.recentActivity.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8" data-testid="text-no-activity">
+                      No activity recorded yet
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {analyticsSummary.recentActivity.map((activity, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg" data-testid={`activity-${index}`}>
+                          <div className="flex-1">
+                            <div className="font-medium">{activity.eventType}</div>
+                            {activity.eventData && (
+                              <div className="text-sm text-muted-foreground">
+                                {JSON.stringify(activity.eventData)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(activity.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

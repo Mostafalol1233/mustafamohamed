@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import StarRating from "@/components/StarRating";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { Review } from "@shared/schema";
 
 // Import customer images
 import sarahImage from "@/assets/customer-sarah.png";
@@ -15,45 +18,29 @@ export default function ReviewsSection() {
   const { toast } = useToast();
   const [rating, setRating] = useState(0);
 
-  // 4 selected reviews with mixed Arabic and English
-  const staticReviews = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@techco.com",
-      rating: 5,
-      comment: "مصطفى مطور محترف وموهوب جداً. أنجز لنا موقع ويب متكامل للشركة في وقت قياسي وبجودة عالية. التصميم رائع والبرمجة احترافية.",
-      isApproved: true,
-      createdAt: "2024-08-15T10:30:00Z",
+  const { data: reviews = [], isLoading } = useQuery<Review[]>({
+    queryKey: ["/api/reviews"],
+  });
+
+  const createReviewMutation = useMutation({
+    mutationFn: async (data: { name: string; email: string; rating: number; comment: string }) => {
+      await apiRequest("POST", "/api/reviews", data);
     },
-    {
-      id: 2,
-      name: "Michael Chen",
-      email: "m.chen@business.net",
-      rating: 5,
-      comment: "أسلوب عمل محترف ونتائج مميزة. طور لنا نظام إدارة مخصص حسّن من كفاءة العمل بشكل كبير. سرعة في التنفيذ وجودة عالية.",
-      isApproved: true,
-      createdAt: "2024-07-28T16:45:00Z",
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+      toast({
+        title: "Thank you!",
+        description: "Your review has been submitted successfully! It will be visible after approval.",
+      });
     },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      email: "emily.rodriguez@agency.ae",
-      rating: 5,
-      comment: "مصطفى خبير في استراتيجية المحتوى والتسويق الرقمي. ساعدنا في تطوير خطة محتوى متكاملة ونفذها بإبداع. النتائج فاقت توقعاتنا.",
-      isApproved: true,
-      createdAt: "2024-08-05T09:15:00Z",
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
     },
-    {
-      id: 4,
-      name: "David Wilson",
-      email: "david.wilson@media.co",
-      rating: 5,
-      comment: "خبرة مصطفى في السوقين العربي والإنجليزي كانت لا تقدر بثمن. استراتيجية المحتوى ثنائية اللغة وتطوير الويب RTL تم تنفيذهما بشكل مثالي.",
-      isApproved: true,
-      createdAt: "2024-07-12T08:20:00Z",
-    }
-  ];
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,19 +54,24 @@ export default function ReviewsSection() {
       return;
     }
 
-    // Show success message (no actual database save)
-    toast({
-      title: "Thank you!",
-      description: "Your review has been submitted successfully! It will be visible after approval.",
-    });
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      rating,
+      comment: formData.get("comment") as string,
+    };
+
+    createReviewMutation.mutate(data);
     
     // Reset form
     e.currentTarget.reset();
     setRating(0);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (dateInput: string | Date | null | undefined) => {
+    if (!dateInput) return "Recently";
+    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -178,7 +170,16 @@ export default function ReviewsSection() {
 
         {/* Reviews Display */}
         <div className="grid lg:grid-cols-2 gap-8">
-          {staticReviews.map((review) => (
+          {isLoading ? (
+            <div className="col-span-2 text-center py-8">
+              <p className="text-muted-foreground">Loading reviews...</p>
+            </div>
+          ) : reviews.length === 0 ? (
+            <div className="col-span-2 text-center py-8">
+              <p className="text-muted-foreground">No reviews yet. Be the first to leave a review!</p>
+            </div>
+          ) : (
+            reviews.map((review) => (
             <Card key={review.id} className="bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4 mb-4">
@@ -208,32 +209,39 @@ export default function ReviewsSection() {
                 <p className="text-muted-foreground leading-relaxed">{review.comment}</p>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Reviews Summary */}
-        <div className="mt-16 text-center">
-          <div className="bg-card rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-bold text-primary mb-4">Customer Satisfaction</h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <div className="text-3xl font-bold text-yellow-500 mb-2">5.0</div>
-                <div className="text-lg flex justify-center mb-1">
-                  {renderStars(5)}
+        {reviews.length > 0 && (
+          <div className="mt-16 text-center">
+            <div className="bg-card rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold text-primary mb-4">Customer Satisfaction</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-3xl font-bold text-yellow-500 mb-2">
+                    {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)}
+                  </div>
+                  <div className="text-lg flex justify-center mb-1">
+                    {renderStars(Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length))}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Average Rating</div>
                 </div>
-                <div className="text-sm text-muted-foreground">Average Rating</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
-                <div className="text-sm text-muted-foreground">Customer Satisfaction</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">{staticReviews.length}+</div>
-                <div className="text-sm text-muted-foreground">Happy Clients</div>
+                <div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    {Math.round((reviews.filter(r => r.rating >= 4).length / reviews.length) * 100)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">Customer Satisfaction</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">{reviews.length}+</div>
+                  <div className="text-sm text-muted-foreground">Happy Clients</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

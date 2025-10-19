@@ -5,6 +5,7 @@ import {
   contactMessages,
   projects,
   notifications,
+  analytics,
   type User,
   type UpsertUser,
   type Certificate,
@@ -17,9 +18,11 @@ import {
   type InsertProject,
   type Notification,
   type InsertNotification,
+  type Analytics,
+  type InsertAnalytics,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, count, gte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -57,6 +60,17 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   updateNotification(id: number, notification: Partial<InsertNotification>): Promise<Notification>;
   deleteNotification(id: number): Promise<void>;
+  
+  // Analytics operations
+  createAnalyticsEvent(event: InsertAnalytics): Promise<Analytics>;
+  getAnalytics(days?: number): Promise<Analytics[]>;
+  getAnalyticsSummary(): Promise<{
+    totalViews: number;
+    totalProjects: number;
+    totalReviews: number;
+    totalContacts: number;
+    recentActivity: Analytics[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -231,6 +245,62 @@ export class DatabaseStorage implements IStorage {
 
   async deleteNotification(id: number): Promise<void> {
     await db.delete(notifications).where(eq(notifications.id, id));
+  }
+
+  // Analytics operations
+  async createAnalyticsEvent(event: InsertAnalytics): Promise<Analytics> {
+    const [newEvent] = await db
+      .insert(analytics)
+      .values(event)
+      .returning();
+    return newEvent;
+  }
+
+  async getAnalytics(days: number = 30): Promise<Analytics[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    return await db
+      .select()
+      .from(analytics)
+      .where(gte(analytics.createdAt, cutoffDate))
+      .orderBy(desc(analytics.createdAt))
+      .limit(1000);
+  }
+
+  async getAnalyticsSummary() {
+    const [viewsResult] = await db
+      .select({ count: count() })
+      .from(analytics)
+      .where(eq(analytics.eventType, 'page_view'));
+
+    const [projectsResult] = await db
+      .select({ count: count() })
+      .from(projects)
+      .where(eq(projects.isVisible, true));
+
+    const [reviewsResult] = await db
+      .select({ count: count() })
+      .from(reviews)
+      .where(eq(reviews.isApproved, true));
+
+    const [contactsResult] = await db
+      .select({ count: count() })
+      .from(contactMessages);
+
+    const recentActivity = await db
+      .select()
+      .from(analytics)
+      .orderBy(desc(analytics.createdAt))
+      .limit(10);
+
+    return {
+      totalViews: viewsResult?.count || 0,
+      totalProjects: projectsResult?.count || 0,
+      totalReviews: reviewsResult?.count || 0,
+      totalContacts: contactsResult?.count || 0,
+      recentActivity,
+    };
   }
 }
 

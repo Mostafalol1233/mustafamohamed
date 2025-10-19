@@ -4,7 +4,7 @@ import express from "express";
 import { storage } from "./storage";
 import { authenticateAdmin, requireAdminAuth } from "./adminAuth";
 import session from "express-session";
-import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema, insertNotificationSchema } from "@shared/schema";
+import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema, insertNotificationSchema, type InsertAnalytics } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -420,6 +420,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting review:", error);
       res.status(500).json({ message: "Failed to delete review" });
+    }
+  });
+
+  // Analytics routes
+  app.post("/api/analytics", async (req, res) => {
+    try {
+      const { eventType, eventData } = req.body;
+      const ipAddress = req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      
+      const event = await storage.createAnalyticsEvent({
+        eventType: eventType || 'unknown',
+        eventData: eventData || null,
+        ipAddress,
+        userAgent,
+      } as InsertAnalytics);
+      res.json(event);
+    } catch (error) {
+      console.error("Error creating analytics event:", error);
+      res.status(500).json({ message: "Failed to create analytics event" });
+    }
+  });
+
+  app.get("/api/admin/analytics", requireAdminAuth, async (req, res) => {
+    try {
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const analytics = await storage.getAnalytics(days);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  app.get("/api/admin/analytics/summary", requireAdminAuth, async (req, res) => {
+    try {
+      const summary = await storage.getAnalyticsSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching analytics summary:", error);
+      res.status(500).json({ message: "Failed to fetch analytics summary" });
     }
   });
 

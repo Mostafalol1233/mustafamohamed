@@ -92,6 +92,16 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Analytics table for tracking visitor engagement
+export const analytics = pgTable("analytics", {
+  id: serial("id").primaryKey(),
+  eventType: text("event_type").notNull(), // page_view, project_view, contact_submit, review_submit
+  eventData: jsonb("event_data"), // Additional event metadata
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -110,6 +120,9 @@ export type Project = typeof projects.$inferSelect;
 
 export type InsertNotification = typeof notifications.$inferInsert;
 export type Notification = typeof notifications.$inferSelect;
+
+export type InsertAnalytics = typeof analytics.$inferInsert;
+export type Analytics = typeof analytics.$inferSelect;
 
 // Zod schemas
 export const insertCertificateSchema = z.object({
@@ -149,4 +162,11 @@ export const insertNotificationSchema = z.object({
   message: z.string(),
   type: z.enum(["info", "warning", "success", "error"]).optional(),
   isActive: z.boolean().optional(),
+});
+
+export const insertAnalyticsSchema = z.object({
+  eventType: z.string(),
+  eventData: z.any().optional().nullable(),
+  ipAddress: z.string().optional().nullable(),
+  userAgent: z.string().optional().nullable(),
 });
