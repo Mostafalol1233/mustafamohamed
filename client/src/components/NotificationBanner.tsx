@@ -70,7 +70,7 @@ export default function NotificationBanner() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 space-y-2 p-4">
+    <div className="fixed top-20 left-0 right-0 z-40 space-y-2 p-4">
       {activeNotifications.map((notification) => {
         const styles = getTypeStyles(notification.type);
         const IconComponent = styles.icon;
