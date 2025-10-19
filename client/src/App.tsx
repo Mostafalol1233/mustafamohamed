@@ -10,6 +10,7 @@ import Home from "@/pages/Home";
 import Landing from "@/pages/Landing";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import NotificationBanner from "@/components/NotificationBanner";
 import { Analytics } from "@vercel/analytics/react";
 import { useState } from "react";
 
@@ -46,6 +47,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <NotificationBanner />
         <Toaster />
         <Router />
         <Analytics />

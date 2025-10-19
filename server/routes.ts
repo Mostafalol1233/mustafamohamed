@@ -4,7 +4,7 @@ import express from "express";
 import { storage } from "./storage";
 import { authenticateAdmin, requireAdminAuth } from "./adminAuth";
 import session from "express-session";
-import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema } from "@shared/schema";
+import { insertReviewSchema, insertContactMessageSchema, insertCertificateSchema, insertProjectSchema, insertNotificationSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -264,6 +264,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting project:", error);
       res.status(500).json({ message: "Failed to delete project" });
+    }
+  });
+
+  app.patch("/api/projects/:id", requireAdminAuth, upload.single("image"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+      
+      const projectData: any = {
+        title: req.body.title,
+        description: req.body.description,
+        technologies: req.body.technologies ? JSON.parse(req.body.technologies) : undefined,
+        liveUrl: req.body.liveUrl,
+        githubUrl: req.body.githubUrl,
+        isVisible: req.body.isVisible !== undefined ? req.body.isVisible === 'true' : undefined
+      };
+
+      if (imageUrl) {
+        projectData.imageUrl = imageUrl;
+      }
+
+      // Remove undefined values
+      Object.keys(projectData).forEach(key => 
+        projectData[key] === undefined && delete projectData[key]
+      );
+
+      const project = await storage.updateProject(id, projectData);
+      res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to update project" });
+    }
+  });
+
+  // Notification routes
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      const notifications = await storage.getActiveNotifications();
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get("/api/notifications/all", requireAdminAuth, async (req, res) => {
+    try {
+      const notifications = await storage.getAllNotifications();
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching all notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.post("/api/notifications", requireAdminAuth, async (req, res) => {
+    try {
+      const validatedData = insertNotificationSchema.parse(req.body);
+      const notification = await storage.createNotification(validatedData as any);
+      res.json(notification);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create notification" });
+    }
+  });
+
+  app.patch("/api/notifications/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const notification = await storage.updateNotification(id, req.body);
+      res.json(notification);
+    } catch (error) {
+      console.error("Error updating notification:", error);
+      res.status(500).json({ message: "Failed to update notification" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteNotification(id);
+      res.json({ message: "Notification deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
     }
   });
 

@@ -4,7 +4,7 @@ import CertificationsSection from "@/components/CertificationsSection";
 import PortfolioSection from "@/components/PortfolioSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
-import AdminDashboard from "@/components/AdminDashboard";
+import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 
 export default function Home() {
   return (
@@ -56,7 +56,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
-      <AdminDashboard />
+      <EnhancedAdminDashboard />
     </div>
   );
 }

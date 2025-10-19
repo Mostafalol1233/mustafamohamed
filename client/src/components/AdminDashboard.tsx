@@ -13,12 +13,12 @@ export default function AdminDashboard() {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  const { data: allReviews = [] } = useQuery({
+  const { data: allReviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews/all"],
     enabled: isAuthenticated,
   });
 
-  const { data: contactMessages = [] } = useQuery({
+  const { data: contactMessages = [] } = useQuery<ContactMessage[]>({
     queryKey: ["/api/contact"],
     enabled: isAuthenticated,
   });

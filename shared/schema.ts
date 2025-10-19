@@ -82,6 +82,16 @@ export const projects = pgTable("projects", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Site notifications table
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: text("type").notNull().default("info"), // info, warning, success, error
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schema types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -98,25 +108,45 @@ export type ContactMessage = typeof contactMessages.$inferSelect;
 export type InsertProject = typeof projects.$inferInsert;
 export type Project = typeof projects.$inferSelect;
 
+export type InsertNotification = typeof notifications.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+
 // Zod schemas
-export const insertCertificateSchema = createInsertSchema(certificates).omit({
-  id: true,
-  createdAt: true,
+export const insertCertificateSchema = z.object({
+  title: z.string(),
+  description: z.string().optional().nullable(),
+  issueDate: z.string().optional().nullable(),
+  imageUrl: z.string().optional().nullable(),
+  isVisible: z.boolean().optional(),
 });
 
-export const insertReviewSchema = createInsertSchema(reviews).omit({
-  id: true,
-  isApproved: true,
-  createdAt: true,
+export const insertReviewSchema = z.object({
+  name: z.string(),
+  email: z.string().optional().nullable(),
+  rating: z.number().min(1).max(5),
+  comment: z.string(),
 });
 
-export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({
-  id: true,
-  isRead: true,
-  createdAt: true,
+export const insertContactMessageSchema = z.object({
+  name: z.string(),
+  email: z.string(),
+  subject: z.string().optional().nullable(),
+  message: z.string(),
 });
 
-export const insertProjectSchema = createInsertSchema(projects).omit({
-  id: true,
-  createdAt: true,
+export const insertProjectSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  imageUrl: z.string().optional().nullable(),
+  technologies: z.array(z.string()).optional(),
+  liveUrl: z.string().optional().nullable(),
+  githubUrl: z.string().optional().nullable(),
+  isVisible: z.boolean().optional(),
+});
+
+export const insertNotificationSchema = z.object({
+  title: z.string(),
+  message: z.string(),
+  type: z.enum(["info", "warning", "success", "error"]).optional(),
+  isActive: z.boolean().optional(),
 });

@@ -4,6 +4,7 @@ import {
   reviews,
   contactMessages,
   projects,
+  notifications,
   type User,
   type UpsertUser,
   type Certificate,
@@ -14,6 +15,8 @@ import {
   type InsertContactMessage,
   type Project,
   type InsertProject,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -47,6 +50,13 @@ export interface IStorage {
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
   deleteProject(id: number): Promise<void>;
+  
+  // Notification operations
+  getActiveNotifications(): Promise<Notification[]>;
+  getAllNotifications(): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  updateNotification(id: number, notification: Partial<InsertNotification>): Promise<Notification>;
+  deleteNotification(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -184,6 +194,43 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProject(id: number): Promise<void> {
     await db.delete(projects).where(eq(projects.id, id));
+  }
+
+  // Notification operations
+  async getActiveNotifications(): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.isActive, true))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async getAllNotifications(): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [newNotification] = await db
+      .insert(notifications)
+      .values(notification)
+      .returning();
+    return newNotification;
+  }
+
+  async updateNotification(id: number, notification: Partial<InsertNotification>): Promise<Notification> {
+    const [updatedNotification] = await db
+      .update(notifications)
+      .set(notification)
+      .where(eq(notifications.id, id))
+      .returning();
+    return updatedNotification;
+  }
+
+  async deleteNotification(id: number): Promise<void> {
+    await db.delete(notifications).where(eq(notifications.id, id));
   }
 }
 
