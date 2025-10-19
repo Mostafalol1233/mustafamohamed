@@ -237,10 +237,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
       
+      let technologies = [];
+      if (req.body.technologies) {
+        if (Array.isArray(req.body.technologies)) {
+          technologies = req.body.technologies;
+        } else if (typeof req.body.technologies === 'string') {
+          try {
+            technologies = JSON.parse(req.body.technologies);
+          } catch {
+            technologies = req.body.technologies.split(',').map((t: string) => t.trim()).filter(Boolean);
+          }
+        }
+      }
+
       const projectData = {
         title: req.body.title,
         description: req.body.description,
-        technologies: req.body.technologies ? JSON.parse(req.body.technologies) : [],
+        technologies,
         liveUrl: req.body.liveUrl,
         githubUrl: req.body.githubUrl,
         imageUrl,
@@ -272,10 +285,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
       
+      let technologies = undefined;
+      if (req.body.technologies !== undefined) {
+        if (Array.isArray(req.body.technologies)) {
+          technologies = req.body.technologies;
+        } else if (typeof req.body.technologies === 'string') {
+          try {
+            technologies = JSON.parse(req.body.technologies);
+          } catch {
+            technologies = req.body.technologies.split(',').map((t: string) => t.trim()).filter(Boolean);
+          }
+        }
+      }
+
       const projectData: any = {
         title: req.body.title,
         description: req.body.description,
-        technologies: req.body.technologies ? JSON.parse(req.body.technologies) : undefined,
+        technologies,
         liveUrl: req.body.liveUrl,
         githubUrl: req.body.githubUrl,
         isVisible: req.body.isVisible !== undefined ? req.body.isVisible === 'true' : undefined
