@@ -1,0 +1,150 @@
+This is a large multi-part task. Read ALL of my project files carefully 
+before starting. The backend is on Supabase.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. ADMIN DASHBOARD — build advanced version
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Build a proper admin dashboard that connects to Supabase.
+It should be genuinely useful — not just a placeholder.
+
+Include these sections:
+
+A) PROJECTS MANAGER
+- View all projects in a table (name, category, live URL, tech stack, visible/hidden toggle)
+- Add new project (form with all fields)
+- Edit existing project inline
+- Delete project with confirmation
+- Reorder projects via drag or up/down arrows
+- Toggle project visibility (show/hide on portfolio without deleting)
+
+B) TESTIMONIALS MANAGER  
+- View all testimonials
+- Add / edit / delete testimonials
+- Toggle visibility per testimonial
+
+C) SKILLS MANAGER
+- View all skill categories and their skills
+- Edit proficiency percentage per skill
+- Add or remove skills
+
+D) MESSAGES INBOX
+- View all contact form submissions from Supabase
+- Mark as read / unread
+- Delete message
+- Show: sender name, contact info, message, date
+
+E) SITE SETTINGS
+- Edit hero section text (name, title, tagline)
+- Edit footer copyright text
+- Toggle sections visible/hidden (show or hide Reviews, Portfolio, etc.)
+- Edit social links (X, YouTube, Email URLs)
+
+F) DASHBOARD HOME (overview page)
+- Stats cards: total projects, total messages, unread messages, total testimonials
+- Recent messages list (last 5)
+- Quick action buttons
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. TESTIMONIALS — SQL script for Supabase
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Generate a complete SQL script I can paste into the Supabase SQL Editor.
+The script should:
+- CREATE TABLE testimonials if it doesn't exist (with all needed columns)
+- INSERT all the current testimonials that exist in the frontend code
+- Each testimonial: id, name, role, company, quote, stars, icon, visible, created_at
+
+Save this as a separate file: supabase/seed_testimonials.sql
+Add a comment at the top: -- Paste this into Supabase SQL Editor and click Run
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. FOOTER — fix properly this time
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The footer fix was applied to the wrong file previously (it was editing 
+the Navbar component instead of the Footer component).
+
+Do this:
+- Search ALL files in the project for "Built with React" or copyright text
+- Find the ACTUAL footer component file (not navbar)
+- Confirm which file renders at the bottom of the page
+- Apply the icon fix there specifically:
+  Replace "X", "YT", "Email" text buttons with Tabler icon buttons
+  (ti-brand-x, ti-brand-youtube, ti-mail)
+- Also remove "Built with React, TypeScript & Tailwind CSS" from footer text
+- Make sure Tabler Icons CDN is in the correct HTML entry file
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. SKILLS — fix progress bar colors
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Update the terminal skills section so progress bar colors follow logic:
+- 80% and above → green (#3fb950)
+- 60% to 79% → blue (#58a6ff)  
+- Below 60% → yellow (#f0c040)
+
+This should be dynamic — calculated automatically from the percentage value,
+not hardcoded per skill.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. PROJECT IMAGES — restore and upload to Supabase Storage
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The old project screenshot images are missing or broken.
+
+Do this:
+- Find all project image references in the codebase
+- If images exist locally in /public or /assets, upload them to 
+  Supabase Storage bucket named "project-images"
+- Replace all local image src paths with the Supabase public URL
+
+If you cannot upload directly to Supabase Storage from here:
+- Create a file: supabase/upload_images.sql or supabase/storage_notes.md
+- List each image filename and what its storage path should be
+- Write clear instructions so I can upload them manually via 
+  the Supabase dashboard Storage tab
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. DUPLICATE FILES — audit and clean
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Some previous edits may have been applied to wrong/duplicate files 
+causing changes to not appear on the live site.
+
+Do this:
+- Search for duplicate component names (two Footer files, two Navbar files, etc.)
+- Identify which file is actually being imported and rendered
+- Remove or consolidate duplicates
+- Confirm the active file for: Footer, Navbar, Reviews/Testimonials, Skills, Contact
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. MISSING FEATURES — review and add
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After reviewing the full codebase, identify and add any important 
+missing features a professional portfolio should have:
+
+Suggestions to check and implement if missing:
+- SEO meta tags (title, description, og:image, og:title per page)
+- Loading skeleton screens while data fetches from Supabase
+- 404 page (custom not-found page)
+- Mobile menu (hamburger) if not already working
+- Smooth scroll behavior between sections
+- Active nav link highlight based on current scroll position
+- Toast notifications for form success/error (contact form)
+- Back to top button (if not already there)
+- Page transition animation between route changes
+
+For each feature: either confirm it exists and is working, 
+or implement it if missing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMPORTANT RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Read ALL files before starting anything
+- Tell me which file you are editing before each change
+- If you need to create a SQL file for manual execution, 
+  save it clearly and tell me exactly where to find it and how to run it
+- Do not install new dependencies without asking first
+- Work through each section in order, confirm each one before moving on

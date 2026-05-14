@@ -322,7 +322,7 @@ function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
   }, [total]);
 
   const empty = 10 - filled;
-  const barColor = percent >= 85 ? T.green : percent >= 70 ? T.accent : "#e3b341";
+  const barColor = percent >= 80 ? T.green : percent >= 60 ? T.accent : "#e3b341";
 
   return (
     <div
@@ -351,7 +351,7 @@ function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
         <span style={{ color: T.textDim, marginLeft: 8 }}>{percent}%</span>
         {hovered && (
           <span style={{ color: barColor, marginLeft: 10, fontSize: "10px" }}>
-            ▲ {percent >= 85 ? "expert" : percent >= 70 ? "proficient" : "learning"}
+            ▲ {percent >= 80 ? "expert" : percent >= 60 ? "proficient" : "learning"}
           </span>
         )}
       </div>

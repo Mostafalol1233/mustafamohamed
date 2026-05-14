@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
-import type { DbProject, DbReview, DbMessage, DbCertificate, DbNotification } from "@/lib/supabase";
+import type { DbProject, DbReview, DbMessage, DbCertificate, DbNotification, DbTestimonial, DbSkill, DbSiteSetting } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { useLocation } from "wouter";
 import {
   Star, Mail, FolderGit2, Award, Bell, LayoutDashboard,
   LogOut, Check, Trash2, Eye, EyeOff, TrendingUp, MessageSquare,
-  Plus, Edit, ExternalLink,
+  Plus, Edit, ExternalLink, Users, Wrench, Settings, Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -58,6 +58,16 @@ const notificationFormSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+const testimonialFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  role: z.string().min(1, "Role is required"),
+  company: z.string().min(1, "Company is required"),
+  quote: z.string().min(1, "Quote is required"),
+  stars: z.coerce.number().min(1).max(5).default(5),
+  icon: z.string().optional(),
+  visible: z.boolean().default(true),
+});
+
 // ── Query keys ────────────────────────────────────────────────────────────────
 
 const QK = {
@@ -66,6 +76,9 @@ const QK = {
   messages: ["sb", "messages"],
   certificates: ["sb", "certificates"],
   notifications: ["sb", "notifications"],
+  testimonials: ["sb", "testimonials"],
+  skills: ["sb", "skills"],
+  siteSettings: ["sb", "site_settings"],
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -79,6 +92,12 @@ export default function AdminDashboard() {
   const [imagePreview, setImagePreview] = useState("");
   const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
   const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+  const [testimonialDialogOpen, setTestimonialDialogOpen] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<DbTestimonial | null>(null);
+  const [editingSkillId, setEditingSkillId] = useState<number | null>(null);
+  const [editingSkillPercent, setEditingSkillPercent] = useState<number>(0);
+  const [editingSettingKey, setEditingSettingKey] = useState<string | null>(null);
+  const [editingSettingValue, setEditingSettingValue] = useState<string>("");
 
   // ── Auth check (Express session stays) ───────────────────────────────────
   const { data: authData, isLoading: authLoading } = useQuery<{ isAuthenticated: boolean; isAdmin: boolean }>({
@@ -143,6 +162,36 @@ export default function AdminDashboard() {
     enabled: !!authData?.isAuthenticated,
   });
 
+  const { data: testimonials = [], refetch: refetchTestimonials } = useQuery<DbTestimonial[]>({
+    queryKey: QK.testimonials,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("testimonials").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
+  });
+
+  const { data: skills = [], refetch: refetchSkills } = useQuery<DbSkill[]>({
+    queryKey: QK.skills,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("skills").select("*").order("sort_order");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
+  });
+
+  const { data: siteSettings = [], refetch: refetchSettings } = useQuery<DbSiteSetting[]>({
+    queryKey: QK.siteSettings,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("site_settings").select("*").order("key");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
+  });
+
   // ── Forms ─────────────────────────────────────────────────────────────────
   const projectForm = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
@@ -157,6 +206,11 @@ export default function AdminDashboard() {
   const notificationForm = useForm<z.infer<typeof notificationFormSchema>>({
     resolver: zodResolver(notificationFormSchema),
     defaultValues: { title: "", message: "", type: "info", isActive: true },
+  });
+
+  const testimonialForm = useForm<z.infer<typeof testimonialFormSchema>>({
+    resolver: zodResolver(testimonialFormSchema),
+    defaultValues: { name: "", role: "", company: "", quote: "", stars: 5, icon: "", visible: true },
   });
 
   // ── Logout ────────────────────────────────────────────────────────────────
@@ -360,6 +414,86 @@ export default function AdminDashboard() {
     },
   });
 
+  // ── Testimonial mutations ─────────────────────────────────────────────────
+  const createTestimonialMutation = useMutation({
+    mutationFn: async (d: z.infer<typeof testimonialFormSchema>) => {
+      const { error } = await supabase.from("testimonials").insert({
+        name: d.name, role: d.role, company: d.company, quote: d.quote,
+        stars: d.stars, icon: d.icon || null, visible: d.visible,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchTestimonials();
+      toast({ title: "Testimonial added!" });
+      setTestimonialDialogOpen(false);
+      testimonialForm.reset();
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const updateTestimonialMutation = useMutation({
+    mutationFn: async ({ id, d }: { id: number; d: z.infer<typeof testimonialFormSchema> }) => {
+      const { error } = await supabase.from("testimonials").update({
+        name: d.name, role: d.role, company: d.company, quote: d.quote,
+        stars: d.stars, icon: d.icon || null, visible: d.visible,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchTestimonials();
+      toast({ title: "Testimonial updated!" });
+      setTestimonialDialogOpen(false);
+      setEditingTestimonial(null);
+      testimonialForm.reset();
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteTestimonialMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("testimonials").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchTestimonials(); toast({ title: "Testimonial deleted!" }); },
+  });
+
+  const toggleTestimonialVisibilityMutation = useMutation({
+    mutationFn: async ({ id, visible }: { id: number; visible: boolean }) => {
+      const { error } = await supabase.from("testimonials").update({ visible }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchTestimonials(); toast({ title: "Visibility updated!" }); },
+  });
+
+  // ── Skill mutation ────────────────────────────────────────────────────────
+  const updateSkillPercentMutation = useMutation({
+    mutationFn: async ({ id, percent }: { id: number; percent: number }) => {
+      const { error } = await supabase.from("skills").update({ percent }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchSkills();
+      setEditingSkillId(null);
+      toast({ title: "Skill updated!" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  // ── Site settings mutation ────────────────────────────────────────────────
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const { error } = await supabase.from("site_settings").update({ value, updated_at: new Date().toISOString() }).eq("key", key);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchSettings();
+      setEditingSettingKey(null);
+      toast({ title: "Setting saved!" });
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   const formatDate = (s: string) =>
     new Date(s).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -368,6 +502,23 @@ export default function AdminDashboard() {
     Array.from({ length: 5 }, (_, i) => (
       <Star key={i} className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
     ));
+
+  const handleEditTestimonial = (t: DbTestimonial) => {
+    setEditingTestimonial(t);
+    testimonialForm.reset({
+      name: t.name, role: t.role, company: t.company, quote: t.quote,
+      stars: t.stars, icon: t.icon || "", visible: t.visible,
+    });
+    setTestimonialDialogOpen(true);
+  };
+
+  const handleTestimonialSubmit = (values: z.infer<typeof testimonialFormSchema>) => {
+    if (editingTestimonial) {
+      updateTestimonialMutation.mutate({ id: editingTestimonial.id, d: values });
+    } else {
+      createTestimonialMutation.mutate(values);
+    }
+  };
 
   const handleEditProject = (p: DbProject) => {
     setEditingProject(p);
@@ -399,6 +550,7 @@ export default function AdminDashboard() {
     unreadMessages: contactMessages.filter(m => !m.is_read).length,
     visibleProjects: projects.filter(p => p.is_visible).length,
     activeNotifications: notifications.filter(n => n.is_active).length,
+    visibleTestimonials: testimonials.filter(t => t.visible).length,
   };
 
   if (authLoading) {
@@ -433,26 +585,32 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 lg:w-auto" data-testid="tabs-navigation">
-            <TabsTrigger value="overview"><LayoutDashboard className="w-4 h-4 mr-2" />Overview</TabsTrigger>
+          <TabsList className="flex flex-wrap gap-1 h-auto w-full justify-start" data-testid="tabs-navigation">
+            <TabsTrigger value="overview"><LayoutDashboard className="w-4 h-4 mr-1.5" />Overview</TabsTrigger>
             <TabsTrigger value="projects">
-              <FolderGit2 className="w-4 h-4 mr-2" />Projects
+              <FolderGit2 className="w-4 h-4 mr-1.5" />Projects
               <Badge variant="secondary" className="ml-1">{projects.length}</Badge>
             </TabsTrigger>
+            <TabsTrigger value="testimonials">
+              <Users className="w-4 h-4 mr-1.5" />Testimonials
+              <Badge variant="secondary" className="ml-1">{testimonials.length}</Badge>
+            </TabsTrigger>
             <TabsTrigger value="reviews">
-              <Star className="w-4 h-4 mr-2" />Reviews
+              <Star className="w-4 h-4 mr-1.5" />Reviews
               {stats.pendingReviews > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReviews}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="messages">
-              <Mail className="w-4 h-4 mr-2" />Messages
+              <Mail className="w-4 h-4 mr-1.5" />Messages
               {stats.unreadMessages > 0 && <Badge variant="destructive" className="ml-1">{stats.unreadMessages}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="certificates"><Award className="w-4 h-4 mr-2" />Certificates</TabsTrigger>
+            <TabsTrigger value="certificates"><Award className="w-4 h-4 mr-1.5" />Certificates</TabsTrigger>
             <TabsTrigger value="notifications">
-              <Bell className="w-4 h-4 mr-2" />Notifications
+              <Bell className="w-4 h-4 mr-1.5" />Notifications
               {stats.activeNotifications > 0 && <Badge variant="secondary" className="ml-1">{stats.activeNotifications}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="analytics"><TrendingUp className="w-4 h-4 mr-2" />Analytics</TabsTrigger>
+            <TabsTrigger value="skills"><Wrench className="w-4 h-4 mr-1.5" />Skills</TabsTrigger>
+            <TabsTrigger value="settings"><Settings className="w-4 h-4 mr-1.5" />Settings</TabsTrigger>
+            <TabsTrigger value="analytics"><TrendingUp className="w-4 h-4 mr-1.5" />Analytics</TabsTrigger>
           </TabsList>
 
           {/* ── OVERVIEW ── */}
@@ -797,6 +955,261 @@ export default function AdminDashboard() {
               </Card>
             </div>
           </TabsContent>
+
+          {/* ── TESTIMONIALS ── */}
+          <TabsContent value="testimonials">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center"><Users className="w-5 h-5 mr-2 text-indigo-500" />Testimonials</CardTitle>
+                    <CardDescription>{testimonials.length} total · {stats.visibleTestimonials} visible</CardDescription>
+                  </div>
+                  <Button onClick={() => { setEditingTestimonial(null); testimonialForm.reset({ name: "", role: "", company: "", quote: "", stars: 5, icon: "", visible: true }); setTestimonialDialogOpen(true); }} data-testid="button-add-testimonial">
+                    <Plus className="w-4 h-4 mr-2" />Add Testimonial
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {testimonials.length === 0 ? (
+                    <div className="text-center py-8 space-y-2">
+                      <p className="text-muted-foreground">No testimonials yet.</p>
+                      <p className="text-xs text-muted-foreground">Run <code className="bg-gray-100 px-1 rounded">supabase/seed_testimonials.sql</code> in Supabase SQL Editor to populate with existing data.</p>
+                    </div>
+                  ) : testimonials.map((t) => (
+                    <div key={t.id} className="border rounded-lg p-4 flex gap-4 items-start" data-testid={`card-testimonial-${t.id}`}>
+                      <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold flex-shrink-0 text-sm">
+                        {t.name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold">{t.name}</span>
+                          <span className="text-xs text-muted-foreground">{t.role} · {t.company}</span>
+                          <Badge variant={t.visible ? "default" : "secondary"}>{t.visible ? "Visible" : "Hidden"}</Badge>
+                          <span className="flex gap-0.5">
+                            {Array.from({ length: t.stars }).map((_, i) => (
+                              <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            ))}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">"{t.quote}"</p>
+                      </div>
+                      <div className="flex flex-col gap-1 flex-shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => handleEditTestimonial(t)} data-testid={`button-edit-testimonial-${t.id}`}>
+                          <Edit className="w-3 h-3 mr-1" />Edit
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => toggleTestimonialVisibilityMutation.mutate({ id: t.id, visible: !t.visible })} data-testid={`button-toggle-testimonial-${t.id}`}>
+                          {t.visible ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                          {t.visible ? "Hide" : "Show"}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteTestimonialMutation.mutate(t.id)} data-testid={`button-delete-testimonial-${t.id}`}>
+                          <Trash2 className="w-3 h-3 mr-1" />Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ── SKILLS ── */}
+          <TabsContent value="skills">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center"><Wrench className="w-5 h-5 mr-2 text-amber-500" />Skills Manager</CardTitle>
+                <CardDescription>Edit proficiency percentages for each skill. Run <code className="bg-gray-100 px-1 rounded text-xs">supabase/skills_and_settings.sql</code> in Supabase SQL Editor to populate.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {skills.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No skills found. Run supabase/skills_and_settings.sql in Supabase SQL Editor first.</p>
+                ) : (
+                  <div className="space-y-8">
+                    {["frontend", "backend", "design", "tools", "ai"].map((cat) => {
+                      const catSkills = skills.filter(s => s.category === cat);
+                      if (!catSkills.length) return null;
+                      return (
+                        <div key={cat}>
+                          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 capitalize">{cat}</h3>
+                          <div className="space-y-2">
+                            {catSkills.map((s) => (
+                              <div key={s.id} className="flex items-center gap-3 p-3 border rounded-lg" data-testid={`skill-row-admin-${s.id}`}>
+                                <span className="w-36 text-sm font-medium truncate flex-shrink-0">{s.name}</span>
+                                <div className="flex-1 bg-gray-100 rounded-full h-2 min-w-0">
+                                  <div
+                                    className="h-2 rounded-full transition-all"
+                                    style={{
+                                      width: `${s.percent}%`,
+                                      background: s.percent >= 80 ? "#3fb950" : s.percent >= 60 ? "#58a6ff" : "#f0c040",
+                                    }}
+                                  />
+                                </div>
+                                {editingSkillId === s.id ? (
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Input
+                                      type="number" min={0} max={100}
+                                      value={editingSkillPercent}
+                                      onChange={(e) => setEditingSkillPercent(Number(e.target.value))}
+                                      className="w-20 h-8 text-sm"
+                                      data-testid={`input-skill-percent-${s.id}`}
+                                    />
+                                    <Button size="sm" onClick={() => updateSkillPercentMutation.mutate({ id: s.id, percent: editingSkillPercent })} disabled={updateSkillPercentMutation.isPending} data-testid={`button-save-skill-${s.id}`}>
+                                      <Save className="w-3 h-3" />
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => setEditingSkillId(null)}>✕</Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <span className="w-10 text-sm text-right text-muted-foreground">{s.percent}%</span>
+                                    <Button size="sm" variant="outline" onClick={() => { setEditingSkillId(s.id); setEditingSkillPercent(s.percent); }} data-testid={`button-edit-skill-${s.id}`}>
+                                      <Edit className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ── SETTINGS ── */}
+          <TabsContent value="settings">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center"><Settings className="w-5 h-5 mr-2 text-slate-500" />Site Settings</CardTitle>
+                  <CardDescription>Manage hero text, social links, and section visibility. Run <code className="bg-gray-100 px-1 rounded text-xs">supabase/skills_and_settings.sql</code> in Supabase SQL Editor to populate.</CardDescription>
+                </CardHeader>
+                {siteSettings.length === 0 ? (
+                  <CardContent><p className="text-center text-muted-foreground py-4">No settings found. Run supabase/skills_and_settings.sql in Supabase SQL Editor first.</p></CardContent>
+                ) : (
+                  <CardContent className="space-y-8">
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Hero Section</h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: "hero_name", label: "Name" },
+                          { key: "hero_title", label: "Title" },
+                          { key: "hero_tagline", label: "Tagline" },
+                          { key: "hero_available", label: "Available badge" },
+                        ].map(({ key, label }) => {
+                          const s = siteSettings.find(x => x.key === key);
+                          if (!s) return null;
+                          return (
+                            <div key={key} className="flex items-start gap-3">
+                              <label className="w-32 text-sm font-medium pt-2 shrink-0">{label}</label>
+                              {editingSettingKey === key ? (
+                                <div className="flex-1 flex items-center gap-2">
+                                  <Input value={editingSettingValue} onChange={(e) => setEditingSettingValue(e.target.value)} className="flex-1" data-testid={`input-setting-${key}`} />
+                                  <Button size="sm" onClick={() => updateSettingMutation.mutate({ key, value: editingSettingValue })} disabled={updateSettingMutation.isPending}><Save className="w-3 h-3" /></Button>
+                                  <Button size="sm" variant="outline" onClick={() => setEditingSettingKey(null)}>✕</Button>
+                                </div>
+                              ) : (
+                                <div className="flex-1 flex items-center gap-2">
+                                  <span className="flex-1 text-sm text-muted-foreground truncate">{s.value}</span>
+                                  <Button size="sm" variant="outline" onClick={() => { setEditingSettingKey(key); setEditingSettingValue(s.value); }} data-testid={`button-edit-setting-${key}`}><Edit className="w-3 h-3" /></Button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Social Links</h3>
+                      <div className="space-y-3">
+                        {[
+                          { key: "social_twitter", label: "X (Twitter)" },
+                          { key: "social_youtube", label: "YouTube" },
+                          { key: "social_email", label: "Email" },
+                        ].map(({ key, label }) => {
+                          const s = siteSettings.find(x => x.key === key);
+                          if (!s) return null;
+                          return (
+                            <div key={key} className="flex items-center gap-3">
+                              <label className="w-32 text-sm font-medium shrink-0">{label}</label>
+                              {editingSettingKey === key ? (
+                                <div className="flex-1 flex items-center gap-2">
+                                  <Input value={editingSettingValue} onChange={(e) => setEditingSettingValue(e.target.value)} className="flex-1" data-testid={`input-setting-${key}`} />
+                                  <Button size="sm" onClick={() => updateSettingMutation.mutate({ key, value: editingSettingValue })} disabled={updateSettingMutation.isPending}><Save className="w-3 h-3" /></Button>
+                                  <Button size="sm" variant="outline" onClick={() => setEditingSettingKey(null)}>✕</Button>
+                                </div>
+                              ) : (
+                                <div className="flex-1 flex items-center gap-2">
+                                  <span className="flex-1 text-sm text-muted-foreground truncate">{s.value}</span>
+                                  <Button size="sm" variant="outline" onClick={() => { setEditingSettingKey(key); setEditingSettingValue(s.value); }} data-testid={`button-edit-setting-${key}`}><Edit className="w-3 h-3" /></Button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Section Visibility</h3>
+                      <div className="space-y-2">
+                        {[
+                          { key: "section_reviews", label: "Reviews" },
+                          { key: "section_portfolio", label: "Portfolio" },
+                          { key: "section_skills", label: "Skills" },
+                          { key: "section_contact", label: "Contact" },
+                        ].map(({ key, label }) => {
+                          const s = siteSettings.find(x => x.key === key);
+                          if (!s) return null;
+                          const isVisible = s.value === "true";
+                          return (
+                            <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
+                              <span className="text-sm font-medium">{label}</span>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={isVisible ? "default" : "secondary"}>{isVisible ? "Visible" : "Hidden"}</Badge>
+                                <Button size="sm" variant="outline" onClick={() => updateSettingMutation.mutate({ key, value: isVisible ? "false" : "true" })} disabled={updateSettingMutation.isPending} data-testid={`button-toggle-section-${key}`}>
+                                  {isVisible ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                                  {isVisible ? "Hide" : "Show"}
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Footer</h3>
+                      {(() => {
+                        const s = siteSettings.find(x => x.key === "footer_copyright");
+                        if (!s) return null;
+                        const key = "footer_copyright";
+                        return (
+                          <div className="flex items-center gap-3">
+                            <label className="w-32 text-sm font-medium shrink-0">Copyright</label>
+                            {editingSettingKey === key ? (
+                              <div className="flex-1 flex items-center gap-2">
+                                <Input value={editingSettingValue} onChange={(e) => setEditingSettingValue(e.target.value)} className="flex-1" data-testid={`input-setting-${key}`} />
+                                <Button size="sm" onClick={() => updateSettingMutation.mutate({ key, value: editingSettingValue })} disabled={updateSettingMutation.isPending}><Save className="w-3 h-3" /></Button>
+                                <Button size="sm" variant="outline" onClick={() => setEditingSettingKey(null)}>✕</Button>
+                              </div>
+                            ) : (
+                              <div className="flex-1 flex items-center gap-2">
+                                <span className="flex-1 text-sm text-muted-foreground truncate">{s.value}</span>
+                                <Button size="sm" variant="outline" onClick={() => { setEditingSettingKey(key); setEditingSettingValue(s.value); }} data-testid={`button-edit-setting-${key}`}><Edit className="w-3 h-3" /></Button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            </div>
+          </TabsContent>
+
         </Tabs>
       </div>
 
@@ -937,6 +1350,59 @@ export default function AdminDashboard() {
                 <Button type="button" variant="outline" onClick={() => setNotificationDialogOpen(false)}>Cancel</Button>
                 <Button type="submit" disabled={createNotificationMutation.isPending}>
                   {createNotificationMutation.isPending ? "Creating..." : "Create"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── TESTIMONIAL DIALOG ── */}
+      <Dialog open={testimonialDialogOpen} onOpenChange={(open) => {
+        setTestimonialDialogOpen(open);
+        if (!open) { setEditingTestimonial(null); testimonialForm.reset(); }
+      }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid="dialog-testimonial">
+          <DialogHeader>
+            <DialogTitle>{editingTestimonial ? "Edit Testimonial" : "Add Testimonial"}</DialogTitle>
+            <DialogDescription>{editingTestimonial ? "Update testimonial details." : "Add a new testimonial to your portfolio."}</DialogDescription>
+          </DialogHeader>
+          <Form {...testimonialForm}>
+            <form onSubmit={testimonialForm.handleSubmit(handleTestimonialSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={testimonialForm.control} name="name" render={({ field }) => (
+                  <FormItem><FormLabel>Name *</FormLabel><FormControl><Input placeholder="Ahmed Hassan" {...field} data-testid="input-testimonial-name" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={testimonialForm.control} name="stars" render={({ field }) => (
+                  <FormItem><FormLabel>Stars (1–5)</FormLabel><FormControl>
+                    <Input type="number" min={1} max={5} {...field} onChange={e => field.onChange(Number(e.target.value))} data-testid="input-testimonial-stars" />
+                  </FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={testimonialForm.control} name="role" render={({ field }) => (
+                  <FormItem><FormLabel>Role *</FormLabel><FormControl><Input placeholder="CEO" {...field} data-testid="input-testimonial-role" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={testimonialForm.control} name="company" render={({ field }) => (
+                  <FormItem><FormLabel>Company *</FormLabel><FormControl><Input placeholder="Tech Corp" {...field} data-testid="input-testimonial-company" /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+              <FormField control={testimonialForm.control} name="quote" render={({ field }) => (
+                <FormItem><FormLabel>Quote *</FormLabel><FormControl><Textarea placeholder="Write the testimonial text here..." {...field} rows={3} data-testid="input-testimonial-quote" /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={testimonialForm.control} name="icon" render={({ field }) => (
+                <FormItem><FormLabel>Icon / Avatar URL</FormLabel><FormControl><Input placeholder="https://..." {...field} data-testid="input-testimonial-icon" /></FormControl><FormDescription>Optional image URL for avatar</FormDescription><FormMessage /></FormItem>
+              )} />
+              <FormField control={testimonialForm.control} name="visible" render={({ field }) => (
+                <FormItem className="flex items-center gap-3">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-testimonial-visible" /></FormControl>
+                  <FormLabel className="cursor-pointer">Visible on portfolio</FormLabel>
+                </FormItem>
+              )} />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setTestimonialDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createTestimonialMutation.isPending || updateTestimonialMutation.isPending} data-testid="button-submit-testimonial">
+                  {(createTestimonialMutation.isPending || updateTestimonialMutation.isPending) ? "Saving..." : editingTestimonial ? "Update" : "Add"}
                 </Button>
               </DialogFooter>
             </form>

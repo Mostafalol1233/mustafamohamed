@@ -55,3 +55,32 @@ export type DbNotification = {
   is_active: boolean;
   created_at: string;
 };
+
+export type DbTestimonial = {
+  id: number;
+  name: string;
+  role: string;
+  company: string;
+  quote: string;
+  stars: number;
+  icon: string | null;
+  visible: boolean;
+  created_at: string;
+};
+
+export type DbSkill = {
+  id: number;
+  category: string;
+  name: string;
+  percent: number;
+  description: string | null;
+  icon: string | null;
+  tags: string[] | null;
+  sort_order: number;
+};
+
+export type DbSiteSetting = {
+  key: string;
+  value: string;
+  updated_at: string;
+};
