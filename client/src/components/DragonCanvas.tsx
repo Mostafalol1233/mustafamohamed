@@ -1,20 +1,35 @@
 import { useEffect, useRef } from "react";
 
-// ─── Original spring-chain physics (ported from script.js) ───────────────────
-// N = 28 segments (shorter tail: original used 40)
-const N = 28;
+// N = 18 segments (shorter tail — middle removed)
+const N = 18;
 
-// Scale formula from original: s = (162 + 4*(1-i)) / 50
-// Mapped to canvas pixels
 function segSize(i: number): number {
   const s = (162 + 4 * (1 - i)) / 50;
   return Math.max(2.5, s * 8);
-  // i=1 → 26px, i=27 → ~9px  — natural body taper
 }
 
 interface El { x: number; y: number; }
 interface Food { id: number; x: number; y: number; eaten: boolean; }
 interface Particle { x: number; y: number; vx: number; vy: number; life: number; }
+
+// ── Web Audio eat sound ───────────────────────────────────────────────────────
+function playEatSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(520, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.18);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.22);
+  } catch (_) {}
+}
 
 export default function DragonCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,36 +52,45 @@ export default function DragonCanvas() {
     const ctx = canvas.getContext("2d")!;
     setSize();
 
-    // ── State ────────────────────────────────────────────────────────────────
     const pointer = { x: W / 2, y: H / 2 };
 
-    // Chain elements: e[0] = virtual mouse-guide (not drawn)
     const elems: El[] = Array.from({ length: N }, (_, i) => ({
       x: W / 2 - i * 22,
       y: H / 2,
     }));
 
-    let frm     = Math.random();  // idle animation phase
-    let rad     = 0;              // idle orbit radius (grows when still)
+    let frm     = Math.random();
+    let rad     = 0;
     let bootT   = 0;
     let blinkCD = 150 + Math.random() * 180;
     let blinkPh = 0;
     let isBlinking = false;
 
-    // Food
     const foods: Food[] = [];
     let foodId = 0;
     let score  = 0;
 
-    // Particles (eat burst)
     const particles: Particle[] = [];
+
+    // ── Auto food spawn ───────────────────────────────────────────────────────
+    const spawnFood = () => {
+      const margin = 50;
+      const x = margin + Math.random() * (W - margin * 2);
+      const y = margin + Math.random() * (H - margin * 2);
+      foods.push({ id: foodId++, x, y, eaten: false });
+      if (foods.length > 6) foods.shift();
+    };
+
+    // Spawn first food after 1s, then every 3.5s
+    const firstSpawn = setTimeout(spawnFood, 1000);
+    const autoSpawn  = setInterval(spawnFood, 3500);
 
     // ── Events ───────────────────────────────────────────────────────────────
     const onMove = (e: MouseEvent) => {
       const r = canvas.getBoundingClientRect();
       pointer.x = e.clientX - r.left;
       pointer.y = e.clientY - r.top;
-      rad = 0; // reset idle drift when mouse moves
+      rad = 0;
     };
     const onTouch = (e: TouchEvent) => {
       const r = canvas.getBoundingClientRect();
@@ -77,7 +101,7 @@ export default function DragonCanvas() {
     const onClick = (e: MouseEvent) => {
       const r = canvas.getBoundingClientRect();
       foods.push({ id: foodId++, x: e.clientX - r.left, y: e.clientY - r.top, eaten: false });
-      if (foods.length > 6) foods.shift(); // keep max 6 food items
+      if (foods.length > 6) foods.shift();
     };
 
     window.addEventListener("mousemove", onMove);
@@ -85,7 +109,6 @@ export default function DragonCanvas() {
     canvas.addEventListener("click", onClick);
     window.addEventListener("resize", setSize);
 
-    // ── Particle helpers ──────────────────────────────────────────────────────
     function burst(x: number, y: number) {
       for (let k = 0; k < 16; k++) {
         const a = (Math.PI * 2 * k) / 16 + Math.random() * 0.3;
@@ -93,8 +116,6 @@ export default function DragonCanvas() {
         particles.push({ x, y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd, life: 1 });
       }
     }
-
-    // ── Draw ─────────────────────────────────────────────────────────────────
 
     function drawGrid() {
       const sz = 44;
@@ -105,6 +126,7 @@ export default function DragonCanvas() {
     }
 
     function drawWingAt(si: number) {
+      if (si >= N) return;
       const ep = elems[si - 1], e = elems[si];
       const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
       const a  = Math.atan2(e.y - ep.y, e.x - ep.x);
@@ -127,7 +149,6 @@ export default function DragonCanvas() {
         const t2x = -50, t2y = side * (bR + spread * 0.12);
         const taX = -44, taY = side * bR * 0.2;
 
-        // membrane
         ctx.save();
         ctx.shadowColor = "rgba(70,10,110,0.18)"; ctx.shadowBlur = 20;
         ctx.beginPath();
@@ -145,13 +166,11 @@ export default function DragonCanvas() {
         ctx.fill(); ctx.stroke();
         ctx.restore();
 
-        // ribs
         ctx.strokeStyle = "rgba(28,7,55,0.55)"; ctx.lineWidth = 0.8;
         [[jx, jy], [tipX * 0.9, tipY * 0.9], [t1x, t1y], [t2x, t2y]].forEach(([rx, ry]) => {
           ctx.beginPath(); ctx.moveTo(0, rY); ctx.lineTo(rx, ry); ctx.stroke();
         });
 
-        // wing claw at tip
         const ca = Math.atan2(tipY - jy, tipX - jx);
         ctx.strokeStyle = "rgba(18,5,38,0.6)"; ctx.lineWidth = 0.8;
         ctx.beginPath(); ctx.moveTo(tipX, tipY);
@@ -165,10 +184,8 @@ export default function DragonCanvas() {
     function drawHead() {
       const ep = elems[0], e = elems[1];
       const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
-      // head faces FROM body TOWARD mouse-guide = forward direction
       const a = Math.atan2(ep.y - e.y, ep.x - e.x);
 
-      // blink update
       blinkCD--;
       if (blinkCD <= 0 && !isBlinking) { isBlinking = true; blinkPh = 0; blinkCD = 150 + Math.random() * 200; }
       if (isBlinking) { blinkPh += 0.14; if (blinkPh > Math.PI) isBlinking = false; }
@@ -178,7 +195,6 @@ export default function DragonCanvas() {
       ctx.translate(mx, my);
       ctx.rotate(a);
 
-      // head glow + fill
       ctx.save();
       ctx.shadowColor = "rgba(75,15,130,0.45)"; ctx.shadowBlur = 32;
       ctx.beginPath();
@@ -189,23 +205,19 @@ export default function DragonCanvas() {
       ctx.fillStyle = "#040810"; ctx.fill();
       ctx.restore();
 
-      // top horn
       ctx.beginPath();
       ctx.moveTo(0, -15); ctx.lineTo(3, -27); ctx.lineTo(7, -15);
       ctx.fillStyle = "#07050f"; ctx.fill();
 
-      // back spines
       [[-8, -12], [-14, -12], [-19, -9]].forEach(([hx, hy]) => {
         ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - 2, hy - 7);
         ctx.strokeStyle = "rgba(25,6,50,0.5)"; ctx.lineWidth = 1; ctx.stroke();
       });
 
-      // snout ridge
       ctx.beginPath();
       ctx.moveTo(26, 0); ctx.lineTo(20, -4); ctx.lineTo(12, -6);
       ctx.strokeStyle = "rgba(35,10,65,0.4)"; ctx.lineWidth = 0.8; ctx.stroke();
 
-      // eyes
       [[9, -7], [9, 6]].forEach(([ex, ey]) => {
         ctx.save();
         ctx.shadowColor = "#cc0a0a"; ctx.shadowBlur = 16;
@@ -219,12 +231,10 @@ export default function DragonCanvas() {
         ctx.beginPath(); ctx.ellipse(ex, ey, 3.2, 3.2 * blinkY, 0, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
 
-        // slit pupil
         ctx.beginPath();
         ctx.ellipse(ex + 1, ey, 1.2, 2.8 * blinkY, 0.25, 0, Math.PI * 2);
         ctx.fillStyle = "#120003"; ctx.fill();
 
-        // glint
         ctx.save();
         ctx.shadowColor = "#ff5555"; ctx.shadowBlur = 4;
         ctx.fillStyle = "rgba(255,130,130,0.65)";
@@ -236,7 +246,6 @@ export default function DragonCanvas() {
     }
 
     function drawBody() {
-      // glow pass
       ctx.save();
       ctx.shadowColor = "rgba(75,15,130,0.22)"; ctx.shadowBlur = 24;
       for (let i = 2; i < N; i++) {
@@ -254,7 +263,6 @@ export default function DragonCanvas() {
       }
       ctx.restore();
 
-      // solid dark pass
       for (let i = 2; i < N; i++) {
         const ep = elems[i - 1], e = elems[i];
         const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
@@ -269,8 +277,7 @@ export default function DragonCanvas() {
         ctx.lineCap = "round"; ctx.stroke();
       }
 
-      // subtle purple edge rim on upper body
-      for (let i = 2; i < Math.min(N - 4, 14); i++) {
+      for (let i = 2; i < Math.min(N - 4, 10); i++) {
         const ep = elems[i - 1], e = elems[i];
         const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
         const nep = elems[i], ne  = elems[i + 1] ?? e;
@@ -283,13 +290,12 @@ export default function DragonCanvas() {
         ctx.lineCap = "round"; ctx.stroke();
       }
 
-      // tail spike
       const tl = elems[N - 1], tp = elems[N - 2];
       const tailA = Math.atan2(tl.y - tp.y, tl.x - tp.x);
       ctx.beginPath();
       ctx.moveTo(tl.x, tl.y);
-      ctx.lineTo(tl.x + Math.cos(tailA) * 13, tl.y + Math.sin(tailA) * 13);
-      ctx.strokeStyle = "#040710"; ctx.lineWidth = 1.8; ctx.lineCap = "round"; ctx.stroke();
+      ctx.lineTo(tl.x + Math.cos(tailA) * 10, tl.y + Math.sin(tailA) * 10);
+      ctx.strokeStyle = "#040710"; ctx.lineWidth = 1.5; ctx.lineCap = "round"; ctx.stroke();
     }
 
     function drawFood() {
@@ -299,26 +305,22 @@ export default function DragonCanvas() {
         const pulse = 0.6 + 0.4 * Math.sin(now / 320 + f.id * 1.3);
         const r = 10 + pulse * 3;
 
-        // outer glow ring
         ctx.save();
         ctx.shadowColor = "#ff1a1a"; ctx.shadowBlur = 20 * pulse;
         ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(180,20,20,${0.22 * pulse})`; ctx.fill();
 
-        // core gem
         ctx.shadowBlur = 14;
         ctx.beginPath(); ctx.arc(f.x, f.y, 7, 0, Math.PI * 2);
         ctx.fillStyle = "#b01010"; ctx.fill();
         ctx.beginPath(); ctx.arc(f.x, f.y, 4.5, 0, Math.PI * 2);
         ctx.fillStyle = "#ff3030"; ctx.fill();
 
-        // glint
         ctx.shadowBlur = 0;
         ctx.beginPath(); ctx.arc(f.x - 2, f.y - 2, 1.5, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255,200,200,0.8)"; ctx.fill();
         ctx.restore();
 
-        // label
         ctx.save();
         ctx.font = "9px 'JetBrains Mono',monospace";
         ctx.fillStyle = `rgba(255,80,80,${0.6 + 0.4 * pulse})`;
@@ -350,7 +352,7 @@ export default function DragonCanvas() {
       ctx.fillStyle = "#3fb950";
       ctx.fillText("> Void entity detected...", 22, 34);
       if (bootT > 0.8)  ctx.fillText("> Binding to cursor... done", 22, 52);
-      if (bootT > 1.8)  ctx.fillText("> click anywhere to place food", 22, 70);
+      if (bootT > 1.8)  ctx.fillText("> click or wait — food spawns automatically", 22, 70);
       ctx.restore();
 
       if (score > 0) {
@@ -362,7 +364,6 @@ export default function DragonCanvas() {
       }
     }
 
-    // ── RAF loop ──────────────────────────────────────────────────────────────
     let lastT = performance.now();
     let raf: number;
 
@@ -371,8 +372,6 @@ export default function DragonCanvas() {
       lastT = now;
       bootT += dt;
 
-      // ── Physics — exact original spring chain ─────────────────────────────
-      // Idle oscillation: grows when mouse is still
       const maxRad = Math.min(pointer.x, pointer.y, W - pointer.x, H - pointer.y) - 20;
       if (rad < maxRad) rad++;
       frm += 0.003;
@@ -384,11 +383,9 @@ export default function DragonCanvas() {
       const ax = (Math.cos(3 * frm) * rad * W) / H;
       const ay = (Math.sin(4 * frm) * rad * H) / W;
 
-      // Mouse-guide (e[0]) chases pointer
       elems[0].x += (ax + pointer.x - elems[0].x) / 10;
       elems[0].y += (ay + pointer.y - elems[0].y) / 10;
 
-      // Body chain: each segment spring-follows the previous
       for (let i = 1; i < N; i++) {
         const e = elems[i], ep = elems[i - 1];
         const a = Math.atan2(e.y - ep.y, e.x - ep.x);
@@ -396,16 +393,19 @@ export default function DragonCanvas() {
         e.y += (ep.y - e.y + Math.sin(a) * (100 - i) / 5) / 4;
       }
 
-      // ── Food eating ───────────────────────────────────────────────────────
       const headX = (elems[0].x + elems[1].x) / 2;
       const headY = (elems[0].y + elems[1].y) / 2;
       foods.forEach(f => {
         if (f.eaten) return;
         const d = Math.hypot(headX - f.x, headY - f.y);
-        if (d < 28) { f.eaten = true; score++; burst(f.x, f.y); }
+        if (d < 28) {
+          f.eaten = true;
+          score++;
+          burst(f.x, f.y);
+          playEatSound();
+        }
       });
 
-      // ── Draw ──────────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = "#0d1117";
       ctx.fillRect(0, 0, W, H);
@@ -413,9 +413,9 @@ export default function DragonCanvas() {
       drawGrid();
       drawFood();
 
-      // Wings (same positions as original "Aletas" at i=8 and i=14)
-      drawWingAt(8);
-      drawWingAt(14);
+      // Wings at segments 6 and 11 (adjusted for shorter N=18 tail)
+      drawWingAt(6);
+      drawWingAt(11);
 
       drawBody();
       drawHead();
@@ -429,6 +429,8 @@ export default function DragonCanvas() {
 
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(firstSpawn);
+      clearInterval(autoSpawn);
       window.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("touchmove", onTouch);
       canvas.removeEventListener("click", onClick);
@@ -445,11 +447,11 @@ export default function DragonCanvas() {
         className="absolute bottom-4 right-5 text-xs pointer-events-none z-10"
         style={{ color: "#30363d", fontFamily: "'JetBrains Mono','Fira Code',monospace" }}
       >
-        click · feed the void
+        click · food auto-spawns · feed the void
       </div>
       <canvas
         ref={canvasRef}
-        style={{ width: "100%", height: "520px", display: "block", cursor: "none" }}
+        style={{ width: "100%", height: "360px", display: "block", cursor: "none" }}
         data-testid="canvas-dragon"
       />
     </section>
