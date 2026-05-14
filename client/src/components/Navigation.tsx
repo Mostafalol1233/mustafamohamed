@@ -42,10 +42,16 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
   };
 
   const switchLang = () => {
+    const scrollY = window.scrollY;
     const next = lang === "en" ? "ar" : "en";
     setLang(next);
     const base = next === "ar" ? "/ar" : "/";
-    setLocation(base);
+    // Use replaceState to update URL without triggering scroll-to-top
+    window.history.replaceState(null, "", base);
+    // Restore scroll position after React re-renders
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
+    });
   };
 
   const navBg = scrolled

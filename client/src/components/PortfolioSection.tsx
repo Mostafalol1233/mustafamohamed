@@ -74,6 +74,7 @@ function BrowserMockup({ project, visible }: { project: Project; visible: boolea
 }
 
 function ProjectInfo({ project, visible }: { project: Project; visible: boolean }) {
+  const { t } = useLang();
   const cat = inferCategory(project);
   const catStyle = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS["Web App"];
   return (
@@ -93,13 +94,13 @@ function ProjectInfo({ project, visible }: { project: Project; visible: boolean 
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, background: "#0f172a", color: "#fff", textDecoration: "none", transition: "background 0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "#1e293b")}
             onMouseLeave={e => (e.currentTarget.style.background = "#0f172a")}>
-            <ExternalLink size={13} /> Live Demo
+            <ExternalLink size={13} /> {t.portfolio.live_demo}
           </a>
         )}
         {project.githubUrl && (
           <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" data-testid={`link-github-${project.id}`}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, background: "hsl(var(--card))", color: "hsl(var(--foreground))", textDecoration: "none", border: "1px solid hsl(var(--border))", transition: "border-color 0.15s" }}>
-            <Github size={13} /> GitHub
+            <Github size={13} /> {t.portfolio.github}
           </a>
         )}
       </div>
@@ -108,6 +109,7 @@ function ProjectInfo({ project, visible }: { project: Project; visible: boolean 
 }
 
 function ProjectViewer({ projects }: { projects: Project[] }) {
+  const { t } = useLang();
   const [current, setCurrent] = useState(0);
   const [visible, setVisible] = useState(true);
   const count = projects.length;
@@ -166,7 +168,7 @@ function ProjectViewer({ projects }: { projects: Project[] }) {
         ))}
       </div>
       <div style={{ textAlign: "center", marginTop: 12 }}>
-        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "monospace", letterSpacing: "0.04em" }}>← → to navigate</span>
+        <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontFamily: "monospace", letterSpacing: "0.04em" }}>{t.portfolio.navigate}</span>
       </div>
     </div>
   );
@@ -198,9 +200,9 @@ export default function PortfolioSection() {
     <section id="portfolio" className="section-padding">
       <div className="container-max">
         <div className="max-w-2xl mb-14">
-          <span className="section-eyebrow">Work</span>
-          <h2 className="section-title">{t.sections.portfolio}</h2>
-          <p className="section-subtitle">Real projects, real impact. Each one built to solve a problem and ship clean, fast, and maintainable code.</p>
+          <span className="section-eyebrow">{t.portfolio.eyebrow}</span>
+          <h2 className="section-title">{t.portfolio.title}</h2>
+          <p className="section-subtitle">{t.portfolio.subtitle}</p>
         </div>
 
         {/* Dragon Console */}
