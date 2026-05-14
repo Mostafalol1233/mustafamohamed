@@ -199,6 +199,173 @@ function getLines(cmd: string): TermLine[] {
   return errorLines(cmd.trim());
 }
 
+// ─── Matrix rain canvas ───────────────────────────────────────────────────────
+
+const MATRIX_CHARS = "アイウエオカキクケコサシスセソタチツテトナニヌネノ01ABCDEFabcdef<>/{}[]#@!";
+
+function MatrixRain() {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+
+    let W = 0, H = 0;
+    const FONT_SZ = 13;
+    let columns: number[] = [];
+
+    const resize = () => {
+      W = canvas.offsetWidth;
+      H = canvas.offsetHeight;
+      canvas.width  = W;
+      canvas.height = H;
+      const cols = Math.floor(W / FONT_SZ);
+      columns = Array.from({ length: cols }, () => Math.random() * -H);
+    };
+    resize();
+
+    let raf: number;
+    let lastT = 0;
+
+    const draw = (ts: number) => {
+      raf = requestAnimationFrame(draw);
+      if (ts - lastT < 60) return; // ~16 fps
+      lastT = ts;
+
+      ctx.fillStyle = "rgba(13,17,23,0.18)";
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.font = `${FONT_SZ}px 'JetBrains Mono', monospace`;
+
+      columns.forEach((y, i) => {
+        const ch = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        const x  = i * FONT_SZ;
+        // bright head character
+        ctx.fillStyle = "rgba(63,185,80,0.85)";
+        ctx.fillText(ch, x, y);
+        // dimmer trail
+        ctx.fillStyle = "rgba(56,139,253,0.18)";
+        ctx.fillText(
+          MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)],
+          x,
+          y - FONT_SZ,
+        );
+        // advance column
+        columns[i] = y > H + FONT_SZ * 2 ? -FONT_SZ * Math.random() * 20 : y + FONT_SZ;
+      });
+    };
+
+    raf = requestAnimationFrame(draw);
+    window.addEventListener("resize", resize);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+
+  return (
+    <canvas
+      ref={ref}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        opacity: 0.055,
+      }}
+    />
+  );
+}
+
+// ─── Live sys-stats ticker ────────────────────────────────────────────────────
+
+function useSysStats() {
+  const startRef = useRef(Date.now());
+  const pktRef   = useRef(Math.floor(Math.random() * 8000 + 4000));
+
+  const [stats, setStats] = useState({ lat: 18, pkt: pktRef.current, uptime: "99.9%" });
+
+  useEffect(() => {
+    const iv = setInterval(() => {
+      pktRef.current += Math.floor(Math.random() * 12 + 2);
+      const lat    = Math.floor(Math.random() * 38 + 8);
+      const secs   = Math.floor((Date.now() - startRef.current) / 1000);
+      const mm     = String(Math.floor(secs / 60)).padStart(2, "0");
+      const ss     = String(secs % 60).padStart(2, "0");
+      setStats({ lat, pkt: pktRef.current, uptime: `${mm}:${ss}` });
+    }, 500);
+    return () => clearInterval(iv);
+  }, []);
+
+  return stats;
+}
+
+// ─── Status bar inside terminal ───────────────────────────────────────────────
+
+function SysStatusBar() {
+  const { lat, pkt, uptime } = useSysStats();
+  const [tick, setTick] = useState(true);
+
+  useEffect(() => {
+    const iv = setInterval(() => setTick(t => !t), 700);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <div
+      className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs px-0 py-2 mt-2 border-t select-none"
+      style={{
+        borderColor: "#21262d",
+        fontFamily: "'JetBrains Mono','Fira Code',monospace",
+        color: "#484f58",
+      }}
+      data-testid="status-bar-sys"
+    >
+      {/* signal dot */}
+      <span className="flex items-center gap-1.5">
+        <span
+          style={{
+            display: "inline-block",
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: "#3fb950",
+            boxShadow: tick ? "0 0 5px #3fb950" : "none",
+            transition: "box-shadow 0.3s",
+          }}
+        />
+        <span style={{ color: "#3fb950" }}>SIGNAL_ACTIVE</span>
+      </span>
+
+      <span style={{ color: "#30363d" }}>│</span>
+
+      <span>
+        PKT: <span style={{ color: "#58a6ff" }}>{pkt.toLocaleString()}</span>
+      </span>
+
+      <span style={{ color: "#30363d" }}>│</span>
+
+      <span>
+        LAT:{" "}
+        <span style={{ color: lat > 30 ? "#f78166" : "#3fb950" }}>
+          {lat}ms
+        </span>
+      </span>
+
+      <span style={{ color: "#30363d" }}>│</span>
+
+      <span>
+        UP: <span style={{ color: "#8b949e" }}>{uptime}</span>
+      </span>
+
+      <span style={{ color: "#30363d" }}>│</span>
+
+      <span style={{ color: "#30363d" }}>
+        mustafa@portfolio:~ {tick ? "▋" : " "}
+      </span>
+    </div>
+  );
+}
+
 // ─── Animated skill bar ───────────────────────────────────────────────────────
 
 function SkillLine({ name, percent, desc }: { name: string; percent: number; desc: string }) {
@@ -310,7 +477,6 @@ export default function SkillsSection() {
 
   const push = (t: ReturnType<typeof setTimeout>) => timersRef.current.push(t);
 
-  // Reveal `newLines` one by one with stagger
   const reveal = (newLines: TermLine[]) => {
     setLines(newLines);
     setVisibleCount(0);
@@ -323,11 +489,9 @@ export default function SkillsSection() {
         }, i * 32)
       );
     });
-    // If empty (clear), unblock immediately
     if (newLines.length === 0) setBusy(false);
   };
 
-  // Execute a command: fade out → swap → reveal
   const execute = (cmd: string) => {
     const c = cmd.trim().toLowerCase();
     if (!c) return;
@@ -341,7 +505,6 @@ export default function SkillsSection() {
     );
   };
 
-  // Click a link inside terminal output: type it into input then submit
   const handleLinkClick = (cmd: string) => {
     if (busy) return;
     setInput("");
@@ -373,13 +536,11 @@ export default function SkillsSection() {
     execute(val);
   };
 
-  // Auto-scroll output to bottom whenever visible lines grow
   useEffect(() => {
     const el = outputRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [visibleCount]);
 
-  // Boot sequence when section scrolls into view
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || booted) return;
@@ -434,42 +595,76 @@ export default function SkillsSection() {
             <span className="ml-3 text-xs" style={{ color: "#8b949e" }}>
               terminal — mustafa@portfolio:~
             </span>
+            {/* Live indicator in titlebar */}
+            <span className="ml-auto flex items-center gap-1.5 text-xs" style={{ color: "#3fb950" }}>
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "#3fb950" }}
+              />
+              LIVE
+            </span>
           </div>
 
-          {/* Output area */}
+          {/* Output area — matrix rain canvas sits behind text */}
           <div
-            ref={outputRef}
-            className="overflow-y-auto px-6 pt-6 pb-2 md:px-8"
-            style={{
-              minHeight: "320px",
-              maxHeight: "420px",
-              opacity: fading ? 0 : 1,
-              transition: "opacity 0.14s ease",
-            }}
+            className="relative"
+            style={{ minHeight: "320px", maxHeight: "420px", overflow: "hidden" }}
           >
-            {lines.slice(0, visibleCount).map((line, i) => {
-              if (line.kind === "blank") return <div key={i} className="h-1" />;
-              if (line.kind === "skill")
-                return <SkillLine key={i} name={line.name} percent={line.percent} desc={line.desc} />;
-              return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} />;
-            })}
+            {/* Matrix rain background */}
+            <MatrixRain />
 
-            {/* Blinking cursor always at bottom */}
-            {!fading && (
-              <div className="flex items-center gap-2 text-sm mt-3 mb-4">
-                <span style={{ color: "#58a6ff" }}>~</span>
-                <span style={{ color: "#8b949e" }}>$</span>
-                <span
-                  className="animate-blink inline-block"
-                  style={{
-                    width: "8px",
-                    height: "15px",
-                    background: "#58a6ff",
-                    verticalAlign: "middle",
-                  }}
-                />
-              </div>
-            )}
+            {/* Scanlines overlay */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                zIndex: 1,
+                backgroundImage:
+                  "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)",
+              }}
+            />
+
+            {/* Actual scrollable text content */}
+            <div
+              ref={outputRef}
+              className="overflow-y-auto px-6 pt-6 pb-2 md:px-8 relative"
+              style={{
+                minHeight: "320px",
+                maxHeight: "420px",
+                zIndex: 2,
+                opacity: fading ? 0 : 1,
+                transition: "opacity 0.14s ease",
+              }}
+            >
+              {lines.slice(0, visibleCount).map((line, i) => {
+                if (line.kind === "blank") return <div key={i} className="h-1" />;
+                if (line.kind === "skill")
+                  return <SkillLine key={i} name={line.name} percent={line.percent} desc={line.desc} />;
+                return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} />;
+              })}
+
+              {/* Blinking cursor */}
+              {!fading && (
+                <div className="flex items-center gap-2 text-sm mt-3 mb-1">
+                  <span style={{ color: "#58a6ff" }}>~</span>
+                  <span style={{ color: "#8b949e" }}>$</span>
+                  <span
+                    className="animate-blink inline-block"
+                    style={{
+                      width: "8px",
+                      height: "15px",
+                      background: "#58a6ff",
+                      verticalAlign: "middle",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Real-time sys status ticker */}
+              <SysStatusBar />
+            </div>
           </div>
 
           {/* Input area */}
