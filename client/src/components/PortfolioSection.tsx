@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
+import { supabase } from "@/lib/supabase";
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from "lucide-react";
 import { DragonConsole } from "./DragonConsole";
 
@@ -397,9 +398,30 @@ function ViewerSkeleton() {
 // ── Main Section ──────────────────────────────────────────────────────────────
 
 function PortfolioSection() {
-  const { data: allProjects = [], isLoading } = useQuery<Project[]>({ queryKey: ["/api/projects"] });
+  const { data: allProjects = [], isLoading } = useQuery<Project[]>({
+    queryKey: ["sb", "projects", "visible"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("is_visible", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data || []).map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        imageUrl: p.image_url,
+        technologies: p.technologies || [],
+        liveUrl: p.live_url,
+        githubUrl: p.github_url,
+        isVisible: p.is_visible,
+        createdAt: p.created_at,
+      })) as Project[];
+    },
+  });
 
-  const projects = allProjects.filter(p => p.isVisible !== false);
+  const projects = allProjects;
 
   return (
     <section id="portfolio" className="section-padding">

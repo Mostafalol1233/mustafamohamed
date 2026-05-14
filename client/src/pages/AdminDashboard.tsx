@@ -1,54 +1,28 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
+import type { DbProject, DbReview, DbMessage, DbCertificate, DbNotification } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
-import { 
-  Star, 
-  Mail, 
-  FolderGit2, 
-  Award, 
-  Bell, 
-  LayoutDashboard,
-  LogOut,
-  Check,
-  Trash2,
-  Eye,
-  EyeOff,
-  TrendingUp,
-  MessageSquare,
-  Users,
-  Plus,
-  Edit
+import {
+  Star, Mail, FolderGit2, Award, Bell, LayoutDashboard,
+  LogOut, Check, Trash2, Eye, EyeOff, TrendingUp, MessageSquare,
+  Plus, Edit, ExternalLink,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { Review, ContactMessage, Project, Certificate, Notification } from "@shared/schema";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter,
+  DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,449 +30,402 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertProjectSchema, insertCertificateSchema, insertNotificationSchema } from "@shared/schema";
 
-// Extended schemas with URL validation
-const projectFormSchema = insertProjectSchema.extend({
+// ── Form schemas ─────────────────────────────────────────────────────────────
+
+const projectFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  liveUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
-  githubUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
-  imageUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
   technologiesInput: z.string().optional(),
-}).transform((data) => ({
-  ...data,
-  technologies: data.technologiesInput ? data.technologiesInput.split(',').map(t => t.trim()).filter(Boolean) : [],
-}));
-
-const certificateFormSchema = insertCertificateSchema.extend({
-  title: z.string().min(1, "Title is required"),
-  imageUrl: z.union([z.string().url("Must be a valid URL").optional(), z.literal("")]).transform(val => val === "" ? undefined : val),
+  liveUrl: z.string().optional(),
+  githubUrl: z.string().optional(),
+  imageUrl: z.string().optional(),
+  isVisible: z.boolean().default(true),
 });
 
-const notificationFormSchema = insertNotificationSchema.extend({
+const certificateFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  issueDate: z.string().optional(),
+  imageUrl: z.string().optional(),
+  isVisible: z.boolean().default(true),
+});
+
+const notificationFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   message: z.string().min(1, "Message is required"),
   type: z.enum(["info", "warning", "success", "error"]),
+  isActive: z.boolean().default(true),
 });
+
+// ── Query keys ────────────────────────────────────────────────────────────────
+
+const QK = {
+  projects: ["sb", "projects"],
+  reviews: ["sb", "reviews"],
+  messages: ["sb", "messages"],
+  certificates: ["sb", "certificates"],
+  notifications: ["sb", "notifications"],
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  
-  // Dialog state
+
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<DbProject | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
   const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
 
-  // Check authentication
+  // ── Auth check (Express session stays) ───────────────────────────────────
   const { data: authData, isLoading: authLoading } = useQuery<{ isAuthenticated: boolean; isAdmin: boolean }>({
     queryKey: ["/api/auth/user"],
     retry: false,
   });
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && (!authData?.isAuthenticated || !authData?.isAdmin)) {
       setLocation("/admin/login");
     }
   }, [authData, authLoading, setLocation]);
 
-  // Fetch all data
-  const { data: allReviews = [] } = useQuery<Review[]>({
-    queryKey: ["/api/admin/reviews"],
-    enabled: authData?.isAuthenticated,
+  // ── Supabase queries ──────────────────────────────────────────────────────
+  const { data: projects = [], refetch: refetchProjects } = useQuery<DbProject[]>({
+    queryKey: QK.projects,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
   });
 
-  const { data: contactMessages = [] } = useQuery<ContactMessage[]>({
-    queryKey: ["/api/admin/contact"],
-    enabled: authData?.isAuthenticated,
+  const { data: allReviews = [], refetch: refetchReviews } = useQuery<DbReview[]>({
+    queryKey: QK.reviews,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
   });
 
-  const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ["/api/projects/all"],
-    enabled: authData?.isAuthenticated,
+  const { data: contactMessages = [], refetch: refetchMessages } = useQuery<DbMessage[]>({
+    queryKey: QK.messages,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
   });
 
-  const { data: certificates = [] } = useQuery<Certificate[]>({
-    queryKey: ["/api/certificates"],
-    enabled: authData?.isAuthenticated,
+  const { data: certificates = [], refetch: refetchCertificates } = useQuery<DbCertificate[]>({
+    queryKey: QK.certificates,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("certificates").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
   });
 
-  const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["/api/notifications/all"],
-    enabled: authData?.isAuthenticated,
+  const { data: notifications = [], refetch: refetchNotifications } = useQuery<DbNotification[]>({
+    queryKey: QK.notifications,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("notifications").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!authData?.isAuthenticated,
   });
 
-  const { data: analyticsSummary } = useQuery<{
-    totalViews: number;
-    totalProjects: number;
-    totalReviews: number;
-    totalContacts: number;
-    recentActivity: any[];
-  }>({
-    queryKey: ["/api/admin/analytics/summary"],
-    enabled: authData?.isAuthenticated,
-  });
-
-  // Forms
+  // ── Forms ─────────────────────────────────────────────────────────────────
   const projectForm = useForm<z.infer<typeof projectFormSchema>>({
     resolver: zodResolver(projectFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      technologiesInput: "",
-      liveUrl: "",
-      githubUrl: "",
-      imageUrl: "",
-      isVisible: true,
-    },
+    defaultValues: { title: "", description: "", technologiesInput: "", liveUrl: "", githubUrl: "", imageUrl: "", isVisible: true },
   });
 
   const certificateForm = useForm<z.infer<typeof certificateFormSchema>>({
     resolver: zodResolver(certificateFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      issueDate: "",
-      imageUrl: "",
-      isVisible: true,
-    },
+    defaultValues: { title: "", description: "", issueDate: "", imageUrl: "", isVisible: true },
   });
 
   const notificationForm = useForm<z.infer<typeof notificationFormSchema>>({
     resolver: zodResolver(notificationFormSchema),
-    defaultValues: {
-      title: "",
-      message: "",
-      type: "info",
-      isActive: true,
-    },
+    defaultValues: { title: "", message: "", type: "info", isActive: true },
   });
 
-  // Mutations
+  // ── Logout ────────────────────────────────────────────────────────────────
   const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/admin/logout");
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Logged out successfully!",
-      });
-      setLocation("/admin/login");
-    },
+    mutationFn: async () => { await apiRequest("POST", "/api/admin/logout"); },
+    onSuccess: () => { toast({ title: "Logged out" }); setLocation("/admin/login"); },
   });
 
+  // ── Project mutations ─────────────────────────────────────────────────────
   const createProjectMutation = useMutation({
-    mutationFn: async (data: FormData) => {
-      const res = await fetch("/api/projects", { method: "POST", body: data, credentials: "include" });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Failed"); }
-      return res.json();
+    mutationFn: async (d: z.infer<typeof projectFormSchema>) => {
+      const { error } = await supabase.from("projects").insert({
+        title: d.title,
+        description: d.description,
+        technologies: d.technologiesInput ? d.technologiesInput.split(",").map(t => t.trim()).filter(Boolean) : [],
+        live_url: d.liveUrl || null,
+        github_url: d.githubUrl || null,
+        image_url: d.imageUrl || null,
+        is_visible: d.isVisible,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({ title: "Success", description: "Project created successfully!" });
+      refetchProjects();
+      queryClient.invalidateQueries({ queryKey: ["sb", "projects", "visible"] });
+      toast({ title: "Project created!" });
       setProjectDialogOpen(false);
-      setImageFile(null);
       setImagePreview("");
       projectForm.reset();
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to create project", variant: "destructive" });
-    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
-      const res = await fetch(`/api/projects/${id}`, { method: "PATCH", body: data, credentials: "include" });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Failed"); }
-      return res.json();
+    mutationFn: async ({ id, d }: { id: number; d: z.infer<typeof projectFormSchema> }) => {
+      const { error } = await supabase.from("projects").update({
+        title: d.title,
+        description: d.description,
+        technologies: d.technologiesInput ? d.technologiesInput.split(",").map(t => t.trim()).filter(Boolean) : [],
+        live_url: d.liveUrl || null,
+        github_url: d.githubUrl || null,
+        image_url: d.imageUrl || null,
+        is_visible: d.isVisible,
+      }).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({ title: "Success", description: "Project updated successfully!" });
+      refetchProjects();
+      queryClient.invalidateQueries({ queryKey: ["sb", "projects", "visible"] });
+      toast({ title: "Project updated!" });
       setProjectDialogOpen(false);
       setEditingProject(null);
-      setImageFile(null);
       setImagePreview("");
       projectForm.reset();
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "Failed to update project", variant: "destructive" });
-    },
-  });
-
-  const createCertificateMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/certificates", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/certificates"] });
-      toast({
-        title: "Success",
-        description: "Certificate created successfully!",
-      });
-      setCertificateDialogOpen(false);
-      certificateForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create certificate",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const createNotificationMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/notifications", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications/all"] });
-      toast({
-        title: "Success",
-        description: "Notification created successfully!",
-      });
-      setNotificationDialogOpen(false);
-      notificationForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create notification",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const approveReviewMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("PATCH", `/api/admin/reviews/${id}/approve`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/reviews"] });
-      toast({
-        title: "Success",
-        description: "Review approved successfully!",
-      });
-    },
-  });
-
-  const deleteReviewMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/reviews/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/reviews"] });
-      toast({
-        title: "Success",
-        description: "Review deleted successfully!",
-      });
-    },
-  });
-
-  const markMessageReadMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("PATCH", `/api/contact/${id}/read`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/contact"] });
-      toast({
-        title: "Success",
-        description: "Message marked as read!",
-      });
-    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteProjectMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/projects/${id}`);
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({ title: "Success", description: "Project deleted successfully!" });
+      refetchProjects();
+      queryClient.invalidateQueries({ queryKey: ["sb", "projects", "visible"] });
+      toast({ title: "Project deleted!" });
     },
   });
 
   const toggleProjectVisibilityMutation = useMutation({
-    mutationFn: async ({ id, isVisible }: { id: number; isVisible: boolean }) => {
-      await apiRequest("PATCH", `/api/projects/${id}`, { isVisible });
+    mutationFn: async ({ id, is_visible }: { id: number; is_visible: boolean }) => {
+      const { error } = await supabase.from("projects").update({ is_visible }).eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({ title: "Success", description: "Project visibility updated!" });
+      refetchProjects();
+      queryClient.invalidateQueries({ queryKey: ["sb", "projects", "visible"] });
+      toast({ title: "Visibility updated!" });
     },
+  });
+
+  // ── Review mutations ──────────────────────────────────────────────────────
+  const approveReviewMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("reviews").update({ is_approved: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchReviews(); toast({ title: "Review approved!" }); },
+  });
+
+  const deleteReviewMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("reviews").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchReviews(); toast({ title: "Review deleted!" }); },
+  });
+
+  // ── Message mutations ─────────────────────────────────────────────────────
+  const markMessageReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("contact_messages").update({ is_read: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchMessages(); toast({ title: "Marked as read!" }); },
+  });
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from("contact_messages").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchMessages(); toast({ title: "Message deleted!" }); },
+  });
+
+  // ── Certificate mutations ─────────────────────────────────────────────────
+  const createCertificateMutation = useMutation({
+    mutationFn: async (d: z.infer<typeof certificateFormSchema>) => {
+      const { error } = await supabase.from("certificates").insert({
+        title: d.title,
+        description: d.description || null,
+        issue_date: d.issueDate || null,
+        image_url: d.imageUrl || null,
+        is_visible: d.isVisible,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchCertificates();
+      queryClient.invalidateQueries({ queryKey: ["sb", "certificates"] });
+      toast({ title: "Certificate created!" });
+      setCertificateDialogOpen(false);
+      certificateForm.reset();
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
   const deleteCertificateMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/certificates/${id}`);
+      const { error } = await supabase.from("certificates").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/certificates"] });
-      toast({
-        title: "Success",
-        description: "Certificate deleted successfully!",
-      });
+      refetchCertificates();
+      queryClient.invalidateQueries({ queryKey: ["sb", "certificates"] });
+      toast({ title: "Certificate deleted!" });
     },
   });
 
-  const toggleNotificationMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      await apiRequest("PATCH", `/api/notifications/${id}`, { isActive });
+  const toggleCertificateVisibilityMutation = useMutation({
+    mutationFn: async ({ id, is_visible }: { id: number; is_visible: boolean }) => {
+      const { error } = await supabase.from("certificates").update({ is_visible }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { refetchCertificates(); toast({ title: "Visibility updated!" }); },
+  });
+
+  // ── Notification mutations ────────────────────────────────────────────────
+  const createNotificationMutation = useMutation({
+    mutationFn: async (d: z.infer<typeof notificationFormSchema>) => {
+      const { error } = await supabase.from("notifications").insert({
+        title: d.title,
+        message: d.message,
+        type: d.type,
+        is_active: d.isActive,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications/all"] });
-      toast({
-        title: "Success",
-        description: "Notification updated!",
-      });
+      refetchNotifications();
+      queryClient.invalidateQueries({ queryKey: ["sb", "notifications", "active"] });
+      toast({ title: "Notification created!" });
+      setNotificationDialogOpen(false);
+      notificationForm.reset();
+    },
+    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const toggleNotificationMutation = useMutation({
+    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) => {
+      const { error } = await supabase.from("notifications").update({ is_active }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refetchNotifications();
+      queryClient.invalidateQueries({ queryKey: ["sb", "notifications", "active"] });
+      toast({ title: "Notification updated!" });
     },
   });
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/notifications/${id}`);
+      const { error } = await supabase.from("notifications").delete().eq("id", id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications/all"] });
-      toast({
-        title: "Success",
-        description: "Notification deleted successfully!",
-      });
+      refetchNotifications();
+      queryClient.invalidateQueries({ queryKey: ["sb", "notifications", "active"] });
+      toast({ title: "Notification deleted!" });
     },
   });
 
-  // Helper functions
-  const formatDate = (dateString: string | Date) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const formatDate = (s: string) =>
+    new Date(s).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-        }`}
-      />
+  const renderStars = (rating: number) =>
+    Array.from({ length: 5 }, (_, i) => (
+      <Star key={i} className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
     ));
-  };
 
-  const handleEditProject = (project: Project) => {
-    setEditingProject(project);
-    setImageFile(null);
-    setImagePreview(project.imageUrl || "");
+  const handleEditProject = (p: DbProject) => {
+    setEditingProject(p);
+    setImagePreview(p.image_url || "");
     projectForm.reset({
-      title: project.title,
-      description: project.description,
-      technologiesInput: project.technologies?.join(", ") || "",
-      liveUrl: project.liveUrl || "",
-      githubUrl: project.githubUrl || "",
-      imageUrl: project.imageUrl || "",
-      isVisible: project.isVisible ?? true,
+      title: p.title,
+      description: p.description,
+      technologiesInput: p.technologies?.join(", ") || "",
+      liveUrl: p.live_url || "",
+      githubUrl: p.github_url || "",
+      imageUrl: p.image_url || "",
+      isVisible: p.is_visible,
     });
     setProjectDialogOpen(true);
   };
 
   const handleProjectSubmit = (values: z.infer<typeof projectFormSchema>) => {
-    const formData = new FormData();
-    formData.append("title", values.title);
-    formData.append("description", values.description);
-    formData.append("technologies", JSON.stringify(values.technologies || []));
-    formData.append("liveUrl", values.liveUrl || "");
-    formData.append("githubUrl", values.githubUrl || "");
-    formData.append("isVisible", String(values.isVisible ?? true));
-    if (imageFile) {
-      formData.append("image", imageFile);
-    } else if (values.imageUrl) {
-      formData.append("imageUrl", values.imageUrl);
-    }
-
     if (editingProject) {
-      updateProjectMutation.mutate({ id: editingProject.id, data: formData });
+      updateProjectMutation.mutate({ id: editingProject.id, d: values });
     } else {
-      createProjectMutation.mutate(formData);
+      createProjectMutation.mutate(values);
     }
   };
 
-  const handleCertificateSubmit = (values: z.infer<typeof certificateFormSchema>) => {
-    const data = {
-      title: values.title,
-      description: values.description || undefined,
-      issueDate: values.issueDate || undefined,
-      imageUrl: values.imageUrl || undefined,
-      isVisible: values.isVisible,
-    };
-    createCertificateMutation.mutate(data);
-  };
-
-  const handleNotificationSubmit = (values: z.infer<typeof notificationFormSchema>) => {
-    createNotificationMutation.mutate(values);
-  };
-
-  // Calculate statistics
+  // ── Stats ─────────────────────────────────────────────────────────────────
   const stats = {
-    totalReviews: allReviews.length,
-    pendingReviews: allReviews.filter(r => !r.isApproved).length,
-    unreadMessages: contactMessages.filter(m => !m.isRead).length,
-    totalProjects: projects.length,
-    visibleProjects: projects.filter(p => p.isVisible).length,
-    activeNotifications: notifications.filter(n => n.isActive).length,
+    pendingReviews: allReviews.filter(r => !r.is_approved).length,
+    approvedReviews: allReviews.filter(r => r.is_approved).length,
+    unreadMessages: contactMessages.filter(m => !m.is_read).length,
+    visibleProjects: projects.filter(p => p.is_visible).length,
+    activeNotifications: notifications.filter(n => n.is_active).length,
   };
 
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
 
-  if (!authData?.isAuthenticated) {
-    return null; // Will redirect via useEffect
-  }
+  if (!authData?.isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900" data-testid="text-dashboard-title">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage your portfolio content</p>
-            </div>
-            <Button
-              onClick={() => logoutMutation.mutate()}
-              variant="outline"
-              disabled={logoutMutation.isPending}
-              data-testid="button-logout"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900" data-testid="text-dashboard-title">Admin Dashboard</h1>
+            <p className="text-gray-500 text-sm">Supabase · Manage your portfolio content</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setLocation("/")} className="text-xs">
+              ← Back to site
+            </Button>
+            <Button onClick={() => logoutMutation.mutate()} variant="outline" disabled={logoutMutation.isPending} data-testid="button-logout">
+              <LogOut className="w-4 h-4 mr-2" /> Logout
             </Button>
           </div>
         </div>
@@ -507,679 +434,365 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 lg:w-auto" data-testid="tabs-navigation">
-            <TabsTrigger value="overview" data-testid="tab-overview">
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Overview
+            <TabsTrigger value="overview"><LayoutDashboard className="w-4 h-4 mr-2" />Overview</TabsTrigger>
+            <TabsTrigger value="projects">
+              <FolderGit2 className="w-4 h-4 mr-2" />Projects
+              <Badge variant="secondary" className="ml-1">{projects.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="reviews" data-testid="tab-reviews">
-              <Star className="w-4 h-4 mr-2" />
-              Reviews
+            <TabsTrigger value="reviews">
+              <Star className="w-4 h-4 mr-2" />Reviews
+              {stats.pendingReviews > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReviews}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="messages" data-testid="tab-messages">
-              <Mail className="w-4 h-4 mr-2" />
-              Messages
+            <TabsTrigger value="messages">
+              <Mail className="w-4 h-4 mr-2" />Messages
+              {stats.unreadMessages > 0 && <Badge variant="destructive" className="ml-1">{stats.unreadMessages}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="projects" data-testid="tab-projects">
-              <FolderGit2 className="w-4 h-4 mr-2" />
-              Projects
+            <TabsTrigger value="certificates"><Award className="w-4 h-4 mr-2" />Certificates</TabsTrigger>
+            <TabsTrigger value="notifications">
+              <Bell className="w-4 h-4 mr-2" />Notifications
+              {stats.activeNotifications > 0 && <Badge variant="secondary" className="ml-1">{stats.activeNotifications}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="certificates" data-testid="tab-certificates">
-              <Award className="w-4 h-4 mr-2" />
-              Certificates
-            </TabsTrigger>
-            <TabsTrigger value="notifications" data-testid="tab-notifications">
-              <Bell className="w-4 h-4 mr-2" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="analytics" data-testid="tab-analytics">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Analytics
-            </TabsTrigger>
+            <TabsTrigger value="analytics"><TrendingUp className="w-4 h-4 mr-2" />Analytics</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
+          {/* ── OVERVIEW ── */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card data-testid="card-stat-reviews">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <MessageSquare className="w-4 h-4 mr-2 text-blue-600" />
-                    Reviews
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-total-reviews">{stats.totalReviews}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stats.pendingReviews} pending approval
-                  </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[
+                { label: "Projects", value: projects.length, sub: `${stats.visibleProjects} visible`, color: "text-blue-600", Icon: FolderGit2 },
+                { label: "Reviews", value: allReviews.length, sub: `${stats.pendingReviews} pending`, color: "text-green-600", Icon: Star },
+                { label: "Messages", value: contactMessages.length, sub: `${stats.unreadMessages} unread`, color: "text-purple-600", Icon: MessageSquare },
+                { label: "Certificates", value: certificates.length, sub: "total", color: "text-orange-600", Icon: Award },
+                { label: "Notifications", value: notifications.length, sub: `${stats.activeNotifications} active`, color: "text-red-600", Icon: Bell },
+                { label: "Approved", value: stats.approvedReviews, sub: "reviews live", color: "text-teal-600", Icon: Check },
+              ].map(({ label, value, sub, color, Icon }) => (
+                <Card key={label}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Icon className={`w-4 h-4 ${color}`} />{label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className={`text-2xl font-bold ${color}`}>{value}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                  <Button className="w-full" onClick={() => { setEditingProject(null); projectForm.reset(); setProjectDialogOpen(true); }}>
+                    <Plus className="w-4 h-4 mr-2" />Add New Project
+                  </Button>
+                  <Button className="w-full" variant="outline" onClick={() => { certificateForm.reset(); setCertificateDialogOpen(true); }}>
+                    <Plus className="w-4 h-4 mr-2" />Add Certificate
+                  </Button>
+                  <Button className="w-full" variant="outline" onClick={() => { notificationForm.reset(); setNotificationDialogOpen(true); }}>
+                    <Plus className="w-4 h-4 mr-2" />Create Notification
+                  </Button>
                 </CardContent>
               </Card>
-
-              <Card data-testid="card-stat-messages">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Mail className="w-4 h-4 mr-2 text-green-600" />
-                    Messages
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-total-messages">{contactMessages.length}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stats.unreadMessages} unread
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card data-testid="card-stat-projects">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <FolderGit2 className="w-4 h-4 mr-2 text-purple-600" />
-                    Projects
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-total-projects">{stats.totalProjects}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stats.visibleProjects} visible
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card data-testid="card-stat-certificates">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Award className="w-4 h-4 mr-2 text-orange-600" />
-                    Certificates
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-total-certificates">{certificates.length}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Total certificates
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card data-testid="card-stat-notifications">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <Bell className="w-4 h-4 mr-2 text-red-600" />
-                    Notifications
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-total-notifications">{notifications.length}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {stats.activeNotifications} active
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card data-testid="card-stat-engagement">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-teal-600" />
-                    Engagement
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-engagement-rate">
-                    {allReviews.length > 0 
-                      ? Math.round((allReviews.filter(r => r.isApproved).length / allReviews.length) * 100) 
-                      : 0}%
+              <Card>
+                <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span>Latest Review</span>
+                    <span className="text-muted-foreground">{allReviews[0] ? formatDate(allReviews[0].created_at) : "None"}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Review approval rate
-                  </p>
+                  <div className="flex justify-between">
+                    <span>Latest Message</span>
+                    <span className="text-muted-foreground">{contactMessages[0] ? formatDate(contactMessages[0].created_at) : "None"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Latest Project</span>
+                    <span className="text-muted-foreground">{projects[0] ? formatDate(projects[0].created_at) : "None"}</span>
+                  </div>
                 </CardContent>
               </Card>
             </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Common administrative tasks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {stats.pendingReviews > 0 && (
-                  <div className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-center">
-                      <Star className="w-5 h-5 text-yellow-600 mr-3" />
-                      <span className="text-sm font-medium">{stats.pendingReviews} reviews pending approval</span>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => {
-                      const tabsElement = document.querySelector('[data-testid="tab-reviews"]') as HTMLButtonElement;
-                      tabsElement?.click();
-                    }} data-testid="button-quick-action-reviews">
-                      Review Now
-                    </Button>
-                  </div>
-                )}
-                {stats.unreadMessages > 0 && (
-                  <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center">
-                      <Mail className="w-5 h-5 text-blue-600 mr-3" />
-                      <span className="text-sm font-medium">{stats.unreadMessages} unread messages</span>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => {
-                      const tabsElement = document.querySelector('[data-testid="tab-messages"]') as HTMLButtonElement;
-                      tabsElement?.click();
-                    }} data-testid="button-quick-action-messages">
-                      View Messages
-                    </Button>
-                  </div>
-                )}
-                {stats.pendingReviews === 0 && stats.unreadMessages === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <Check className="w-12 h-12 mx-auto mb-2 text-green-500" />
-                    <p>All caught up! No pending actions.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
 
-          {/* Reviews Tab */}
-          <TabsContent value="reviews">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Star className="w-5 h-5 mr-2 text-yellow-500" />
-                  Reviews Management
-                </CardTitle>
-                <CardDescription>
-                  Manage and moderate user reviews ({allReviews.length} total, {stats.pendingReviews} pending)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {allReviews.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-reviews">No reviews found</p>
-                  ) : (
-                    allReviews.map((review) => (
-                      <div key={review.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-review-${review.id}`}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-semibold" data-testid={`text-review-name-${review.id}`}>{review.name}</h4>
-                            {review.email && <p className="text-sm text-gray-600">{review.email}</p>}
-                            <div className="flex items-center space-x-2 mt-1">
-                              <div className="flex">{renderStars(review.rating)}</div>
-                              <Badge variant={review.isApproved ? "default" : "secondary"} data-testid={`badge-review-status-${review.id}`}>
-                                {review.isApproved ? "Approved" : "Pending"}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="flex space-x-2">
-                            {!review.isApproved && (
-                              <Button
-                                size="sm"
-                                onClick={() => approveReviewMutation.mutate(review.id)}
-                                disabled={approveReviewMutation.isPending}
-                                data-testid={`button-approve-review-${review.id}`}
-                              >
-                                <Check className="w-4 h-4 mr-1" />
-                                Approve
-                              </Button>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteReviewMutation.mutate(review.id)}
-                              disabled={deleteReviewMutation.isPending}
-                              data-testid={`button-delete-review-${review.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                        <p className="text-gray-600 text-sm" data-testid={`text-review-comment-${review.id}`}>{review.comment}</p>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(review.createdAt!)}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Messages Tab */}
-          <TabsContent value="messages">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Mail className="w-5 h-5 mr-2 text-blue-500" />
-                  Contact Messages
-                </CardTitle>
-                <CardDescription>
-                  View and manage contact form submissions ({contactMessages.length} total, {stats.unreadMessages} unread)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {contactMessages.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-messages">No messages found</p>
-                  ) : (
-                    contactMessages.map((message) => (
-                      <div key={message.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-message-${message.id}`}>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-semibold" data-testid={`text-message-name-${message.id}`}>{message.name}</h4>
-                            <p className="text-sm text-gray-600">{message.email}</p>
-                            {message.subject && (
-                              <p className="text-sm font-medium text-gray-800 mt-1">
-                                Subject: {message.subject}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant={message.isRead ? "default" : "destructive"} data-testid={`badge-message-status-${message.id}`}>
-                              {message.isRead ? "Read" : "Unread"}
-                            </Badge>
-                            {!message.isRead && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => markMessageReadMutation.mutate(message.id)}
-                                disabled={markMessageReadMutation.isPending}
-                                data-testid={`button-mark-read-${message.id}`}
-                              >
-                                <Check className="w-4 h-4 mr-1" />
-                                Mark Read
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-gray-600 text-sm" data-testid={`text-message-content-${message.id}`}>{message.message}</p>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(message.createdAt!)}
-                        </p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Projects Tab */}
+          {/* ── PROJECTS ── */}
           <TabsContent value="projects">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle className="flex items-center">
-                      <FolderGit2 className="w-5 h-5 mr-2 text-purple-500" />
-                      Projects Management
-                    </CardTitle>
-                    <CardDescription>
-                      Manage portfolio projects ({projects.length} total, {stats.visibleProjects} visible)
-                    </CardDescription>
+                    <CardTitle className="flex items-center"><FolderGit2 className="w-5 h-5 mr-2 text-blue-500" />Projects</CardTitle>
+                    <CardDescription>{projects.length} total · {stats.visibleProjects} visible on site</CardDescription>
                   </div>
-                  <Button
-                    onClick={() => {
-                      setEditingProject(null);
-                      setImageFile(null);
-                      setImagePreview("");
-                      projectForm.reset({
-                        title: "",
-                        description: "",
-                        technologiesInput: "",
-                        liveUrl: "",
-                        githubUrl: "",
-                        imageUrl: "",
-                        isVisible: true,
-                      });
-                      setProjectDialogOpen(true);
-                    }}
-                    data-testid="button-create-project"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Project
+                  <Button onClick={() => { setEditingProject(null); projectForm.reset(); setImagePreview(""); setProjectDialogOpen(true); }}>
+                    <Plus className="w-4 h-4 mr-2" />Add Project
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {projects.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-projects">No projects found</p>
-                  ) : (
-                    projects.map((project) => (
-                      <div key={project.id} className="border rounded-lg p-4 space-y-3" data-testid={`card-project-${project.id}`}>
-                        <div className="flex gap-4 items-start">
-                          {/* Thumbnail */}
-                          {project.imageUrl && (
-                            <img src={project.imageUrl} alt={project.title}
-                              className="w-20 h-14 object-cover rounded-md flex-shrink-0 border" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <h4 className="font-semibold truncate" data-testid={`text-project-title-${project.id}`}>{project.title}</h4>
-                                <p className="text-sm text-gray-500 mt-0.5 line-clamp-2" data-testid={`text-project-description-${project.id}`}>{project.description}</p>
-                              </div>
-                              {/* Actions */}
-                              <div className="flex gap-1.5 flex-shrink-0">
-                                <Button size="sm" variant="outline" onClick={() => handleEditProject(project)}
-                                  data-testid={`button-edit-project-${project.id}`}>
-                                  <Edit className="w-3.5 h-3.5 mr-1" />Edit
-                                </Button>
-                                <Button size="sm" variant="destructive" onClick={() => deleteProjectMutation.mutate(project.id)}
-                                  disabled={deleteProjectMutation.isPending}
-                                  data-testid={`button-delete-project-${project.id}`}>
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* Tech tags */}
-                            {project.technologies && project.technologies.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {project.technologies.map((tech, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs" data-testid={`badge-project-tech-${project.id}-${idx}`}>
-                                    {tech}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Status row */}
-                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                              {/* Visibility toggle */}
-                              <button
-                                onClick={() => toggleProjectVisibilityMutation.mutate({ id: project.id, isVisible: !project.isVisible })}
-                                disabled={toggleProjectVisibilityMutation.isPending}
-                                data-testid={`button-toggle-visibility-${project.id}`}
-                                className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${
-                                  project.isVisible
-                                    ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                                    : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
-                                }`}
-                              >
-                                {project.isVisible ? <><Eye className="w-3 h-3" />Visible</> : <><EyeOff className="w-3 h-3" />Hidden</>}
-                              </button>
-
-                              {/* Live URL badge */}
-                              {project.liveUrl && (
-                                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-medium"
-                                  data-testid={`link-project-live-${project.id}`}>
-                                  🌐 Live Demo
-                                </a>
-                              )}
-
-                              {/* GitHub badge — only shown if githubUrl exists */}
-                              {project.githubUrl ? (
-                                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 font-medium"
-                                  data-testid={`link-project-github-${project.id}`}>
-                                  ⌥ GitHub
-                                </a>
-                              ) : project.liveUrl ? (
-                                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 font-medium"
-                                  data-testid={`badge-project-published-${project.id}`}>
-                                  ✦ Published (no GitHub)
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
+                    <p className="text-center text-muted-foreground py-8">No projects yet. Add one!</p>
+                  ) : projects.map((p) => (
+                    <div key={p.id} className="border rounded-lg p-4 flex gap-4 items-start" data-testid={`card-project-${p.id}`}>
+                      {p.image_url && (
+                        <img src={p.image_url} alt={p.title} className="w-16 h-12 object-cover rounded flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold">{p.title}</h4>
+                          <Badge variant={p.is_visible ? "default" : "secondary"}>
+                            {p.is_visible ? "Visible" : "Hidden"}
+                          </Badge>
                         </div>
-                        <p className="text-xs text-gray-400">{formatDate(project.createdAt!)}</p>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {p.technologies?.map(t => (
+                            <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+                          {p.live_url && <a href={p.live_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary"><ExternalLink className="w-3 h-3" />Live</a>}
+                        </div>
                       </div>
-                    ))
-                  )}
+                      <div className="flex flex-col gap-1 flex-shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => handleEditProject(p)} data-testid={`button-edit-project-${p.id}`}>
+                          <Edit className="w-3 h-3 mr-1" />Edit
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => toggleProjectVisibilityMutation.mutate({ id: p.id, is_visible: !p.is_visible })} data-testid={`button-toggle-project-${p.id}`}>
+                          {p.is_visible ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                          {p.is_visible ? "Hide" : "Show"}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteProjectMutation.mutate(p.id)} data-testid={`button-delete-project-${p.id}`}>
+                          <Trash2 className="w-3 h-3 mr-1" />Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Certificates Tab */}
+          {/* ── REVIEWS ── */}
+          <TabsContent value="reviews">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center"><Star className="w-5 h-5 mr-2 text-yellow-500" />Reviews</CardTitle>
+                <CardDescription>{allReviews.length} total · {stats.pendingReviews} pending · {stats.approvedReviews} approved</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {allReviews.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No reviews yet.</p>
+                  ) : allReviews.map((r) => (
+                    <div key={r.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-review-${r.id}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold">{r.name}</span>
+                            {r.email && <span className="text-xs text-muted-foreground">{r.email}</span>}
+                            <Badge variant={r.is_approved ? "default" : "secondary"}>
+                              {r.is_approved ? "Approved" : "Pending"}
+                            </Badge>
+                          </div>
+                          <div className="flex mt-1">{renderStars(r.rating)}</div>
+                          <p className="text-sm mt-1">{r.comment}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatDate(r.created_at)}</p>
+                        </div>
+                        <div className="flex flex-col gap-1 ml-3">
+                          {!r.is_approved && (
+                            <Button size="sm" onClick={() => approveReviewMutation.mutate(r.id)} disabled={approveReviewMutation.isPending} data-testid={`button-approve-review-${r.id}`}>
+                              <Check className="w-3 h-3 mr-1" />Approve
+                            </Button>
+                          )}
+                          <Button size="sm" variant="destructive" onClick={() => deleteReviewMutation.mutate(r.id)} disabled={deleteReviewMutation.isPending} data-testid={`button-delete-review-${r.id}`}>
+                            <Trash2 className="w-3 h-3 mr-1" />Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ── MESSAGES ── */}
+          <TabsContent value="messages">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center"><Mail className="w-5 h-5 mr-2 text-green-500" />Contact Messages</CardTitle>
+                <CardDescription>{contactMessages.length} total · {stats.unreadMessages} unread</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {contactMessages.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No messages yet.</p>
+                  ) : contactMessages.map((m) => (
+                    <div key={m.id} className={`border rounded-lg p-4 space-y-1 ${!m.is_read ? "border-blue-200 bg-blue-50/40" : ""}`} data-testid={`card-message-${m.id}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-semibold">{m.name}</span>
+                            <span className="text-xs text-muted-foreground">{m.email}</span>
+                            {!m.is_read && <Badge variant="secondary" className="text-xs">Unread</Badge>}
+                          </div>
+                          {m.subject && <p className="text-sm font-medium mt-0.5">{m.subject}</p>}
+                          <p className="text-sm text-muted-foreground mt-1">{m.message}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatDate(m.created_at)}</p>
+                        </div>
+                        <div className="flex flex-col gap-1 ml-3">
+                          {!m.is_read && (
+                            <Button size="sm" variant="outline" onClick={() => markMessageReadMutation.mutate(m.id)} data-testid={`button-read-message-${m.id}`}>
+                              <Check className="w-3 h-3 mr-1" />Mark Read
+                            </Button>
+                          )}
+                          <Button size="sm" variant="destructive" onClick={() => deleteMessageMutation.mutate(m.id)} data-testid={`button-delete-message-${m.id}`}>
+                            <Trash2 className="w-3 h-3 mr-1" />Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ── CERTIFICATES ── */}
           <TabsContent value="certificates">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle className="flex items-center">
-                      <Award className="w-5 h-5 mr-2 text-orange-500" />
-                      Certificates Management
-                    </CardTitle>
-                    <CardDescription>
-                      Manage certifications and achievements ({certificates.length} total)
-                    </CardDescription>
+                    <CardTitle className="flex items-center"><Award className="w-5 h-5 mr-2 text-orange-500" />Certificates</CardTitle>
+                    <CardDescription>{certificates.length} total</CardDescription>
                   </div>
-                  <Button
-                    onClick={() => {
-                      certificateForm.reset({
-                        title: "",
-                        description: "",
-                        issueDate: "",
-                        imageUrl: "",
-                        isVisible: true,
-                      });
-                      setCertificateDialogOpen(true);
-                    }}
-                    data-testid="button-create-certificate"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New
+                  <Button onClick={() => { certificateForm.reset(); setCertificateDialogOpen(true); }}>
+                    <Plus className="w-4 h-4 mr-2" />Add Certificate
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {certificates.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-certificates">No certificates found</p>
-                  ) : (
-                    certificates.map((cert) => (
-                      <div key={cert.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-certificate-${cert.id}`}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-semibold" data-testid={`text-certificate-title-${cert.id}`}>{cert.title}</h4>
-                            {cert.description && (
-                              <p className="text-sm text-gray-600 mt-1" data-testid={`text-certificate-description-${cert.id}`}>
-                                {cert.description}
-                              </p>
-                            )}
-                            <div className="flex items-center space-x-2 mt-2">
-                              {cert.issueDate && (
-                                <p className="text-xs text-gray-500" data-testid={`text-certificate-date-${cert.id}`}>
-                                  Issued: {cert.issueDate}
-                                </p>
-                              )}
-                              <Badge variant={cert.isVisible ? "default" : "secondary"} data-testid={`badge-certificate-visibility-${cert.id}`}>
-                                {cert.isVisible ? <><Eye className="w-3 h-3 mr-1" />Visible</> : <><EyeOff className="w-3 h-3 mr-1" />Hidden</>}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteCertificateMutation.mutate(cert.id)}
-                            disabled={deleteCertificateMutation.isPending}
-                            data-testid={`button-delete-certificate-${cert.id}`}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
+                    <p className="text-center text-muted-foreground py-8">No certificates yet.</p>
+                  ) : certificates.map((c) => (
+                    <div key={c.id} className="border rounded-lg p-4 flex gap-4 items-start" data-testid={`card-certificate-${c.id}`}>
+                      {c.image_url && <img src={c.image_url} alt={c.title} className="w-16 h-12 object-cover rounded flex-shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{c.title}</h4>
+                          <Badge variant={c.is_visible ? "default" : "secondary"}>{c.is_visible ? "Visible" : "Hidden"}</Badge>
                         </div>
+                        {c.description && <p className="text-sm text-muted-foreground mt-1">{c.description}</p>}
+                        {c.issue_date && <p className="text-xs text-muted-foreground mt-1">Issued: {c.issue_date}</p>}
                       </div>
-                    ))
-                  )}
+                      <div className="flex flex-col gap-1">
+                        <Button size="sm" variant="outline" onClick={() => toggleCertificateVisibilityMutation.mutate({ id: c.id, is_visible: !c.is_visible })} data-testid={`button-toggle-cert-${c.id}`}>
+                          {c.is_visible ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+                          {c.is_visible ? "Hide" : "Show"}
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteCertificateMutation.mutate(c.id)} data-testid={`button-delete-certificate-${c.id}`}>
+                          <Trash2 className="w-3 h-3 mr-1" />Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Notifications Tab */}
+          {/* ── NOTIFICATIONS ── */}
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle className="flex items-center">
-                      <Bell className="w-5 h-5 mr-2 text-red-500" />
-                      Notifications Management
-                    </CardTitle>
-                    <CardDescription>
-                      Manage site-wide notifications ({notifications.length} total, {stats.activeNotifications} active)
-                    </CardDescription>
+                    <CardTitle className="flex items-center"><Bell className="w-5 h-5 mr-2 text-red-500" />Notifications</CardTitle>
+                    <CardDescription>{notifications.length} total · {stats.activeNotifications} active</CardDescription>
                   </div>
-                  <Button
-                    onClick={() => {
-                      notificationForm.reset({
-                        title: "",
-                        message: "",
-                        type: "info",
-                        isActive: true,
-                      });
-                      setNotificationDialogOpen(true);
-                    }}
-                    data-testid="button-create-notification"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create New
+                  <Button onClick={() => { notificationForm.reset(); setNotificationDialogOpen(true); }} data-testid="button-create-notification">
+                    <Plus className="w-4 h-4 mr-2" />Create New
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {notifications.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-notifications">No notifications found</p>
-                  ) : (
-                    notifications.map((notification) => (
-                      <div key={notification.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-notification-${notification.id}`}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <h4 className="font-semibold" data-testid={`text-notification-title-${notification.id}`}>{notification.title}</h4>
-                              <Badge variant={
-                                notification.type === "error" ? "destructive" :
-                                notification.type === "warning" ? "secondary" :
-                                notification.type === "success" ? "default" :
-                                "outline"
-                              } data-testid={`badge-notification-type-${notification.id}`}>
-                                {notification.type}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1" data-testid={`text-notification-message-${notification.id}`}>
-                              {notification.message}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-2">
-                              <Badge variant={notification.isActive ? "default" : "secondary"} data-testid={`badge-notification-status-${notification.id}`}>
-                                {notification.isActive ? "Active" : "Inactive"}
-                              </Badge>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => toggleNotificationMutation.mutate({
-                                  id: notification.id,
-                                  isActive: !notification.isActive
-                                })}
-                                disabled={toggleNotificationMutation.isPending}
-                                data-testid={`button-toggle-notification-${notification.id}`}
-                              >
-                                {notification.isActive ? "Deactivate" : "Activate"}
-                              </Button>
-                            </div>
+                    <p className="text-center text-muted-foreground py-8">No notifications yet.</p>
+                  ) : notifications.map((n) => (
+                    <div key={n.id} className="border rounded-lg p-4" data-testid={`card-notification-${n.id}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-semibold">{n.title}</h4>
+                            <Badge variant={n.type === "error" ? "destructive" : n.type === "warning" ? "secondary" : "outline"}>{n.type}</Badge>
+                            <Badge variant={n.is_active ? "default" : "secondary"}>{n.is_active ? "Active" : "Inactive"}</Badge>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                            disabled={deleteNotificationMutation.isPending}
-                            data-testid={`button-delete-notification-${notification.id}`}
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
+                          <p className="text-sm text-muted-foreground mt-1">{n.message}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{formatDate(n.created_at)}</p>
+                        </div>
+                        <div className="flex gap-1 ml-3">
+                          <Button size="sm" variant="outline" onClick={() => toggleNotificationMutation.mutate({ id: n.id, is_active: !n.is_active })} data-testid={`button-toggle-notification-${n.id}`}>
+                            {n.is_active ? "Deactivate" : "Activate"}
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => deleteNotificationMutation.mutate(n.id)} data-testid={`button-delete-notification-${n.id}`}>
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(notification.createdAt!)}
-                        </p>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Analytics Tab */}
+          {/* ── ANALYTICS ── */}
           <TabsContent value="analytics">
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="w-5 h-5 mr-2 text-teal-500" />
-                    Analytics Overview
-                  </CardTitle>
-                  <CardDescription>
-                    Visitor engagement and site statistics
-                  </CardDescription>
+                  <CardTitle className="flex items-center"><TrendingUp className="w-5 h-5 mr-2 text-teal-500" />Site Statistics</CardTitle>
+                  <CardDescription>Live data from Supabase</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Total Page Views</div>
-                      <div className="text-2xl font-bold" data-testid="text-analytics-views">
-                        {analyticsSummary?.totalViews || 0}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: "Total Projects", value: projects.length, bg: "bg-blue-50", color: "text-blue-700" },
+                      { label: "Live Projects", value: stats.visibleProjects, bg: "bg-green-50", color: "text-green-700" },
+                      { label: "Total Reviews", value: allReviews.length, bg: "bg-purple-50", color: "text-purple-700" },
+                      { label: "Approved Reviews", value: stats.approvedReviews, bg: "bg-yellow-50", color: "text-yellow-700" },
+                      { label: "Contact Messages", value: contactMessages.length, bg: "bg-orange-50", color: "text-orange-700" },
+                      { label: "Unread Messages", value: stats.unreadMessages, bg: "bg-red-50", color: "text-red-700" },
+                      { label: "Certificates", value: certificates.length, bg: "bg-teal-50", color: "text-teal-700" },
+                      { label: "Active Banners", value: stats.activeNotifications, bg: "bg-pink-50", color: "text-pink-700" },
+                    ].map(({ label, value, bg, color }) => (
+                      <div key={label} className={`${bg} rounded-lg p-4`}>
+                        <div className="text-xs text-muted-foreground mb-1">{label}</div>
+                        <div className={`text-2xl font-bold ${color}`}>{value}</div>
                       </div>
-                    </div>
-                    <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Active Projects</div>
-                      <div className="text-2xl font-bold" data-testid="text-analytics-projects">
-                        {analyticsSummary?.totalProjects || 0}
-                      </div>
-                    </div>
-                    <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Approved Reviews</div>
-                      <div className="text-2xl font-bold" data-testid="text-analytics-reviews">
-                        {analyticsSummary?.totalReviews || 0}
-                      </div>
-                    </div>
-                    <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <div className="text-sm text-muted-foreground mb-1">Contact Submissions</div>
-                      <div className="text-2xl font-bold" data-testid="text-analytics-contacts">
-                        {analyticsSummary?.totalContacts || 0}
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                  <CardDescription>
-                    Latest visitor interactions
-                  </CardDescription>
-                </CardHeader>
+                <CardHeader><CardTitle>Recent Reviews</CardTitle></CardHeader>
                 <CardContent>
-                  {!analyticsSummary?.recentActivity || analyticsSummary.recentActivity.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8" data-testid="text-no-activity">
-                      No activity recorded yet
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {analyticsSummary.recentActivity.map((activity, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg" data-testid={`activity-${index}`}>
-                          <div className="flex-1">
-                            <div className="font-medium">{activity.eventType}</div>
-                            {activity.eventData && (
-                              <div className="text-sm text-muted-foreground">
-                                {JSON.stringify(activity.eventData)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(activity.createdAt).toLocaleString()}
-                          </div>
-                        </div>
-                      ))}
+                  {allReviews.slice(0, 5).map((r) => (
+                    <div key={r.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                      <div>
+                        <span className="font-medium text-sm">{r.name}</span>
+                        <span className="text-xs text-muted-foreground ml-2">{r.comment.slice(0, 60)}...</span>
+                      </div>
+                      <Badge variant={r.is_approved ? "default" : "secondary"} className="text-xs">{r.is_approved ? "Approved" : "Pending"}</Badge>
                     </div>
-                  )}
+                  ))}
+                  {allReviews.length === 0 && <p className="text-muted-foreground text-sm py-4 text-center">No reviews yet.</p>}
                 </CardContent>
               </Card>
             </div>
@@ -1187,190 +800,56 @@ export default function AdminDashboard() {
         </Tabs>
       </div>
 
-      {/* Project Dialog */}
+      {/* ── PROJECT DIALOG ── */}
       <Dialog open={projectDialogOpen} onOpenChange={(open) => {
         setProjectDialogOpen(open);
-        if (!open) {
-          setEditingProject(null);
-          setImageFile(null);
-          setImagePreview("");
-          projectForm.reset();
-        }
+        if (!open) { setEditingProject(null); setImagePreview(""); projectForm.reset(); }
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-project">
           <DialogHeader>
-            <DialogTitle data-testid="text-project-dialog-title">
-              {editingProject ? "Edit Project" : "Create New Project"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingProject ? "Update the project details below." : "Fill in the project details below."}
-            </DialogDescription>
+            <DialogTitle data-testid="text-project-dialog-title">{editingProject ? "Edit Project" : "Create New Project"}</DialogTitle>
+            <DialogDescription>{editingProject ? "Update project details." : "Fill in the project details."}</DialogDescription>
           </DialogHeader>
           <Form {...projectForm}>
             <form onSubmit={projectForm.handleSubmit(handleProjectSubmit)} className="space-y-4">
-              <FormField
-                control={projectForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Project Title" {...field} data-testid="input-project-title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={projectForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Project Description" {...field} data-testid="input-project-description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={projectForm.control}
-                name="technologiesInput"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Technologies</FormLabel>
-                    <FormControl>
-                      <Input placeholder="React, TypeScript, Node.js (comma-separated)" {...field} data-testid="input-project-technologies" />
-                    </FormControl>
-                    <FormDescription>
-                      Enter technologies separated by commas
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={projectForm.control}
-                name="liveUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Live URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com" {...field} data-testid="input-project-liveurl" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={projectForm.control}
-                name="githubUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>GitHub URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://github.com/user/repo" {...field} data-testid="input-project-githuburl" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {/* Image upload — file picker OR URL fallback */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Project Image</label>
-                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 space-y-3">
-                  {imagePreview && (
-                    <div className="relative w-full h-36 rounded-lg overflow-hidden bg-gray-100">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => { setImageFile(null); setImagePreview(""); projectForm.setValue("imageUrl", ""); }}
-                        className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
-                        data-testid="button-clear-image"
-                      >✕</button>
-                    </div>
-                  )}
-                  <div>
-                    <label className="flex items-center gap-2 cursor-pointer text-sm text-primary font-medium hover:underline" data-testid="label-upload-image">
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                        className="hidden"
-                        data-testid="input-project-imagefile"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setImageFile(file);
-                            setImagePreview(URL.createObjectURL(file));
-                            projectForm.setValue("imageUrl", "");
-                          }
-                        }}
-                      />
-                      📁 Upload image from device
-                    </label>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP up to 5 MB</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs text-muted-foreground">or paste URL</span>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-                  <FormField
-                    control={projectForm.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            placeholder="https://example.com/image.jpg"
-                            {...field}
-                            disabled={!!imageFile}
-                            data-testid="input-project-imageurl"
-                            onChange={(e) => {
-                              field.onChange(e);
-                              if (e.target.value) setImagePreview(e.target.value);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+              <FormField control={projectForm.control} name="title" render={({ field }) => (
+                <FormItem><FormLabel>Title *</FormLabel><FormControl><Input placeholder="Project Title" {...field} data-testid="input-project-title" /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={projectForm.control} name="description" render={({ field }) => (
+                <FormItem><FormLabel>Description *</FormLabel><FormControl><Textarea placeholder="Project description" {...field} rows={3} data-testid="input-project-description" /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={projectForm.control} name="technologiesInput" render={({ field }) => (
+                <FormItem><FormLabel>Technologies</FormLabel><FormControl><Input placeholder="React, TypeScript, Node.js" {...field} data-testid="input-project-technologies" /></FormControl><FormDescription>Comma-separated</FormDescription><FormMessage /></FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={projectForm.control} name="liveUrl" render={({ field }) => (
+                  <FormItem><FormLabel>Live URL</FormLabel><FormControl><Input placeholder="https://example.com" {...field} data-testid="input-project-liveurl" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={projectForm.control} name="githubUrl" render={({ field }) => (
+                  <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input placeholder="https://github.com/..." {...field} data-testid="input-project-githuburl" /></FormControl><FormMessage /></FormItem>
+                )} />
               </div>
-              <FormField
-                control={projectForm.control}
-                name="isVisible"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-project-visible"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Visible on Portfolio</FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
+              <FormField control={projectForm.control} name="imageUrl" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com/image.jpg" {...field}
+                      onChange={(e) => { field.onChange(e); setImagePreview(e.target.value); }}
+                      data-testid="input-project-imageurl" />
+                  </FormControl>
+                  {imagePreview && <img src={imagePreview} alt="preview" className="w-full h-32 object-cover rounded-md mt-2" onError={() => setImagePreview("")} />}
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={projectForm.control} name="isVisible" render={({ field }) => (
+                <FormItem className="flex items-center gap-3">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-project-visible" /></FormControl>
+                  <FormLabel className="cursor-pointer">Visible on portfolio</FormLabel>
+                </FormItem>
+              )} />
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setProjectDialogOpen(false)}
-                  data-testid="button-cancel-project"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createProjectMutation.isPending || updateProjectMutation.isPending}
-                  data-testid="button-submit-project"
-                >
+                <Button type="button" variant="outline" onClick={() => setProjectDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createProjectMutation.isPending || updateProjectMutation.isPending} data-testid="button-submit-project">
                   {createProjectMutation.isPending || updateProjectMutation.isPending ? "Saving..." : editingProject ? "Update" : "Create"}
                 </Button>
               </DialogFooter>
@@ -1379,104 +858,38 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Certificate Dialog */}
-      <Dialog open={certificateDialogOpen} onOpenChange={(open) => {
-        setCertificateDialogOpen(open);
-        if (!open) certificateForm.reset();
-      }}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-certificate">
+      {/* ── CERTIFICATE DIALOG ── */}
+      <Dialog open={certificateDialogOpen} onOpenChange={(open) => { setCertificateDialogOpen(open); if (!open) certificateForm.reset(); }}>
+        <DialogContent className="max-w-lg" data-testid="dialog-certificate">
           <DialogHeader>
-            <DialogTitle data-testid="text-certificate-dialog-title">Create New Certificate</DialogTitle>
-            <DialogDescription>
-              Fill in the certificate details below.
-            </DialogDescription>
+            <DialogTitle>Add Certificate</DialogTitle>
+            <DialogDescription>Fill in the certificate details.</DialogDescription>
           </DialogHeader>
           <Form {...certificateForm}>
-            <form onSubmit={certificateForm.handleSubmit(handleCertificateSubmit)} className="space-y-4">
-              <FormField
-                control={certificateForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Certificate Title" {...field} data-testid="input-certificate-title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={certificateForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Certificate Description" {...field} value={field.value || ""} data-testid="input-certificate-description" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={certificateForm.control}
-                name="issueDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Issue Date</FormLabel>
-                    <FormControl>
-                      <Input placeholder="January 2024" {...field} value={field.value || ""} data-testid="input-certificate-issuedate" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={certificateForm.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/certificate.jpg" {...field} value={field.value || ""} data-testid="input-certificate-imageurl" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={certificateForm.control}
-                name="isVisible"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-certificate-visible"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Visible on Portfolio</FormLabel>
-                    </div>
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={certificateForm.handleSubmit((v) => createCertificateMutation.mutate(v))} className="space-y-4">
+              <FormField control={certificateForm.control} name="title" render={({ field }) => (
+                <FormItem><FormLabel>Title *</FormLabel><FormControl><Input placeholder="Certificate Title" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={certificateForm.control} name="description" render={({ field }) => (
+                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea placeholder="Description" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={certificateForm.control} name="issueDate" render={({ field }) => (
+                  <FormItem><FormLabel>Issue Date</FormLabel><FormControl><Input placeholder="January 2024" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={certificateForm.control} name="imageUrl" render={({ field }) => (
+                  <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input placeholder="https://..." {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem>
+                )} />
+              </div>
+              <FormField control={certificateForm.control} name="isVisible" render={({ field }) => (
+                <FormItem className="flex items-center gap-3">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormLabel className="cursor-pointer">Visible on portfolio</FormLabel>
+                </FormItem>
+              )} />
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCertificateDialogOpen(false)}
-                  data-testid="button-cancel-certificate"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createCertificateMutation.isPending}
-                  data-testid="button-submit-certificate"
-                >
+                <Button type="button" variant="outline" onClick={() => setCertificateDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createCertificateMutation.isPending}>
                   {createCertificateMutation.isPending ? "Creating..." : "Create"}
                 </Button>
               </DialogFooter>
@@ -1485,104 +898,44 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Notification Dialog */}
-      <Dialog open={notificationDialogOpen} onOpenChange={(open) => {
-        setNotificationDialogOpen(open);
-        if (!open) notificationForm.reset();
-      }}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-notification">
+      {/* ── NOTIFICATION DIALOG ── */}
+      <Dialog open={notificationDialogOpen} onOpenChange={(open) => { setNotificationDialogOpen(open); if (!open) notificationForm.reset(); }}>
+        <DialogContent className="max-w-lg" data-testid="dialog-notification">
           <DialogHeader>
-            <DialogTitle data-testid="text-notification-dialog-title">Create New Notification</DialogTitle>
-            <DialogDescription>
-              Fill in the notification details below.
-            </DialogDescription>
+            <DialogTitle>Create Notification</DialogTitle>
+            <DialogDescription>Banner shown to all site visitors.</DialogDescription>
           </DialogHeader>
           <Form {...notificationForm}>
-            <form onSubmit={notificationForm.handleSubmit(handleNotificationSubmit)} className="space-y-4">
-              <FormField
-                control={notificationForm.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Notification Title" {...field} data-testid="input-notification-title" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={notificationForm.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Notification Message" {...field} data-testid="input-notification-message" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={notificationForm.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-notification-type">
-                          <SelectValue placeholder="Select notification type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="info" data-testid="option-notification-type-info">Info</SelectItem>
-                        <SelectItem value="warning" data-testid="option-notification-type-warning">Warning</SelectItem>
-                        <SelectItem value="success" data-testid="option-notification-type-success">Success</SelectItem>
-                        <SelectItem value="error" data-testid="option-notification-type-error">Error</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={notificationForm.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        data-testid="checkbox-notification-active"
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Active</FormLabel>
-                      <FormDescription>
-                        Active notifications will be displayed on the site
-                      </FormDescription>
-                    </div>
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={notificationForm.handleSubmit((v) => createNotificationMutation.mutate(v))} className="space-y-4">
+              <FormField control={notificationForm.control} name="title" render={({ field }) => (
+                <FormItem><FormLabel>Title *</FormLabel><FormControl><Input placeholder="Notification Title" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={notificationForm.control} name="message" render={({ field }) => (
+                <FormItem><FormLabel>Message *</FormLabel><FormControl><Textarea placeholder="Notification message" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={notificationForm.control} name="type" render={({ field }) => (
+                <FormItem><FormLabel>Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value="info">Info</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                      <SelectItem value="success">Success</SelectItem>
+                      <SelectItem value="error">Error</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={notificationForm.control} name="isActive" render={({ field }) => (
+                <FormItem className="flex items-center gap-3">
+                  <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  <FormLabel className="cursor-pointer">Active (show to visitors)</FormLabel>
+                </FormItem>
+              )} />
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setNotificationDialogOpen(false)}
-                  data-testid="button-cancel-notification"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createNotificationMutation.isPending}
-                  data-testid="button-submit-notification"
-                >
+                <Button type="button" variant="outline" onClick={() => setNotificationDialogOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={createNotificationMutation.isPending}>
                   {createNotificationMutation.isPending ? "Creating..." : "Create"}
                 </Button>
               </DialogFooter>

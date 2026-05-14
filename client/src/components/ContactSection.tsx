@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import { Mail } from "lucide-react";
 import { SiGithub, SiLinkedin, SiWhatsapp } from "react-icons/si";
 import profileImage from "@assets/image_1756332525184.png";
@@ -85,8 +85,15 @@ export default function ContactSection() {
     });
 
   const mutation = useMutation({
-    mutationFn: (payload: { name: string; email: string; subject: string; message: string }) =>
-      apiRequest("POST", "/api/contact", payload),
+    mutationFn: async (payload: { name: string; email: string; subject: string; message: string }) => {
+      const { error } = await supabase.from("contact_messages").insert({
+        name: payload.name,
+        email: payload.email,
+        subject: payload.subject || null,
+        message: payload.message,
+      });
+      if (error) throw error;
+    },
     onSuccess: () => {
       seq([
         { text: "✓ Message delivered.", type: "ok" },

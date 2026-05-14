@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import type { Certificate } from "@shared/schema";
+import { supabase } from "@/lib/supabase";
 import certificateImage from "@assets/113-alx-ai-starter-kit-certificate-mustafa-muhammad.png";
 
 const staticCerts = [
@@ -116,20 +116,29 @@ function CertCard({ cert, delay }: { cert: typeof staticCerts[0]; delay: number 
 }
 
 export default function CertificationsSection() {
-  const { data: dbCerts = [] } = useQuery<Certificate[]>({ queryKey: ["/api/certificates"] });
+  const { data: dbCerts = [] } = useQuery({
+    queryKey: ["sb", "certificates"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("certificates")
+        .select("*")
+        .eq("is_visible", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
-  const extraCerts = dbCerts
-    .filter(c => c.isVisible)
-    .map((c, i) => ({
-      id: `db-${c.id}`,
-      title: c.title,
-      issuer: "Professional Institution",
-      issueDate: c.issueDate || "Recent",
-      category: "Professional Development",
-      imageUrl: c.imageUrl || null,
-      color: "#4f46e5",
-      emoji: "🏅",
-    }));
+  const extraCerts = dbCerts.map((c: any) => ({
+    id: `db-${c.id}`,
+    title: c.title,
+    issuer: "Professional Institution",
+    issueDate: c.issue_date || "Recent",
+    category: "Professional Development",
+    imageUrl: c.image_url || null,
+    color: "#4f46e5",
+    emoji: "🏅",
+  }));
 
   const all = [...staticCerts, ...extraCerts];
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, Info, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
-import type { Notification } from "@shared/schema";
+import { supabase } from "@/lib/supabase";
+import type { DbNotification } from "@/lib/supabase";
 
 export default function NotificationBanner() {
   const [dismissedIds, setDismissedIds] = useState<number[]>(() => {
@@ -9,8 +10,17 @@ export default function NotificationBanner() {
     return stored ? JSON.parse(stored) : [];
   });
 
-  const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["/api/notifications"],
+  const { data: notifications = [] } = useQuery<DbNotification[]>({
+    queryKey: ["sb", "notifications", "active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
   });
 
   const activeNotifications = notifications.filter(
