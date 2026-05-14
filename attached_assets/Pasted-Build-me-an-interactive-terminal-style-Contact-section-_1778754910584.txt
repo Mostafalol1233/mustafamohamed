@@ -1,0 +1,110 @@
+Build me an interactive terminal-style Contact section for my portfolio
+AND fix the Footer at the same time.
+Check my project files first and match my existing stack.
+
+CONCEPT:
+The contact section looks and feels like a real terminal session.
+Instead of a boring form, the terminal "interviews" the visitor 
+step by step — like a CLI onboarding flow.
+
+FLOW (step by step):
+Step 0 — Boot (on section load, types out automatically):
+  > Initializing contact protocol...
+  > Encryption: enabled
+  > Ready to establish connection.
+  [pause 800ms]
+  > What's your name?
+  ~ _  (cursor blinks, input active)
+
+Step 1 — After user types name + Enter:
+  > Hey [Name]! Good to meet you.
+  > How would you like to connect?
+    [1] Email
+    [2] Phone number
+  ~ _
+  (user can type 1 or 2 OR click the options)
+
+Step 2a — If Email chosen:
+  > Enter your email address:
+  ~ _
+
+Step 2b — If Phone chosen:
+  > Enter your phone number:
+  ~ _
+
+Step 3 — After contact info entered:
+  > What would you like to work on?
+  ~ _  (multi-line input, Shift+Enter for new line, Enter to submit)
+
+Step 4 — Sending state:
+  > Transmitting message...
+  > [████████████████████] 100%
+  ✓ Message delivered.
+  > Expected response time: within 24h
+  > Type  restart  to send another message.
+
+INTERACTIONS:
+- Each step: previous output stays, new prompt appears below
+- Typing animation on all terminal output (30ms per character)
+- Blinking cursor on active input
+- Clickable option buttons [1] [2] styled as terminal tags
+- On hover: option tags get subtle green border
+- Enter submits current step
+- Error handling:
+  > Invalid email format. Please re-enter:
+  > Invalid phone number. Please re-enter:
+- "restart" resets the whole flow with clear animation
+
+ACTUALLY SEND THE MESSAGE:
+- Use EmailJS or fetch to existing backend if available in my project
+- On success → Step 4 success message
+- On fail → > Connection failed. Try again? [y/n]
+
+STYLING:
+- Background: #0d1117
+- Prompt > and ~ : #58a6ff
+- Output text: #c9d1d9
+- User input: #ffffff
+- Success ✓ : #3fb950
+- Error: #f85149
+- Progress bar filled: #3fb950, empty: #21262d
+- Option tags border: #30363d, hover border: #3fb950
+- Font: JetBrains Mono
+- macOS titlebar at top (3 dots + "contact.sh")
+- Fixed height ~420px with internal scroll
+
+SECTION LAYOUT:
+- Left side: terminal (~60% width)
+- Right side: clean info card:
+  → Avatar or initials circle
+  → Name + title
+  → Status: ● Online (animated green dot)
+  → Response time: 24h
+  → Icon buttons only (no text cards): Email / GitHub / LinkedIn / WhatsApp
+    each icon has tooltip on hover showing the handle/link
+
+---
+
+FOOTER FIX (do this at the same time):
+Rebuild the footer to look clean and professional:
+
+LAYOUT — two rows:
+Row 1: 
+  - Left: Logo + name
+  - Right: nav links (Home / Skills / Portfolio / Contact)
+
+Row 2:
+  - Left: copyright text "© 2025 [Name]. All rights reserved."
+  - Right: social icon buttons — use proper icons for:
+    Email, GitHub, LinkedIn, Twitter/X, YouTube
+    (icon only, no text, 20px size, circle hover effect)
+
+STYLING:
+  - Subtle top border separator
+  - Muted text color for copyright
+  - Icons: default muted color, on hover → primary accent color
+  - Clean minimal spacing, no heavy backgrounds
+  - Same font as the rest of the site
+
+No new dependencies unless already in my project.
+Match my existing code structure exactly.

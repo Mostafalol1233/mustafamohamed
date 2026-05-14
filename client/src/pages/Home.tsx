@@ -7,7 +7,8 @@ import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 import DragonCanvas from "@/components/DragonCanvas";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Mail } from "lucide-react";
+import { SiGithub, SiLinkedin, SiX, SiYoutube } from "react-icons/si";
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -38,38 +39,59 @@ export default function Home() {
         <ContactSection />
       </main>
 
-      <footer className="border-t border-border py-10 px-6 bg-white">
-        <div className="container-max">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-border bg-white">
+        <div className="container-max px-6">
+          {/* Row 1 */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center">
+              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">M</span>
               </div>
               <span className="font-semibold text-sm text-foreground">Mustafa Mohamed</span>
             </div>
-            <div className="flex items-center gap-5">
-              {["home", "skills", "portfolio", "reviews", "contact"].map(id => (
-                <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize">
-                  {id}
+            <nav className="flex items-center gap-6">
+              {["home", "skills", "portfolio", "reviews", "contact"].map((id) => (
+                <button
+                  key={id}
+                  onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize"
+                  data-testid={`footer-link-${id}`}
+                >
+                  {id.charAt(0).toUpperCase() + id.slice(1)}
                 </button>
               ))}
-            </div>
-            <div className="flex gap-3">
+            </nav>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Row 2 */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5">
+            <p className="text-xs text-muted-foreground">
+              © 2025 Mustafa Mohamed. All rights reserved.
+            </p>
+            <div className="flex items-center gap-2">
               {[
-                { label: "X", href: "https://x.com/Bemora_BEMO" },
-                { label: "YT", href: "https://youtube.com/@Bemora-site" },
-                { label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
-              ].map(({ label, href }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-xs text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all">
-                  {label}
+                { Icon: Mail, label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
+                { Icon: SiGithub, label: "GitHub", href: "https://github.com/Bemora" },
+                { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo" },
+                { Icon: SiX, label: "X", href: "https://x.com/Bemora_BEMO" },
+                { Icon: SiYoutube, label: "YouTube", href: "https://youtube.com/@Bemora-site" },
+              ].map(({ Icon, label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                  data-testid={`footer-social-${label.toLowerCase()}`}
+                >
+                  <Icon size={16} />
                 </a>
               ))}
             </div>
-          </div>
-          <div className="border-t border-border mt-8 pt-6 text-center text-xs text-muted-foreground">
-            © 2025 Mustafa Mohamed. Built with React, TypeScript & Tailwind CSS.
           </div>
         </div>
       </footer>
