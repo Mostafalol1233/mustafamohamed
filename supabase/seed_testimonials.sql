@@ -16,13 +16,14 @@ CREATE TABLE IF NOT EXISTS testimonials (
 -- Enable Row Level Security
 ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
 
--- Allow public read of visible testimonials
-CREATE POLICY IF NOT EXISTS "Public read visible testimonials"
+-- Drop policies if they already exist, then recreate
+DROP POLICY IF EXISTS "Public read visible testimonials" ON testimonials;
+CREATE POLICY "Public read visible testimonials"
   ON testimonials FOR SELECT
   USING (visible = true);
 
--- Allow authenticated (admin) full access
-CREATE POLICY IF NOT EXISTS "Admin full access testimonials"
+DROP POLICY IF EXISTS "Admin full access testimonials" ON testimonials;
+CREATE POLICY "Admin full access testimonials"
   ON testimonials FOR ALL
   USING (true)
   WITH CHECK (true);

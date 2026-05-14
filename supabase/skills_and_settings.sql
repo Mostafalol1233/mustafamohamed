@@ -18,10 +18,12 @@ CREATE TABLE IF NOT EXISTS skills (
 
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Public read skills"
+DROP POLICY IF EXISTS "Public read skills" ON skills;
+CREATE POLICY "Public read skills"
   ON skills FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Admin full access skills"
+DROP POLICY IF EXISTS "Admin full access skills" ON skills;
+CREATE POLICY "Admin full access skills"
   ON skills FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert all skills (matching SkillsSection.tsx data)
@@ -67,10 +69,12 @@ CREATE TABLE IF NOT EXISTS site_settings (
 
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Public read site settings"
+DROP POLICY IF EXISTS "Public read site settings" ON site_settings;
+CREATE POLICY "Public read site settings"
   ON site_settings FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Admin full access site settings"
+DROP POLICY IF EXISTS "Admin full access site settings" ON site_settings;
+CREATE POLICY "Admin full access site settings"
   ON site_settings FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert default settings
