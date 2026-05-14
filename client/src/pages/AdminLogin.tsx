@@ -1,116 +1,69 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminLogin } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
 
 export default function AdminLogin() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: ""
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      const response = await apiRequest("POST", "/api/admin/login", data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Admin login successful!",
-      });
-      setLocation("/admin");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Login Failed",
-        description: error.message || "Invalid email or password",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate(formData);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setLoading(true);
+    try {
+      await adminLogin(email, password);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({ title: "Welcome back!", description: "Logged in successfully." });
+      setLocation("/admin");
+    } catch (err: any) {
+      toast({ title: "Login failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">Admin Login</CardTitle>
-          <CardDescription>
-            Enter your admin credentials to access the dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="w-12 h-12 rounded-xl bg-foreground flex items-center justify-center text-background font-bold text-xl mx-auto mb-4">M</div>
+          <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sign in with your Supabase account</p>
+        </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? (
-                <>
-                  <i className="fas fa-spinner fa-spin mr-2"></i>
-                  Logging in...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-sign-in-alt mr-2"></i>
-                  Login
-                </>
-              )}
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Shortcut: Alt + Shift + A</p>
-            <p>Or go to: /admin</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+            <input
+              type="email" value={email} onChange={e => setEmail(e.target.value)} required
+              placeholder="you@example.com"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
+            <input
+              type="password" value={password} onChange={e => setPassword(e.target.value)} required
+              placeholder="••••••••"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+            />
+          </div>
+          <button
+            type="submit" disabled={loading}
+            className="w-full py-2.5 rounded-lg bg-foreground text-background font-semibold text-sm transition-all hover:bg-foreground/90 disabled:opacity-50"
+          >
+            {loading ? "Signing in…" : "Sign In"}
+          </button>
+        </form>
+
+        <p className="text-xs text-muted-foreground text-center mt-6">
+          Shortcut: <kbd className="px-1.5 py-0.5 rounded border border-border font-mono text-xs">Alt+Shift+A</kbd>
+        </p>
+      </div>
     </div>
   );
 }

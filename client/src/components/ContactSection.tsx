@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { sendContactMessage } from "@/lib/supabase";
 import { Mail } from "lucide-react";
 import { SiGithub, SiLinkedin, SiWhatsapp } from "react-icons/si";
 import profileImage from "@assets/image_1756332525184.png";
@@ -91,7 +91,7 @@ export default function ContactSection() {
 
   const mutation = useMutation({
     mutationFn: async (payload: { name: string; email: string; subject: string; message: string }) => {
-      await apiRequest("POST", "/api/contact", payload);
+      await sendContactMessage(payload);
     },
     onSuccess: () => {
       const c = tRef.current.contact;
