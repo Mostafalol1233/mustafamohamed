@@ -5,7 +5,6 @@ import SkillsSection from "@/components/SkillsSection";
 import PortfolioSection from "@/components/PortfolioSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
-import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 import DragonCanvas from "@/components/DragonCanvas";
 import { ArrowUp } from "lucide-react";
 
@@ -115,7 +114,6 @@ export default function Home() {
         </div>
       </footer>
 
-      <EnhancedAdminDashboard />
       <BackToTop />
     </div>
   );

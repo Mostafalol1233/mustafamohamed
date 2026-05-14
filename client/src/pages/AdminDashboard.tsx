@@ -11,9 +11,9 @@ import { useLocation } from "wouter";
 import {
   Star, Mail, FolderGit2, Award, Bell, LayoutDashboard,
   LogOut, Check, Trash2, Eye, EyeOff, TrendingUp, MessageSquare,
-  Plus, Edit, ExternalLink, Users, Wrench, Settings, Save,
+  Plus, Edit, ExternalLink, Users, Wrench, Settings, Save, Upload,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle,
@@ -98,6 +98,8 @@ export default function AdminDashboard() {
   const [editingSkillPercent, setEditingSkillPercent] = useState<number>(0);
   const [editingSettingKey, setEditingSettingKey] = useState<string | null>(null);
   const [editingSettingValue, setEditingSettingValue] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageUploadRef = useRef<HTMLInputElement>(null);
 
   // ── Auth check (Express session stays) ───────────────────────────────────
   const { data: authData, isLoading: authLoading } = useQuery<{ isAuthenticated: boolean; isAdmin: boolean }>({
@@ -502,6 +504,30 @@ export default function AdminDashboard() {
     Array.from({ length: 5 }, (_, i) => (
       <Star key={i} className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
     ));
+
+  const handleImageFileUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `projects/${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage.from("project-images").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from("project-images").getPublicUrl(data.path);
+      projectForm.setValue("imageUrl", urlData.publicUrl);
+      setImagePreview(urlData.publicUrl);
+      toast({ title: "Image uploaded!" });
+    } catch (e: any) {
+      toast({
+        title: "Upload failed",
+        description: e.message?.includes("not found")
+          ? 'Create a "project-images" bucket in Supabase Storage first (see supabase/storage_notes.md)'
+          : e.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleEditTestimonial = (t: DbTestimonial) => {
     setEditingTestimonial(t);
@@ -1239,18 +1265,52 @@ export default function AdminDashboard() {
                   <FormItem><FormLabel>Live URL</FormLabel><FormControl><Input placeholder="https://example.com" {...field} data-testid="input-project-liveurl" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={projectForm.control} name="githubUrl" render={({ field }) => (
-                  <FormItem><FormLabel>GitHub URL</FormLabel><FormControl><Input placeholder="https://github.com/..." {...field} data-testid="input-project-githuburl" /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>GitHub URL</FormLabel>
+                    <FormControl><Input placeholder="Leave empty to hide GitHub button" {...field} data-testid="input-project-githuburl" /></FormControl>
+                    <FormDescription className="text-xs">Empty = GitHub button hidden (use for client/published projects)</FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 )} />
               </div>
               <FormField control={projectForm.control} name="imageUrl" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field}
-                      onChange={(e) => { field.onChange(e); setImagePreview(e.target.value); }}
-                      data-testid="input-project-imageurl" />
-                  </FormControl>
-                  {imagePreview && <img src={imagePreview} alt="preview" className="w-full h-32 object-cover rounded-md mt-2" onError={() => setImagePreview("")} />}
+                  <FormLabel>Project Image</FormLabel>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input placeholder="https://example.com/image.jpg or upload below" {...field}
+                          onChange={(e) => { field.onChange(e); setImagePreview(e.target.value); }}
+                          data-testid="input-project-imageurl" />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-shrink-0"
+                        disabled={uploadingImage}
+                        onClick={() => imageUploadRef.current?.click()}
+                        data-testid="button-upload-image"
+                      >
+                        {uploadingImage ? (
+                          <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />Uploading…</span>
+                        ) : (
+                          <span className="flex items-center gap-1.5"><Upload className="w-3.5 h-3.5" />Upload</span>
+                        )}
+                      </Button>
+                    </div>
+                    <input
+                      ref={imageUploadRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageFileUpload(f); }}
+                      data-testid="input-project-imagefile"
+                    />
+                    {imagePreview && (
+                      <img src={imagePreview} alt="preview" className="w-full h-36 object-cover rounded-md border" onError={() => setImagePreview("")} />
+                    )}
+                  </div>
+                  <FormDescription className="text-xs">Paste an image URL, or click Upload to pick a file from your device.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
