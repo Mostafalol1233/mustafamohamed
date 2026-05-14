@@ -1,0 +1,48 @@
+I want to build an interactive Skills & Tools section for my portfolio.
+Look at my project files first and implement in whatever stack I'm using.
+
+DESIGN — Terminal / CLI style:
+- Dark background #0d1117, monospace font (JetBrains Mono)
+- Command at top:  ~ scan --skills
+- Each category: green ✓ + orange-bold category name
+- Skills shown as pill badge tags (dark border, monospace)
+- Blinking cursor ~ at the bottom
+- Stagger animation on load (lines appear one by one)
+
+COLORS:
+- Prompt ~ : #58a6ff
+- Checkmark: #3fb950
+- Category names: #f78166 bold
+- Tags: border #30363d, text #8b949e
+- Cursor: #58a6ff blinking
+
+SKILLS:
+Frontend: React, TypeScript, Next.js, Tailwind CSS, Framer Motion
+Backend: Node.js, Express, REST APIs, MongoDB, PostgreSQL
+Design & UI: Figma, Shadcn/UI, Radix UI, Responsive Design
+Dev Tools: Git, GitHub, VS Code, Linux, Vercel
+AI & Data: Prompt Engineering, AI Integration, Data Analysis
+
+---
+
+INTERACTIVE FEATURE (most important):
+Every skill tag is clickable. When the user clicks a skill tag:
+1. A floating panel slides in from the right (or bottom on mobile)
+2. The panel looks like a minimal AI chat interface — dark theme, 
+   clean, similar to Claude or ChatGPT UI style
+3. Inside the panel there's already a pre-loaded response about that skill:
+   - What it is in 1 sentence
+   - My proficiency level (you decide based on the skill)
+   - 2-3 bullet points: what I use it for
+   - A "recommended next skill to explore" suggestion at the bottom 
+     as a clickable tag — clicking it opens that skill's panel instead
+4. The panel has a close button (X) top right
+5. Smooth open/close animation
+6. Panel header shows:  ~ skill --info [SKILL_NAME]  (terminal style)
+7. Inside the panel body switches to clean readable font, not monospace
+
+The overall feel: terminal on the outside, AI assistant on the inside.
+User clicks a skill → feels like they ran a command and got an AI response.
+
+Match my existing project structure exactly — don't add new dependencies
+unless absolutely necessary.
