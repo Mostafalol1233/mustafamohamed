@@ -24,6 +24,10 @@ function BackToTop() {
 }
 
 export default function Landing() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation showAdminButton={false} />
@@ -35,43 +39,79 @@ export default function Landing() {
         <ContactSection />
       </main>
 
-      <footer className="border-t border-border py-10 px-6 bg-white">
-        <div className="container-max">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Brand */}
+      <footer className="border-t border-border bg-white">
+        <div className="container-max px-6">
+          {/* Row 1: logo | nav | socials */}
+          <div className="grid grid-cols-3 items-center py-6 gap-4">
+            {/* Left: logo + name */}
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center">
+              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">M</span>
               </div>
-              <span className="font-semibold text-sm text-foreground">Mustafa Mohamed</span>
+              <span className="font-semibold text-sm text-foreground hidden sm:inline">Mustafa Mohamed</span>
             </div>
 
-            {/* Nav links */}
-            <div className="flex items-center gap-5">
-              {["home", "skills", "portfolio", "reviews", "contact"].map(id => (
-                <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize">
-                  {id}
+            {/* Center: nav links */}
+            <nav className="flex items-center justify-center gap-5 flex-wrap">
+              {["home", "skills", "portfolio", "reviews", "contact"].map((id) => (
+                <button
+                  key={id}
+                  onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize"
+                  data-testid={`footer-link-${id}`}
+                >
+                  {id.charAt(0).toUpperCase() + id.slice(1)}
                 </button>
               ))}
-            </div>
+            </nav>
 
-            {/* Socials */}
-            <div className="flex gap-3">
-              {[
-                { label: "X", href: "https://x.com/Bemora_BEMO" },
-                { label: "YT", href: "https://youtube.com/@Bemora-site" },
-                { label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
-              ].map(({ label, href }) => (
-                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-xs text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all">
-                  {label}
-                </a>
-              ))}
+            {/* Right: social icons */}
+            <div className="flex items-center justify-end gap-2">
+              <a
+                href="https://x.com/Bemora_BEMO"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter"
+                data-testid="footer-social-twitter"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-brand-x" style={{ fontSize:17 }} />
+              </a>
+              <a
+                href="https://youtube.com/@Bemora-site"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                data-testid="footer-social-youtube"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-brand-youtube" style={{ fontSize:17 }} />
+              </a>
+              <a
+                href="mailto:overthegardenwall317@gmail.com"
+                aria-label="Email"
+                data-testid="footer-social-email"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-mail" style={{ fontSize:17 }} />
+              </a>
             </div>
           </div>
-          <div className="border-t border-border mt-8 pt-6 text-center text-xs text-muted-foreground">
-            © 2025 Mustafa Mohamed. Built with React, TypeScript & Tailwind CSS.
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Row 2: centered copyright */}
+          <div className="py-5 text-center">
+            <p className="text-xs text-muted-foreground">
+              © 2025 Mustafa Mohamed. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
