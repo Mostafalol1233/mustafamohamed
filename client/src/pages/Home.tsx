@@ -6,6 +6,7 @@ import PortfolioSection from "@/components/PortfolioSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
+import DragonCanvas from "@/components/DragonCanvas";
 import { ArrowUp } from "lucide-react";
 
 function BackToTop() {
@@ -30,6 +31,7 @@ export default function Home() {
       <Navigation />
       <main>
         <HeroSection />
+        <DragonCanvas />
         <SkillsSection />
         <PortfolioSection />
         <ReviewsSection />

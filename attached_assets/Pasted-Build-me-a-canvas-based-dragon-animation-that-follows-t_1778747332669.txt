@@ -1,0 +1,50 @@
+Build me a canvas-based dragon animation that follows the mouse cursor.
+This will be the hero/background element of my portfolio.
+
+VISUAL STYLE — "Void Dragon":
+- The dragon has NO solid color — it's made of pure darkness/shadow
+- Body segments are deep black with very subtle dark purple edge glow
+- Eyes are the only visible bright element — two small ember/red glowing dots
+- Claws and wing tips are sharp thin lines, barely visible
+- Overall feel: like a shadow creature that exists in darkness
+- NO yellow, NO orange, NO bright colors anywhere on the body
+
+ANATOMY (important — must look like a real dragon):
+- Long segmented body (12-16 segments) that follows mouse with spring physics
+- 4 limbs: 2 front legs, 2 back legs — each with 2 joints (shoulder + knee/elbow)
+- Each limb has 3 claws at the end
+- 2 wings: membrane wings that flap subtly based on movement speed
+- A tail that extends 8 segments beyond the body with a pointed tip
+- Head: angular, reptilian, slightly larger than body segments
+
+INVERSE KINEMATICS (critical):
+- Limbs must use proper 2-bone IK — never clip through the body
+- Front legs plant on the "ground" (bottom of canvas) when dragon is low
+- When dragon moves fast, legs lift and reach forward naturally
+- Wing joints connect to the upper body and spread based on velocity
+- Tail curves with a whip-like follow delay
+
+MOVEMENT BEHAVIOR:
+- Body follows mouse with smooth lag (head reacts fast, tail very slow)
+- Dragon banks/tilts when turning (like a real creature banking in air)
+- Idle animation when mouse is still: slow breathing (body expands slightly),
+  tail sways gently, eyes blink occasionally
+- When mouse moves fast: wings spread wider, body straightens
+- When mouse is slow/still: dragon coils loosely, wings fold
+
+CANVAS SETUP:
+- Full width canvas, fixed height (500-600px)
+- Background: #0d1117 with very subtle grid pattern (barely visible)
+- Add the same terminal boot text in top-left corner (like before):
+  > Void entity detected...
+  > Binding to cursor... done
+  (green text, monospace, fades after 3 seconds)
+
+TECHNICAL:
+- Pure Canvas 2D API — no Three.js, no external physics libraries
+- requestAnimationFrame loop
+- All IK solved manually with FABRIK or 2-bone analytical IK
+- Segments drawn as bezier curves, not circles
+- Performance: must run at 60fps
+
+Check my project stack first and integrate into my existing code properly.
