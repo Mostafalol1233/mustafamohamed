@@ -3,7 +3,6 @@ import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import SkillsSection from "@/components/SkillsSection";
 import PortfolioSection from "@/components/PortfolioSection";
-import CertificationsSection from "@/components/CertificationsSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
@@ -33,7 +32,6 @@ export default function Home() {
         <HeroSection />
         <SkillsSection />
         <PortfolioSection />
-        <CertificationsSection />
         <ReviewsSection />
         <ContactSection />
       </main>
@@ -48,7 +46,7 @@ export default function Home() {
               <span className="font-semibold text-sm text-foreground">Mustafa Mohamed</span>
             </div>
             <div className="flex items-center gap-5">
-              {["home", "skills", "portfolio", "certifications", "reviews", "contact"].map(id => (
+              {["home", "skills", "portfolio", "reviews", "contact"].map(id => (
                 <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize">
                   {id}
