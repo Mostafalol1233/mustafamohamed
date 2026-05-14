@@ -7,8 +7,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 import DragonCanvas from "@/components/DragonCanvas";
-import { ArrowUp, Mail } from "lucide-react";
-import { SiGithub, SiLinkedin, SiX, SiYoutube } from "react-icons/si";
+import { ArrowUp } from "lucide-react";
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -41,15 +40,18 @@ export default function Home() {
 
       <footer className="border-t border-border bg-white">
         <div className="container-max px-6">
-          {/* Row 1 */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
+          {/* Row 1: logo | nav | socials */}
+          <div className="grid grid-cols-3 items-center py-6 gap-4">
+            {/* Left: logo + name */}
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">M</span>
               </div>
-              <span className="font-semibold text-sm text-foreground">Mustafa Mohamed</span>
+              <span className="font-semibold text-sm text-foreground hidden sm:inline">Mustafa Mohamed</span>
             </div>
-            <nav className="flex items-center gap-6">
+
+            {/* Center: nav links */}
+            <nav className="flex items-center justify-center gap-5 flex-wrap">
               {["home", "skills", "portfolio", "reviews", "contact"].map((id) => (
                 <button
                   key={id}
@@ -61,37 +63,46 @@ export default function Home() {
                 </button>
               ))}
             </nav>
-          </div>
 
-          {/* Divider */}
-          <div className="border-t border-border" />
-
-          {/* Row 2 */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5">
-            <p className="text-xs text-muted-foreground">
-              © 2025 Mustafa Mohamed. All rights reserved.
-            </p>
-            <div className="flex items-center gap-2">
+            {/* Right: social icons */}
+            <div className="flex items-center justify-end gap-2">
               {[
-                { Icon: Mail, label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
-                { Icon: SiGithub, label: "GitHub", href: "https://github.com/Bemora" },
-                { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo" },
-                { Icon: SiX, label: "X", href: "https://x.com/Bemora_BEMO" },
-                { Icon: SiYoutube, label: "YouTube", href: "https://youtube.com/@Bemora-site" },
-              ].map(({ Icon, label, href }) => (
+                { icon: "ti-brand-x", label: "X", href: "https://x.com/Bemora_BEMO" },
+                { icon: "ti-brand-youtube", label: "YouTube", href: "https://youtube.com/@Bemora-site" },
+                { icon: "ti-mail", label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
+              ].map(({ icon, label, href }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-primary/8"
+                  style={{ border: "0.5px solid #e5e5e5", color: "#888" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "hsl(234, 89%, 57%)";
+                    e.currentTarget.style.borderColor = "hsl(234, 89%, 57% / 0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#888";
+                    e.currentTarget.style.borderColor = "#e5e5e5";
+                  }}
                   data-testid={`footer-social-${label.toLowerCase()}`}
                 >
-                  <Icon size={16} />
+                  <i className={`ti ${icon}`} style={{ fontSize: 16 }} />
                 </a>
               ))}
             </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* Row 2: centered copyright */}
+          <div className="py-5 text-center">
+            <p className="text-xs text-muted-foreground">
+              © 2025 Mustafa Mohamed. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

@@ -67,7 +67,37 @@ export default function Navigation({ showAdminButton = true }: { showAdminButton
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Social icon buttons — desktop only */}
+              <div className="hidden md:flex items-center gap-1">
+                {[
+                  { icon: "ti-brand-x", label: "X", href: "https://x.com/Bemora_BEMO" },
+                  { icon: "ti-brand-youtube", label: "YouTube", href: "https://youtube.com/@Bemora-site" },
+                  { icon: "ti-mail", label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
+                ].map(({ icon, label, href }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200"
+                    style={{ border: "0.5px solid #e5e5e5", color: "#888" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "hsl(234, 89%, 57%)";
+                      e.currentTarget.style.borderColor = "hsl(234, 89%, 57%)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "#888";
+                      e.currentTarget.style.borderColor = "#e5e5e5";
+                    }}
+                    data-testid={`nav-social-${label.toLowerCase()}`}
+                  >
+                    <i className={`ti ${icon}`} style={{ fontSize: 16 }} />
+                  </a>
+                ))}
+              </div>
+
               {showAdminButton && isAuthenticated && (
                 <a href="/admin" className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md border border-border hover:border-foreground/20 transition-all">
                   <Settings className="w-3.5 h-3.5" /> Admin

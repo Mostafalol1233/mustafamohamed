@@ -1,0 +1,89 @@
+Do 3 things at the same time. Check my project files first.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. TESTIMONIALS SECTION — Infinite Marquee
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace the current reviews section with an infinite auto-scrolling 
+marquee of testimonial cards — like Linear.app or Vercel's homepage.
+
+GENERATE FAKE BUT REALISTIC testimonials:
+- Look at my existing projects in the codebase
+- For each project, invent 1-2 realistic people with real-sounding names
+- Give each person a realistic job title that fits the project type
+- Example: if there's a Gaming project → "Community Manager at [project name]"
+  if Education project → "Academic Director at [project name]"
+  if E-commerce → "Operations Lead at [project name]"
+- Write a short genuine-sounding English quote (2-3 sentences max)
+- All reviews: 5 stars
+
+AVATAR — no initials, use Tabler icons instead:
+- Pick a relevant Tabler outline icon per person based on their role:
+  CEO/Founder → ti-crown
+  Developer → ti-code
+  Designer → ti-brush  
+  Manager → ti-briefcase
+  Academic → ti-school
+  Gaming → ti-device-gamepad-2
+  Marketing → ti-speakerphone
+- Avatar circle: dark background (#1a1a2e), icon in accent color
+- Icon size: 18px inside a 36px circle
+
+MARQUEE BEHAVIOR:
+- Two rows scrolling in opposite directions (row 1 left, row 2 right)
+- Auto-scroll, pauses on hover
+- Seamless infinite loop (duplicate cards)
+- Speed: slow and smooth (~25s per loop)
+
+CARD STYLING:
+- Dark background (#0d1117), border: 1px solid #21262d
+- Border-radius: 10px, padding: 16px
+- Width: 240px fixed
+- Quote text: #c9d1d9, font-size: 13px
+- Stars: #f59e0b
+- Name: #ffffff, font-weight: 500, font-size: 13px
+- Role + company: #666, font-size: 11px
+
+SECTION WRAPPER:
+- White background (matches my site)
+- Section title above marquee: "What clients say" 
+  with subtle muted subtitle: "Trusted by teams across different industries"
+- Fade gradient on left and right edges of marquee 
+  (white fade that hides card edges, depth effect)
+- No form, no stats bar, no submit button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. FOOTER — Fix icons and layout
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current footer has text buttons "X", "YT", "Email" — replace with proper icons.
+
+LAYOUT:
+Row 1 (top):
+- Left: logo + name
+- Center: nav links (Home / Skills / Portfolio / Reviews / Contact)
+- Right: social icon buttons (icon only, no text)
+
+Row 2 (bottom):
+- Center only: "© 2025 Mustafa Mohamed. All rights reserved."
+  muted color, small font
+
+SOCIAL ICON BUTTONS — use Tabler outline icons:
+- Twitter/X → ti-brand-x
+- YouTube → ti-brand-youtube  
+- Email → ti-mail
+- Each in a subtle circle button: 36px, border: 0.5px solid #e5e5e5
+- Default color: #888
+- Hover: icon color changes to accent + border darkens
+- Smooth transition 200ms
+
+Remove "Built with React, TypeScript & Tailwind CSS" from footer text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. NAVBAR — Fix social icon buttons
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Same fix as footer social icons — replace text "X", "YT", "Email" 
+with proper Tabler icon buttons, same style as footer.
+
+Match my existing code structure. No new dependencies unless already installed.
