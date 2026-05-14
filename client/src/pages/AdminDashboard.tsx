@@ -91,6 +91,8 @@ export default function AdminDashboard() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
   const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   // Check authentication
   const { data: authData, isLoading: authLoading } = useQuery<{ isAuthenticated: boolean; isAdmin: boolean }>({
@@ -192,49 +194,43 @@ export default function AdminDashboard() {
   });
 
   const createProjectMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/projects", data);
+    mutationFn: async (data: FormData) => {
+      const res = await fetch("/api/projects", { method: "POST", body: data, credentials: "include" });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Failed"); }
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({
-        title: "Success",
-        description: "Project created successfully!",
-      });
+      toast({ title: "Success", description: "Project created successfully!" });
       setProjectDialogOpen(false);
+      setImageFile(null);
+      setImagePreview("");
       projectForm.reset();
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create project",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to create project", variant: "destructive" });
     },
   });
 
   const updateProjectMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      await apiRequest("PATCH", `/api/projects/${id}`, data);
+    mutationFn: async ({ id, data }: { id: number; data: FormData }) => {
+      const res = await fetch(`/api/projects/${id}`, { method: "PATCH", body: data, credentials: "include" });
+      if (!res.ok) { const err = await res.json(); throw new Error(err.message || "Failed"); }
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({
-        title: "Success",
-        description: "Project updated successfully!",
-      });
+      toast({ title: "Success", description: "Project updated successfully!" });
       setProjectDialogOpen(false);
       setEditingProject(null);
+      setImageFile(null);
+      setImagePreview("");
       projectForm.reset();
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update project",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to update project", variant: "destructive" });
     },
   });
 
@@ -331,10 +327,18 @@ export default function AdminDashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
-      toast({
-        title: "Success",
-        description: "Project deleted successfully!",
-      });
+      toast({ title: "Success", description: "Project deleted successfully!" });
+    },
+  });
+
+  const toggleProjectVisibilityMutation = useMutation({
+    mutationFn: async ({ id, isVisible }: { id: number; isVisible: boolean }) => {
+      await apiRequest("PATCH", `/api/projects/${id}`, { isVisible });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects/all"] });
+      toast({ title: "Success", description: "Project visibility updated!" });
     },
   });
 
@@ -403,6 +407,8 @@ export default function AdminDashboard() {
 
   const handleEditProject = (project: Project) => {
     setEditingProject(project);
+    setImageFile(null);
+    setImagePreview(project.imageUrl || "");
     projectForm.reset({
       title: project.title,
       description: project.description,
@@ -416,20 +422,23 @@ export default function AdminDashboard() {
   };
 
   const handleProjectSubmit = (values: z.infer<typeof projectFormSchema>) => {
-    const data = {
-      title: values.title,
-      description: values.description,
-      technologies: values.technologies,
-      liveUrl: values.liveUrl || undefined,
-      githubUrl: values.githubUrl || undefined,
-      imageUrl: values.imageUrl || undefined,
-      isVisible: values.isVisible,
-    };
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("description", values.description);
+    formData.append("technologies", JSON.stringify(values.technologies || []));
+    formData.append("liveUrl", values.liveUrl || "");
+    formData.append("githubUrl", values.githubUrl || "");
+    formData.append("isVisible", String(values.isVisible ?? true));
+    if (imageFile) {
+      formData.append("image", imageFile);
+    } else if (values.imageUrl) {
+      formData.append("imageUrl", values.imageUrl);
+    }
 
     if (editingProject) {
-      updateProjectMutation.mutate({ id: editingProject.id, data });
+      updateProjectMutation.mutate({ id: editingProject.id, data: formData });
     } else {
-      createProjectMutation.mutate(data);
+      createProjectMutation.mutate(formData);
     }
   };
 
@@ -812,6 +821,8 @@ export default function AdminDashboard() {
                   <Button
                     onClick={() => {
                       setEditingProject(null);
+                      setImageFile(null);
+                      setImagePreview("");
                       projectForm.reset({
                         title: "",
                         description: "",
@@ -826,7 +837,7 @@ export default function AdminDashboard() {
                     data-testid="button-create-project"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Create New
+                    Add Project
                   </Button>
                 </div>
               </CardHeader>
@@ -836,73 +847,86 @@ export default function AdminDashboard() {
                     <p className="text-gray-500 text-center py-8" data-testid="text-no-projects">No projects found</p>
                   ) : (
                     projects.map((project) => (
-                      <div key={project.id} className="border rounded-lg p-4 space-y-2" data-testid={`card-project-${project.id}`}>
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-semibold" data-testid={`text-project-title-${project.id}`}>{project.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1" data-testid={`text-project-description-${project.id}`}>{project.description}</p>
+                      <div key={project.id} className="border rounded-lg p-4 space-y-3" data-testid={`card-project-${project.id}`}>
+                        <div className="flex gap-4 items-start">
+                          {/* Thumbnail */}
+                          {project.imageUrl && (
+                            <img src={project.imageUrl} alt={project.title}
+                              className="w-20 h-14 object-cover rounded-md flex-shrink-0 border" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <h4 className="font-semibold truncate" data-testid={`text-project-title-${project.id}`}>{project.title}</h4>
+                                <p className="text-sm text-gray-500 mt-0.5 line-clamp-2" data-testid={`text-project-description-${project.id}`}>{project.description}</p>
+                              </div>
+                              {/* Actions */}
+                              <div className="flex gap-1.5 flex-shrink-0">
+                                <Button size="sm" variant="outline" onClick={() => handleEditProject(project)}
+                                  data-testid={`button-edit-project-${project.id}`}>
+                                  <Edit className="w-3.5 h-3.5 mr-1" />Edit
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => deleteProjectMutation.mutate(project.id)}
+                                  disabled={deleteProjectMutation.isPending}
+                                  data-testid={`button-delete-project-${project.id}`}>
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Tech tags */}
                             {project.technologies && project.technologies.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-2">
+                              <div className="flex flex-wrap gap-1.5 mt-2">
                                 {project.technologies.map((tech, idx) => (
-                                  <Badge key={idx} variant="secondary" data-testid={`badge-project-tech-${project.id}-${idx}`}>
+                                  <Badge key={idx} variant="secondary" className="text-xs" data-testid={`badge-project-tech-${project.id}-${idx}`}>
                                     {tech}
                                   </Badge>
                                 ))}
                               </div>
                             )}
-                            <div className="flex items-center space-x-2 mt-2">
-                              <Badge variant={project.isVisible ? "default" : "secondary"} data-testid={`badge-project-visibility-${project.id}`}>
-                                {project.isVisible ? <><Eye className="w-3 h-3 mr-1" />Visible</> : <><EyeOff className="w-3 h-3 mr-1" />Hidden</>}
-                              </Badge>
+
+                            {/* Status row */}
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              {/* Visibility toggle */}
+                              <button
+                                onClick={() => toggleProjectVisibilityMutation.mutate({ id: project.id, isVisible: !project.isVisible })}
+                                disabled={toggleProjectVisibilityMutation.isPending}
+                                data-testid={`button-toggle-visibility-${project.id}`}
+                                className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium transition-colors ${
+                                  project.isVisible
+                                    ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                                    : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
+                                }`}
+                              >
+                                {project.isVisible ? <><Eye className="w-3 h-3" />Visible</> : <><EyeOff className="w-3 h-3" />Hidden</>}
+                              </button>
+
+                              {/* Live URL badge */}
                               {project.liveUrl && (
-                                <a
-                                  href={project.liveUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 hover:underline"
-                                  data-testid={`link-project-live-${project.id}`}
-                                >
-                                  Live Demo
+                                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 font-medium"
+                                  data-testid={`link-project-live-${project.id}`}>
+                                  🌐 Live Demo
                                 </a>
                               )}
-                              {project.githubUrl && (
-                                <a
-                                  href={project.githubUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 hover:underline"
-                                  data-testid={`link-project-github-${project.id}`}
-                                >
-                                  GitHub
+
+                              {/* GitHub badge — only shown if githubUrl exists */}
+                              {project.githubUrl ? (
+                                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-900 text-white hover:bg-gray-700 font-medium"
+                                  data-testid={`link-project-github-${project.id}`}>
+                                  ⌥ GitHub
                                 </a>
-                              )}
+                              ) : project.liveUrl ? (
+                                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-700 font-medium"
+                                  data-testid={`badge-project-published-${project.id}`}>
+                                  ✦ Published (no GitHub)
+                                </span>
+                              ) : null}
                             </div>
                           </div>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditProject(project)}
-                              data-testid={`button-edit-project-${project.id}`}
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteProjectMutation.mutate(project.id)}
-                              disabled={deleteProjectMutation.isPending}
-                              data-testid={`button-delete-project-${project.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </Button>
-                          </div>
                         </div>
-                        <p className="text-xs text-gray-400">
-                          {formatDate(project.createdAt!)}
-                        </p>
+                        <p className="text-xs text-gray-400">{formatDate(project.createdAt!)}</p>
                       </div>
                     ))
                   )}
@@ -1168,6 +1192,8 @@ export default function AdminDashboard() {
         setProjectDialogOpen(open);
         if (!open) {
           setEditingProject(null);
+          setImageFile(null);
+          setImagePreview("");
           projectForm.reset();
         }
       }}>
@@ -1250,19 +1276,69 @@ export default function AdminDashboard() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={projectForm.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-project-imageurl" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Image upload — file picker OR URL fallback */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Project Image</label>
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 space-y-3">
+                  {imagePreview && (
+                    <div className="relative w-full h-36 rounded-lg overflow-hidden bg-gray-100">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => { setImageFile(null); setImagePreview(""); projectForm.setValue("imageUrl", ""); }}
+                        className="absolute top-2 right-2 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+                        data-testid="button-clear-image"
+                      >✕</button>
+                    </div>
+                  )}
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer text-sm text-primary font-medium hover:underline" data-testid="label-upload-image">
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        data-testid="input-project-imagefile"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setImageFile(file);
+                            setImagePreview(URL.createObjectURL(file));
+                            projectForm.setValue("imageUrl", "");
+                          }
+                        }}
+                      />
+                      📁 Upload image from device
+                    </label>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP up to 5 MB</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs text-muted-foreground">or paste URL</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+                  <FormField
+                    control={projectForm.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder="https://example.com/image.jpg"
+                            {...field}
+                            disabled={!!imageFile}
+                            data-testid="input-project-imageurl"
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (e.target.value) setImagePreview(e.target.value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               <FormField
                 control={projectForm.control}
                 name="isVisible"

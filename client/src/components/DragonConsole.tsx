@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-const N = 20; // segments
+const N = 14; // segments — compact body
+const SCALE_MULT = 0.52; // shrinks the entire dragon
 
 // ── Web Audio eat sound ────────────────────────────────────────────────────────
 function playEatSound() {
@@ -52,11 +53,11 @@ export function DragonConsole() {
     let frm = Math.random();
     let rad = 0;
 
-    // Original shape assignment — two wing positions
+    // Shape assignment — one wing at segment 6 (fits N=14 body proportionally)
     for (let i = 1; i < N; i++) {
       const el = document.createElementNS(xmlns, 'use');
       elems[i].use = el;
-      const shape = i === 1 ? 'Cabeza' : (i === 8 || i === 14) ? 'Aletas' : 'Espina';
+      const shape = i === 1 ? 'Cabeza' : i === 6 ? 'Aletas' : 'Espina';
       el.setAttributeNS(xlinkns, 'xlink:href', '#' + shape);
       screen.prepend(el);
     }
@@ -171,7 +172,7 @@ export function DragonConsole() {
         const a  = Math.atan2(e.y - ep.y, e.x - ep.x);
         e.x += (ep.x - e.x + Math.cos(a) * (100 - i) / 5) / 4;
         e.y += (ep.y - e.y + Math.sin(a) * (100 - i) / 5) / 4;
-        const s = (162 + 4 * (1 - i)) / 50;
+        const s = ((162 + 4 * (1 - i)) / 50) * SCALE_MULT;
         e.use!.setAttributeNS(
           null, 'transform',
           `translate(${(ep.x + e.x) / 2},${(ep.y + e.y) / 2}) rotate(${(180 / Math.PI) * a}) scale(${s})`
