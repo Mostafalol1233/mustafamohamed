@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import BlogPostPage from "@/pages/BlogPost";
 import NotificationBanner from "@/components/NotificationBanner";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import type { Lang } from "@/lib/i18n";
@@ -39,6 +40,7 @@ function Router() {
         <Route path="/ar" component={Home} />
         <Route path="/ar/:rest*" component={Home} />
         <Route path="/" component={Home} />
+        <Route path="/blog/:slug" component={BlogPostPage} />
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin" component={AdminDashboard} />
         <Route component={NotFound} />

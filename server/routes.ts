@@ -13,6 +13,7 @@ import {
   insertTestimonialSchema,
   insertSkillSchema,
   insertSiteSettingSchema,
+  insertBlogPostSchema,
   type InsertAnalytics,
 } from "@shared/schema";
 import multer from "multer";
@@ -544,6 +545,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await Promise.all(ids.map((id: number) => storage.deleteReview(id)));
       res.json({ message: `${ids.length} reviews deleted` });
     } catch { res.status(500).json({ message: "Bulk delete failed" }); }
+  });
+
+  // ── Blog Posts ────────────────────────────────────────────────────────────────
+
+  app.get("/api/blog", async (req, res) => {
+    try {
+      const posts = await storage.getPublishedBlogPosts();
+      res.json(posts);
+    } catch { res.status(500).json({ message: "Failed to fetch posts" }); }
+  });
+
+  app.get("/api/blog/all", requireAdminAuth, async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json(posts);
+    } catch { res.status(500).json({ message: "Failed to fetch posts" }); }
+  });
+
+  app.get("/api/blog/:slug", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostBySlug(req.params.slug);
+      if (!post || !post.isPublished) return res.status(404).json({ message: "Post not found" });
+      res.json(post);
+    } catch { res.status(500).json({ message: "Failed to fetch post" }); }
+  });
+
+  app.post("/api/blog", requireAdminAuth, async (req, res) => {
+    try {
+      const data = insertBlogPostSchema.parse(req.body);
+      const post = await storage.createBlogPost(data as any);
+      res.json(post);
+    } catch (e: any) { res.status(400).json({ message: e.message || "Failed to create post" }); }
+  });
+
+  app.patch("/api/blog/:id", requireAdminAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const post = await storage.updateBlogPost(id, req.body);
+      res.json(post);
+    } catch { res.status(500).json({ message: "Failed to update post" }); }
+  });
+
+  app.delete("/api/blog/:id", requireAdminAuth, async (req, res) => {
+    try {
+      await storage.deleteBlogPost(parseInt(req.params.id));
+      res.json({ message: "Deleted" });
+    } catch { res.status(500).json({ message: "Failed to delete post" }); }
   });
 
   // ── Seed Default Data ─────────────────────────────────────────────────────────

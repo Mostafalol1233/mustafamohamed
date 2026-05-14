@@ -6,8 +6,6 @@ import PortfolioSection from "@/components/PortfolioSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import BlogSection from "@/components/BlogSection";
-import CertificationsSection from "@/components/CertificationsSection";
-import DragonCanvas from "@/components/DragonCanvas";
 import { ArrowUp } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 
@@ -66,12 +64,10 @@ export default function Home() {
       <Navigation />
       <main>
         <HeroSection />
-        <DragonCanvas />
         <SkillsSection />
         <PortfolioSection />
         <BlogSection />
         <ReviewsSection />
-        <CertificationsSection />
         <ContactSection />
       </main>
 

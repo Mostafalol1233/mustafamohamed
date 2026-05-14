@@ -9,6 +9,7 @@ import {
   testimonials,
   skills,
   siteSettings,
+  blogPosts,
   type User,
   type UpsertUser,
   type Certificate,
@@ -29,6 +30,8 @@ import {
   type InsertSkill,
   type SiteSetting,
   type InsertSiteSetting,
+  type BlogPost,
+  type InsertBlogPost,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, count, gte } from "drizzle-orm";
@@ -86,6 +89,13 @@ export interface IStorage {
 
   getAllSiteSettings(): Promise<SiteSetting[]>;
   upsertSiteSetting(key: string, value: string): Promise<SiteSetting>;
+
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, data: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -271,6 +281,33 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedAt: new Date() } })
       .returning();
     return r;
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return db.select().from(blogPosts).where(eq(blogPosts.isPublished, true)).orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [r] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return r;
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const [r] = await db.insert(blogPosts).values(post).returning();
+    return r;
+  }
+
+  async updateBlogPost(id: number, data: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [r] = await db.update(blogPosts).set(data).where(eq(blogPosts.id, id)).returning();
+    return r;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 }
 

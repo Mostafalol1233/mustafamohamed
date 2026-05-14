@@ -9,9 +9,9 @@ import {
 import {
   LayoutDashboard, FolderOpen, Star, MessageSquare, Award, Bell, BarChart2,
   Download, Settings, LogOut, Plus, Trash2, CheckCircle, Eye, EyeOff,
-  RefreshCw, Key, Check, AlertCircle, Loader2,
+  RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink,
 } from "lucide-react";
-import type { Project, Review, ContactMessage, Certificate, Notification } from "@shared/schema";
+import type { Project, Review, ContactMessage, Certificate, Notification, BlogPost } from "@shared/schema";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -83,6 +83,7 @@ function useAdminAuth() {
 const TABS = [
   { id: "overview",      label: "Overview",      icon: LayoutDashboard },
   { id: "projects",      label: "Projects",      icon: FolderOpen },
+  { id: "articles",     label: "Articles",      icon: FileText },
   { id: "reviews",       label: "Reviews",       icon: Star },
   { id: "messages",      label: "Messages",      icon: MessageSquare },
   { id: "certificates",  label: "Certs",         icon: Award },
@@ -309,6 +310,184 @@ function ProjectsTab() {
         </table>
         {!isLoading && projects.length === 0 && (
           <div className="text-center py-12 text-gray-400 text-sm">No projects yet. Click "New Project" to add one.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Articles Tab ────────────────────────────────────────────────────────────
+
+function ArticlesTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({ queryKey: ["/api/blog/all"] });
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [form, setForm] = useState({
+    title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "",
+    readTime: 5, isPublished: true,
+  });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/blog/all"] });
+
+  const slugify = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  const createMut = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/blog", {
+      ...form,
+      tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
+      slug: form.slug || slugify(form.title),
+    }),
+    onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Article created" }); },
+    onError: () => toast({ title: "Failed to create article", variant: "destructive" }),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: (id: number) => apiRequest("PATCH", `/api/blog/${id}`, {
+      ...form,
+      tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
+    }),
+    onSuccess: () => { invalidate(); setShowForm(false); setEditId(null); resetForm(); toast({ title: "Article updated" }); },
+    onError: () => toast({ title: "Failed to update article", variant: "destructive" }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => apiRequest("DELETE", `/api/blog/${id}`),
+    onSuccess: () => { invalidate(); toast({ title: "Article deleted" }); },
+  });
+
+  const togglePublish = useMutation({
+    mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) =>
+      apiRequest("PATCH", `/api/blog/${id}`, { isPublished }),
+    onSuccess: invalidate,
+  });
+
+  const resetForm = () => {
+    setForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", readTime: 5, isPublished: true });
+    setEditId(null);
+  };
+
+  const startEdit = (p: BlogPost) => {
+    setForm({
+      title: p.title, slug: p.slug, excerpt: p.excerpt,
+      content: p.content || "", coverImage: p.coverImage || "",
+      tags: (p.tags || []).join(", "), readTime: p.readTime ?? 5,
+      isPublished: p.isPublished ?? true,
+    });
+    setEditId(p.id);
+    setShowForm(true);
+  };
+
+  const fields: [keyof typeof form, string, string][] = [
+    ["title", "Title *", "text"],
+    ["slug", "URL Slug (auto-generated if empty)", "text"],
+    ["coverImage", "Cover Image URL", "text"],
+    ["tags", "Tags (comma separated)", "text"],
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-gray-900">Articles ({posts.length})</h2>
+        <Btn onClick={() => { resetForm(); setShowForm(v => !v); }}><Plus size={14} /> New Article</Btn>
+      </div>
+
+      {showForm && (
+        <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+          <h3 className="font-medium text-gray-900 text-sm">{editId ? "Edit Article" : "New Article"}</h3>
+          <div className="grid md:grid-cols-2 gap-3">
+            {fields.map(([key, label]) => (
+              <div key={key}>
+                <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+                <input type="text" value={String(form[key])}
+                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900" />
+              </div>
+            ))}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Read Time (minutes)</label>
+              <input type="number" min={1} max={60} value={form.readTime}
+                onChange={e => setForm(f => ({ ...f, readTime: parseInt(e.target.value) || 5 }))}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Excerpt *</label>
+            <textarea rows={2} value={form.excerpt}
+              onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))}
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Content (HTML or plain text)</label>
+            <textarea rows={6} value={form.content}
+              onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-y font-mono" />
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.isPublished}
+              onChange={e => setForm(f => ({ ...f, isPublished: e.target.checked }))} />
+            <span className="text-sm text-gray-700">Published (visible on site)</span>
+          </label>
+          <div className="flex gap-2">
+            <Btn onClick={() => editId ? updateMut.mutate(editId) : createMut.mutate()}
+              disabled={!form.title || !form.excerpt || createMut.isPending || updateMut.isPending}>
+              {(createMut.isPending || updateMut.isPending) && <Loader2 size={13} className="animate-spin" />}
+              {editId ? "Save Changes" : "Publish Article"}
+            </Btn>
+            <Btn variant="ghost" onClick={() => { setShowForm(false); resetForm(); }}>Cancel</Btn>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead><tr className="border-b border-gray-100 bg-gray-50">
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Title</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 hidden md:table-cell">Tags</th>
+            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Status</th>
+            <th className="text-right px-4 py-3 text-xs font-medium text-gray-500">Actions</th>
+          </tr></thead>
+          <tbody className="divide-y divide-gray-50">
+            {isLoading ? (
+              <tr><td colSpan={4} className="text-center py-12 text-gray-400 text-sm">
+                <Loader2 className="animate-spin inline-block mr-2" size={14} />Loading...
+              </td></tr>
+            ) : (posts as BlogPost[]).map(p => (
+              <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3">
+                  <div className="font-medium text-gray-900 truncate max-w-[180px]">{p.title}</div>
+                  <div className="text-xs text-gray-400 truncate max-w-[180px]">/blog/{p.slug}</div>
+                </td>
+                <td className="px-4 py-3 hidden md:table-cell">
+                  <div className="flex flex-wrap gap-1">
+                    {(p.tags || []).slice(0, 3).map(t => <Badge key={t}>{t}</Badge>)}
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <Badge variant={p.isPublished ? "green" : "default"}>{p.isPublished ? "Published" : "Draft"}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-1 justify-end">
+                    <a href={`/blog/${p.slug}`} target="_blank" rel="noopener noreferrer">
+                      <Btn size="sm" variant="ghost"><ExternalLink size={13} /></Btn>
+                    </a>
+                    <Btn size="sm" variant="ghost" onClick={() => togglePublish.mutate({ id: p.id, isPublished: !p.isPublished })}>
+                      {p.isPublished ? <EyeOff size={13} /> : <Eye size={13} />}
+                    </Btn>
+                    <Btn size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Btn>
+                    <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete this article?")) deleteMut.mutate(p.id); }}>
+                      <Trash2 size={13} />
+                    </Btn>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!isLoading && posts.length === 0 && (
+          <div className="text-center py-12 text-gray-400 text-sm">No articles yet. Click "New Article" to write one.</div>
         )}
       </div>
     </div>
@@ -890,6 +1069,7 @@ export default function AdminDashboard() {
   const CONTENT: Record<Tab, React.ReactNode> = {
     overview:      <OverviewTab />,
     projects:      <ProjectsTab />,
+    articles:     <ArticlesTab />,
     reviews:       <ReviewsTab />,
     messages:      <MessagesTab />,
     certificates:  <CertificatesTab />,
