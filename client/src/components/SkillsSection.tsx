@@ -100,9 +100,9 @@ function bootLines(): TermLine[] {
     {
       kind: "segs",
       segs: [
-        { text: "> Type ", color: "#8b949e" },
-        { text: "help", color: "#58a6ff", clickCmd: "help" },
-        { text: "  to see available commands", color: "#8b949e" },
+        { text: "> Click ", color: "#8b949e" },
+        { text: "scan", color: "#58a6ff", clickCmd: "scan" },
+        { text: "  to explore all skill packages", color: "#8b949e" },
       ],
     },
   ];
@@ -302,8 +302,10 @@ function MatrixRain() {
 
 // ─── Skill bag card ───────────────────────────────────────────────────────────
 
-function SkillLine({ name, percent, desc, icon, tags }: {
-  name: string; percent: number; desc: string; icon: string; tags: string[];
+type Theme = typeof DARK_T;
+
+function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
+  name: string; percent: number; desc: string; icon: string; tags: string[]; theme: Theme;
 }) {
   const total = Math.round(percent / 10);
   const [filled, setFilled] = useState(0);
@@ -320,7 +322,7 @@ function SkillLine({ name, percent, desc, icon, tags }: {
   }, [total]);
 
   const empty = 10 - filled;
-  const barColor = percent >= 85 ? "#3fb950" : percent >= 70 ? "#58a6ff" : "#e3b341";
+  const barColor = percent >= 85 ? T.green : percent >= 70 ? T.accent : "#e3b341";
 
   return (
     <div
@@ -329,8 +331,8 @@ function SkillLine({ name, percent, desc, icon, tags }: {
       onMouseLeave={() => setHovered(false)}
       style={{
         fontFamily: "inherit",
-        border: `1px solid ${hovered ? "#30363d" : "#21262d"}`,
-        background: hovered ? "rgba(22,27,34,0.8)" : "rgba(13,17,23,0.6)",
+        border: `1px solid ${hovered ? T.border : T.skillBorder}`,
+        background: hovered ? T.skillHoverBg : T.skillBg,
         transition: "all 0.15s ease",
         padding: "6px 10px",
       }}
@@ -338,15 +340,15 @@ function SkillLine({ name, percent, desc, icon, tags }: {
     >
       {/* Top row: icon + name + bar + percent */}
       <div className="flex items-baseline gap-0 text-sm leading-6" style={{ whiteSpace: "pre" }}>
-        <span style={{ color: "#484f58", marginRight: 6 }}>{icon}</span>
-        <span style={{ color: "#e6edf3", minWidth: "156px", display: "inline-block" }}>
+        <span style={{ color: T.textFaint, marginRight: 6 }}>{icon}</span>
+        <span style={{ color: T.inputText, minWidth: "156px", display: "inline-block" }}>
           {name}
         </span>
-        <span style={{ color: "#484f58" }}>[</span>
+        <span style={{ color: T.textFaint }}>[</span>
         <span style={{ color: barColor }}>{"█".repeat(filled)}</span>
-        <span style={{ color: "#21262d" }}>{"░".repeat(empty)}</span>
-        <span style={{ color: "#484f58" }}>]</span>
-        <span style={{ color: "#8b949e", marginLeft: 8 }}>{percent}%</span>
+        <span style={{ color: T.skillBorder }}>{"░".repeat(empty)}</span>
+        <span style={{ color: T.textFaint }}>]</span>
+        <span style={{ color: T.textDim, marginLeft: 8 }}>{percent}%</span>
         {hovered && (
           <span style={{ color: barColor, marginLeft: 10, fontSize: "10px" }}>
             ▲ {percent >= 85 ? "expert" : percent >= 70 ? "proficient" : "learning"}
@@ -357,13 +359,13 @@ function SkillLine({ name, percent, desc, icon, tags }: {
       {/* Bottom row: desc + tags (on hover) */}
       {hovered && (
         <div className="flex items-center gap-3 mt-0.5" style={{ whiteSpace: "pre" }}>
-          <span style={{ color: "#6e7681", fontSize: "11px" }}>  └ {desc}</span>
+          <span style={{ color: T.textFaint, fontSize: "11px" }}>  └ {desc}</span>
           <span style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
             {tags.map(t => (
               <span key={t} style={{
                 fontSize: "9px",
-                color: "#484f58",
-                border: "1px solid #21262d",
+                color: T.textFaint,
+                border: `1px solid ${T.skillBorder}`,
                 borderRadius: 3,
                 padding: "0 4px",
                 letterSpacing: "0.02em",
@@ -380,7 +382,11 @@ function SkillLine({ name, percent, desc, icon, tags }: {
 
 // ─── Segment line ─────────────────────────────────────────────────────────────
 
-function SegLine({ segs, onCommand }: { segs: Seg[]; onCommand: (cmd: string) => void }) {
+function SegLine({ segs, onCommand, fallbackColor }: {
+  segs: Seg[];
+  onCommand: (cmd: string) => void;
+  fallbackColor?: string;
+}) {
   return (
     <div className="text-sm leading-7" style={{ whiteSpace: "pre" }}>
       {segs.map((seg, i) =>
@@ -389,14 +395,14 @@ function SegLine({ segs, onCommand }: { segs: Seg[]; onCommand: (cmd: string) =>
             key={i}
             onClick={() => onCommand(seg.clickCmd!)}
             className="cursor-pointer hover:underline"
-            style={{ color: seg.color ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
+            style={{ color: seg.color ?? fallbackColor ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
           >
             {seg.text}
           </span>
         ) : (
           <span
             key={i}
-            style={{ color: seg.color ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
+            style={{ color: seg.color ?? fallbackColor ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
           >
             {seg.text}
           </span>
@@ -410,6 +416,42 @@ function SegLine({ segs, onCommand }: { segs: Seg[]; onCommand: (cmd: string) =>
 
 const MOBILE_CMDS = ["scan", "frontend", "backend", "tools", "design", "ai", "help", "clear"];
 
+// ─── Theme colours ────────────────────────────────────────────────────────────
+
+const DARK_T = {
+  bg:            "#0d1117",
+  titleBg:       "#161b22",
+  border:        "#30363d",
+  innerBorder:   "#21262d",
+  text:          "#c9d1d9",
+  textDim:       "#8b949e",
+  textFaint:     "#484f58",
+  textMuted:     "#30363d",
+  accent:        "#58a6ff",
+  green:         "#3fb950",
+  inputText:     "#e6edf3",
+  skillBorder:   "#21262d",
+  skillHoverBg:  "rgba(22,27,34,0.8)",
+  skillBg:       "rgba(13,17,23,0.6)",
+};
+
+const LIGHT_T = {
+  bg:            "#ffffff",
+  titleBg:       "#f6f8fa",
+  border:        "#d0d7de",
+  innerBorder:   "#d8dee4",
+  text:          "#24292f",
+  textDim:       "#57606a",
+  textFaint:     "#6e7781",
+  textMuted:     "#8c959f",
+  accent:        "#0969da",
+  green:         "#1a7f37",
+  inputText:     "#24292f",
+  skillBorder:   "#d0d7de",
+  skillHoverBg:  "rgba(246,248,250,0.9)",
+  skillBg:       "rgba(255,255,255,0.7)",
+};
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SkillsSection() {
@@ -419,6 +461,9 @@ export default function SkillsSection() {
   const [input, setInput]               = useState("");
   const [busy, setBusy]                 = useState(false);
   const [booted, setBooted]             = useState(false);
+  const [lightMode, setLightMode]       = useState(false);
+
+  const T = lightMode ? LIGHT_T : DARK_T;
 
   const outputRef  = useRef<HTMLDivElement>(null);
   const inputRef   = useRef<HTMLInputElement>(null);
@@ -552,31 +597,50 @@ export default function SkillsSection() {
 
         {/* ── Terminal window ── */}
         <div
-          className="rounded-xl overflow-hidden shadow-2xl border border-[#30363d]"
+          className="rounded-xl overflow-hidden shadow-2xl transition-colors duration-300"
           style={{
-            background: "#0d1117",
+            background: T.bg,
+            border: `1px solid ${T.border}`,
             fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
           }}
           onClick={() => inputRef.current?.focus()}
         >
           {/* Title bar */}
           <div
-            className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]"
-            style={{ background: "#161b22" }}
+            className="flex items-center gap-2 px-4 py-3 transition-colors duration-300"
+            style={{ background: T.titleBg, borderBottom: `1px solid ${T.innerBorder}` }}
           >
             <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
             <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
             <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-            <span className="ml-3 text-xs" style={{ color: "#8b949e" }}>
+            <span className="ml-3 text-xs" style={{ color: T.textDim }}>
               skills.bag — mustafa@portfolio:~
             </span>
-            <span className="ml-auto flex items-center gap-1.5 text-xs" style={{ color: "#3fb950" }}>
-              <span
-                className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
-                style={{ background: "#3fb950" }}
-              />
-              LIVE
-            </span>
+            <div className="ml-auto flex items-center gap-3">
+              {/* Light/Dark toggle */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setLightMode(m => !m); }}
+                className="text-xs px-2 py-0.5 rounded transition-colors duration-200"
+                style={{
+                  color: T.textDim,
+                  border: `1px solid ${T.innerBorder}`,
+                  background: "transparent",
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                }}
+                title="Toggle light/dark mode"
+                data-testid="button-theme-toggle"
+              >
+                {lightMode ? "◑ dark" : "◐ light"}
+              </button>
+              <span className="flex items-center gap-1.5 text-xs" style={{ color: T.green }}>
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: T.green }}
+                />
+                LIVE
+              </span>
+            </div>
           </div>
 
           {/* Output area */}
@@ -584,31 +648,34 @@ export default function SkillsSection() {
             className="relative"
             style={{ minHeight: "340px", maxHeight: "460px", overflow: "hidden" }}
           >
-            <MatrixRain />
+            {!lightMode && <MatrixRain />}
 
-            {/* Scanlines overlay */}
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                inset: 0,
-                pointerEvents: "none",
-                zIndex: 1,
-                backgroundImage:
-                  "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)",
-              }}
-            />
+            {/* Scanlines overlay — only in dark mode */}
+            {!lightMode && (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  zIndex: 1,
+                  backgroundImage:
+                    "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)",
+                }}
+              />
+            )}
 
             {/* Scrollable text */}
             <div
               ref={outputRef}
-              className="overflow-y-auto px-6 pt-6 pb-2 md:px-8 relative"
+              className="overflow-y-auto px-6 pt-6 pb-2 md:px-8 relative transition-colors duration-300"
               style={{
                 minHeight: "340px",
                 maxHeight: "460px",
                 zIndex: 2,
                 opacity: fading ? 0 : 1,
                 transition: "opacity 0.14s ease",
+                background: lightMode ? T.bg : "transparent",
               }}
             >
               {lines.slice(0, visibleCount).map((line, i) => {
@@ -622,19 +689,20 @@ export default function SkillsSection() {
                       desc={line.desc}
                       icon={line.icon}
                       tags={line.tags}
+                      theme={T}
                     />
                   );
-                return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} />;
+                return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} fallbackColor={T.text} />;
               })}
 
               {/* Blinking cursor */}
               {!fading && (
                 <div className="flex items-center gap-2 text-sm mt-3 mb-1">
-                  <span style={{ color: "#58a6ff" }}>~</span>
-                  <span style={{ color: "#8b949e" }}>$</span>
+                  <span style={{ color: T.accent }}>~</span>
+                  <span style={{ color: T.textDim }}>$</span>
                   <span
                     className="animate-blink inline-block"
-                    style={{ width: "8px", height: "15px", background: "#58a6ff", verticalAlign: "middle" }}
+                    style={{ width: "8px", height: "15px", background: T.accent, verticalAlign: "middle" }}
                   />
                 </div>
               )}
@@ -643,12 +711,12 @@ export default function SkillsSection() {
 
           {/* Input area */}
           <div
-            className="border-t border-[#21262d] px-6 py-3 md:px-8"
-            style={{ background: "#0d1117" }}
+            className="px-6 py-3 md:px-8 transition-colors duration-300"
+            style={{ background: T.bg, borderTop: `1px solid ${T.innerBorder}` }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-sm shrink-0" style={{ color: "#58a6ff" }}>~</span>
-              <span className="text-sm shrink-0" style={{ color: "#8b949e" }}>$</span>
+              <span className="text-sm shrink-0" style={{ color: T.accent }}>~</span>
+              <span className="text-sm shrink-0" style={{ color: T.textDim }}>$</span>
               <input
                 ref={inputRef}
                 value={input}
@@ -657,9 +725,10 @@ export default function SkillsSection() {
                 placeholder="type a command and press Enter…"
                 autoComplete="off"
                 spellCheck={false}
-                className="flex-1 bg-transparent outline-none text-sm caret-[#58a6ff]"
+                className="flex-1 bg-transparent outline-none text-sm"
                 style={{
-                  color: "#e6edf3",
+                  color: T.inputText,
+                  caretColor: T.accent,
                   fontFamily: "inherit",
                   border: "none",
                   minWidth: 0,
@@ -671,8 +740,8 @@ export default function SkillsSection() {
                 disabled={!input.trim() || busy}
                 className="shrink-0 text-xs px-3 py-1 rounded border transition-colors disabled:opacity-30"
                 style={{
-                  color: "#58a6ff",
-                  borderColor: "#30363d",
+                  color: T.accent,
+                  borderColor: T.border,
                   background: "transparent",
                   fontFamily: "inherit",
                 }}
@@ -685,18 +754,18 @@ export default function SkillsSection() {
 
           {/* Mobile quick-command buttons */}
           <div
-            className="md:hidden border-t border-[#21262d] px-4 py-3 flex flex-wrap gap-2"
-            style={{ background: "#161b22" }}
+            className="md:hidden px-4 py-3 flex flex-wrap gap-2 transition-colors duration-300"
+            style={{ background: T.titleBg, borderTop: `1px solid ${T.innerBorder}` }}
           >
             {MOBILE_CMDS.map((cmd) => (
               <button
                 key={cmd}
                 onClick={() => handleLinkClick(cmd)}
-                className="text-xs px-2.5 py-1 rounded border transition-colors hover:border-[#58a6ff] hover:text-[#58a6ff]"
+                className="text-xs px-2.5 py-1 rounded border transition-colors"
                 style={{
-                  color: "#8b949e",
-                  borderColor: "#30363d",
-                  background: "#0d1117",
+                  color: T.textDim,
+                  borderColor: T.innerBorder,
+                  background: T.bg,
                   fontFamily: "inherit",
                 }}
                 data-testid={`button-mobile-cmd-${cmd}`}

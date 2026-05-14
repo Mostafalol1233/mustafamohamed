@@ -1,0 +1,50 @@
+Build me a Projects showcase section for my portfolio.
+Check my project files first and implement in my existing stack.
+
+CONCEPT:
+Full-screen project viewer — one project at a time, like a presentation.
+Each project is displayed inside a realistic macOS browser window mockup.
+The user navigates between projects with arrows or keyboard.
+
+LAYOUT:
+- White or off-white background (#fafafa)
+- Top-left: category tag pill (e.g. "Gaming" / "Education" / "E-commerce")
+  → dark text, light gray border, small font, rounded pill shape
+- Top-right: counter (e.g. 01 / 06) — muted color, monospace font
+- Center: macOS browser window mockup containing a screenshot of the project
+  → browser chrome at top: 3 dots (red/yellow/green) + URL bar with project domain
+  → screenshot fills the window below the chrome
+  → window has strong box-shadow so it stands out on white bg
+  → border-radius on the whole window: ~10px
+- Bottom-center: project name + short description + tech stack tags
+- Left/Right: arrow navigation buttons (minimal, not flashy)
+
+PROJECTS DATA (replace with my actual projects):
+1. Category: Gaming | Name: BestyBoy Gaming | URL: bestyboy.com | Stack: React, Node.js, Express
+2. Category: Gaming | Name: BRAVEZM Gaming | URL: bravezm.com | Stack: React, TypeScript, Tailwind
+3. Category: Education | Name: Ahmed Helly Academy | URL: ahmedhelly.com | Stack: React, TypeScript, Tailwind
+4. Category: E-commerce | Name: Eco Eats | URL: ecoeats.com | Stack: React, Tailwind
+(add my remaining projects from my codebase if already defined)
+
+TRANSITION ANIMATION:
+When navigating between projects:
+- Current window scales down slightly + fades out
+- New window scales up from slightly smaller + fades in
+- Category tag and counter update with a quick fade
+- Duration: ~400ms, ease-in-out
+- No sliding — only scale + opacity
+
+BROWSER MOCKUP DETAILS:
+- Titlebar height: ~32px, background: #f0f0f0, border-bottom: 1px solid #ddd
+- Three dots: left side, red (#ff5f57) yellow (#febc2e) green (#28c840), each 12px circle
+- URL bar: centered, ~40% width, background white, border: 1px solid #ddd,
+  border-radius: 6px, font-size: 12px, color: #666, shows the project domain
+- Screenshot below: fills remaining height, object-fit: cover
+- Overall window: max-width 760px, shadow: 0 20px 60px rgba(0,0,0,0.15)
+
+KEYBOARD SUPPORT:
+- Arrow Left / Arrow Right to navigate
+- Show subtle keyboard hint at the bottom: "← → to navigate"
+
+NO external carousel libraries — implement with vanilla JS or my existing stack only.
+Check my code structure and match it exactly.

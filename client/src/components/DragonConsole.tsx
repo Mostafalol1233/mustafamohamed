@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-// ─── N = 35 segments (shorter tail than original 40, still "high animated") ──
-const N = 35;
+// ─── N = 20 segments (compact tail) ──────────────────────────────────────────
+const N = 20;
 
 export function DragonConsole() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -190,7 +190,7 @@ export function DragonConsole() {
     <div
       ref={wrapRef}
       className="relative w-full bg-black rounded-xl overflow-hidden border border-yellow-600/50 shadow-2xl cursor-none"
-      style={{ height: '420px' }}
+      style={{ height: '280px' }}
     >
       {/* Crosshatch bg */}
       <div
