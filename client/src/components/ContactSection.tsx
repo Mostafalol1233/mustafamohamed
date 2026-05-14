@@ -11,28 +11,37 @@ interface TLine { id: number; text: string; type: LineType; display: string; isP
 type Step = "boot" | "name" | "method" | "contact" | "project" | "sending" | "done" | "fail" | "bye";
 
 const SOCIALS = [
-  { Icon: Mail,       label: "Email",    href: "mailto:overthegardenwall317@gmail.com", tip: "overthegardenwall317@gmail.com" },
-  { Icon: SiGithub,  label: "GitHub",   href: "https://github.com/Bemora",             tip: "github.com/Bemora" },
-  { Icon: SiLinkedin,label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo",  tip: "linkedin.com/in/mustafa-bemo" },
-  { Icon: SiWhatsapp,label: "WhatsApp", href: "https://wa.me/",                        tip: "WhatsApp" },
+  { Icon: Mail,        label: "Email",    href: "mailto:overthegardenwall317@gmail.com", tip: "overthegardenwall317@gmail.com" },
+  { Icon: SiGithub,   label: "GitHub",   href: "https://github.com/Bemora",             tip: "github.com/Bemora" },
+  { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo",  tip: "linkedin.com/in/mustafa-bemo" },
+  { Icon: SiWhatsapp, label: "WhatsApp", href: "https://wa.me/",                        tip: "WhatsApp" },
 ];
+
+const lineColor = (type: LineType) => {
+  if (type === "user") return "#e6edf3";
+  if (type === "ok")   return "#3fb950";
+  if (type === "err")  return "#f85149";
+  return "#8b949e";
+};
 
 export default function ContactSection() {
   const { t } = useLang();
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
 
-  const [lines, setLines]   = useState<TLine[]>([]);
-  const [val, setVal]       = useState("");
-  const [step, setStep]     = useState<Step>("boot");
-  const [busy, setBusy]     = useState(false);
+  const [lines, setLines]       = useState<TLine[]>([]);
+  const [val, setVal]           = useState("");
+  const [step, setStep]         = useState<Step>("boot");
+  const [busy, setBusy]         = useState(false);
   const [progress, setProgress] = useState(0);
   const userData = useRef({ name: "", method: "email", contact: "" });
   const lineId   = useRef(0);
   const termRef  = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const scroll = () => { if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight; };
+  const scroll = () => {
+    if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
+  };
 
   const addLine = (text: string, type: LineType = "out", instant = false): Promise<void> =>
     new Promise(resolve => {
@@ -44,13 +53,16 @@ export default function ContactSection() {
         i++;
         setLines(prev => prev.map(l => l.id === id ? { ...l, display: text.slice(0, i) } : l));
         scroll();
-        if (i < text.length) setTimeout(tick, 22);
+        if (i < text.length) setTimeout(tick, 20);
         else resolve();
       };
-      setTimeout(tick, 22);
+      setTimeout(tick, 20);
     });
 
-  const seq = async (items: Array<{ text: string; type?: LineType; delay?: number; instant?: boolean }>, next?: Step) => {
+  const seq = async (
+    items: Array<{ text: string; type?: LineType; delay?: number; instant?: boolean }>,
+    next?: Step,
+  ) => {
     setBusy(true);
     for (const item of items) {
       if (item.delay) await new Promise(r => setTimeout(r, item.delay));
@@ -68,13 +80,13 @@ export default function ContactSection() {
       setProgress(0);
       let p = 0;
       const tick = () => {
-        p = Math.min(p + 4, 100);
+        p = Math.min(p + 3, 100);
         setProgress(p);
         scroll();
-        if (p < 100) setTimeout(tick, 35);
+        if (p < 100) setTimeout(tick, 40);
         else resolve();
       };
-      setTimeout(tick, 35);
+      setTimeout(tick, 40);
     });
 
   const mutation = useMutation({
@@ -100,10 +112,10 @@ export default function ContactSection() {
     userData.current = { name: "", method: "email", contact: "" };
     const c = tRef.current.contact;
     seq([
-      { text: c.boot1, delay: 400 },
-      { text: c.boot2, delay: 150 },
-      { text: c.boot3, delay: 150 },
-      { text: "", type: "blank", delay: 600 },
+      { text: c.boot1, delay: 300 },
+      { text: c.boot2, delay: 120 },
+      { text: c.boot3, delay: 120 },
+      { text: "", type: "blank", delay: 500 },
       { text: c.ask_name },
     ], "name");
   };
@@ -115,7 +127,7 @@ export default function ContactSection() {
     const v = raw.trim();
     if (!v) return;
     setVal("");
-    await addLine(`~ ${v}`, "user", true);
+    await addLine(`$ ${v}`, "user", true);
     const c = tRef.current.contact;
     if (v.toLowerCase() === "restart") { doRestart(); return; }
     if (step === "fail") {
@@ -124,8 +136,15 @@ export default function ContactSection() {
         setBusy(true);
         await addLine(c.retransmit, "out");
         await progressBar();
-        mutation.mutate({ name: d.name, email: d.method === "email" ? d.contact : `phone:${d.contact}`, subject: d.method === "phone" ? "Phone Contact" : "Portfolio Contact", message: "(retry)" });
-      } else seq([{ text: c.goodbye }], "bye");
+        mutation.mutate({
+          name: d.name,
+          email: d.method === "email" ? d.contact : `phone:${d.contact}`,
+          subject: d.method === "phone" ? "Phone Contact" : "Portfolio Contact",
+          message: "(retry)",
+        });
+      } else {
+        seq([{ text: c.goodbye }], "bye");
+      }
       return;
     }
     if (step === "done" || step === "bye") return;
@@ -161,15 +180,13 @@ export default function ContactSection() {
       await addLine(c.sending, "out");
       await progressBar();
       const d = userData.current;
-      mutation.mutate({ name: d.name, email: d.method === "email" ? d.contact : `phone:${d.contact}`, subject: d.method === "phone" ? "Phone Contact" : "Portfolio Contact", message: v });
+      mutation.mutate({
+        name: d.name,
+        email: d.method === "email" ? d.contact : `phone:${d.contact}`,
+        subject: d.method === "phone" ? "Phone Contact" : "Portfolio Contact",
+        message: v,
+      });
     }
-  };
-
-  const lineColor = (type: LineType) => {
-    if (type === "user") return "#e2e8f0";
-    if (type === "ok")   return "#3fb950";
-    if (type === "err")  return "#f85149";
-    return "#94a3b8";
   };
 
   const active = !busy && ["name", "method", "contact", "project", "fail", "done"].includes(step);
@@ -184,63 +201,97 @@ export default function ContactSection() {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-10 items-start">
-          {/* Terminal */}
+          {/* ── Terminal ── */}
           <div className="lg:col-span-3">
-            <div className="rounded-xl overflow-hidden shadow-2xl" style={{ border: "1px solid #1e293b", background: "#020817" }}>
+            <div
+              className="rounded-xl overflow-hidden shadow-xl"
+              style={{ background: "#0d1117", border: "1px solid #30363d" }}
+            >
               {/* Title bar */}
-              <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "#0f172a", borderBottom: "1px solid #1e293b" }}>
-                <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                <span className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                <span className="ml-4 text-xs text-slate-400 font-mono select-none">contact.sh — bash</span>
-                <div className="ml-auto flex gap-1">
-                  <span className="text-xs text-slate-600 font-mono">●</span>
-                </div>
+              <div
+                className="flex items-center gap-2 px-4 py-3"
+                style={{ background: "#161b22", borderBottom: "1px solid #21262d" }}
+              >
+                <span className="w-3 h-3 rounded-full" style={{ background: "#ff5f56" }} />
+                <span className="w-3 h-3 rounded-full" style={{ background: "#ffbd2e" }} />
+                <span className="w-3 h-3 rounded-full" style={{ background: "#27c93f" }} />
+                <span
+                  className="ml-4 text-xs select-none"
+                  style={{ color: "#8b949e", fontFamily: "monospace" }}
+                >
+                  contact.sh
+                </span>
               </div>
 
-              {/* Terminal body */}
+              {/* Body */}
               <div
                 ref={termRef}
-                className="p-4 overflow-y-auto cursor-text"
-                style={{ height: "400px", fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace", fontSize: "13.5px", lineHeight: "1.75" }}
+                className="p-5 overflow-y-auto cursor-text"
+                style={{
+                  height: "380px",
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontSize: "13px",
+                  lineHeight: "1.8",
+                }}
                 onClick={() => inputRef.current?.focus()}
                 data-testid="terminal-body"
               >
-                {/* Static header */}
-                <div style={{ color: "#3b82f6", marginBottom: 8, fontSize: 12 }}>
-                  ┌──────────────────────────────────────┐<br />
-                  │  <span style={{ color: "#22d3ee" }}>CONTACT PROTOCOL v2.0</span>  │<br />
-                  └──────────────────────────────────────┘
-                </div>
-
                 {lines.map(line =>
-                  line.type === "blank" ? <div key={line.id} style={{ height: 6 }} /> :
-                  line.isProgress ? (
-                    <div key={line.id} className="flex items-center gap-1 my-1 flex-wrap" style={{ color: "#94a3b8" }}>
-                      <span style={{ color: "#3b82f6" }}>{">"}</span>
-                      <span>&nbsp;[</span>
-                      <span style={{ color: "#22c55e", letterSpacing: "-1px" }}>{"█".repeat(Math.floor(progress / 5))}</span>
-                      <span style={{ color: "#1e293b", letterSpacing: "-1px" }}>{"░".repeat(20 - Math.floor(progress / 5))}</span>
-                      <span>]&nbsp;{progress}%</span>
+                  line.type === "blank" ? (
+                    <div key={line.id} style={{ height: 4 }} />
+                  ) : line.isProgress ? (
+                    <div
+                      key={line.id}
+                      className="flex items-center gap-1 flex-wrap"
+                      style={{ color: "#8b949e" }}
+                    >
+                      <span style={{ color: "#58a6ff" }}>{">"}</span>
+                      &nbsp;[
+                      <span style={{ color: "#3fb950", letterSpacing: "-1px" }}>
+                        {"█".repeat(Math.floor(progress / 5))}
+                      </span>
+                      <span style={{ color: "#21262d", letterSpacing: "-1px" }}>
+                        {"░".repeat(20 - Math.floor(progress / 5))}
+                      </span>
+                      ]&nbsp;{progress}%
                     </div>
                   ) : (
                     <div key={line.id} style={{ color: lineColor(line.type) }}>
-                      {line.type === "out" && <span style={{ color: "#3b82f6", marginRight: 4 }}>{">"}</span>}
+                      {line.type === "out" && (
+                        <span style={{ color: "#58a6ff", marginRight: 6 }}>{">"}</span>
+                      )}
                       {line.display}
                     </div>
                   )
                 )}
 
-                {/* Method quick-pick buttons */}
+                {/* Method buttons */}
                 {step === "method" && !busy && (
-                  <div className="flex gap-2 mt-3 mb-2">
-                    {[{ v: "1", label: t.contact.opt_email }, { v: "2", label: t.contact.opt_phone }].map(opt => (
-                      <button key={opt.v} onClick={() => submit(opt.v)}
-                        className="px-3 py-1 text-xs rounded border transition-all duration-150"
-                        style={{ fontFamily: "inherit", borderColor: "#334155", color: "#94a3b8", background: "#0f172a" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = "#22c55e"; e.currentTarget.style.color = "#22c55e"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.color = "#94a3b8"; }}
-                        data-testid={`btn-method-${opt.v === "1" ? "email" : "phone"}`}>
+                  <div className="flex gap-2 mt-2 mb-1">
+                    {[
+                      { v: "1", label: t.contact.opt_email },
+                      { v: "2", label: t.contact.opt_phone },
+                    ].map(opt => (
+                      <button
+                        key={opt.v}
+                        onClick={() => submit(opt.v)}
+                        className="px-3 py-0.5 text-xs rounded border transition-colors"
+                        style={{
+                          fontFamily: "inherit",
+                          borderColor: "#30363d",
+                          color: "#8b949e",
+                          background: "transparent",
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.borderColor = "#3fb950";
+                          e.currentTarget.style.color = "#3fb950";
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.borderColor = "#30363d";
+                          e.currentTarget.style.color = "#8b949e";
+                        }}
+                        data-testid={`btn-method-${opt.v === "1" ? "email" : "phone"}`}
+                      >
                         {opt.label}
                       </button>
                     ))}
@@ -250,20 +301,37 @@ export default function ContactSection() {
                 {/* Input row */}
                 {active && (
                   <div className="flex items-center gap-2 mt-1">
-                    <span style={{ color: "#22d3ee", userSelect: "none" }}>~$</span>
+                    <span style={{ color: "#8b949e", userSelect: "none" }}>~$</span>
                     <div className="relative flex-1 flex items-center">
                       <input
                         ref={inputRef}
                         value={val}
                         onChange={e => setVal(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(val); } }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            submit(val);
+                          }
+                        }}
                         className="w-full bg-transparent border-none outline-none"
-                        style={{ fontFamily: "inherit", fontSize: "inherit", color: "#e2e8f0", caretColor: "#3b82f6" }}
-                        autoFocus autoComplete="off" spellCheck={false}
+                        style={{
+                          fontFamily: "inherit",
+                          fontSize: "inherit",
+                          color: "#e6edf3",
+                          caretColor: "#e6edf3",
+                        }}
+                        autoFocus
+                        autoComplete="off"
+                        spellCheck={false}
                         data-testid="input-terminal"
                       />
                       {!val && (
-                        <span className="animate-blink absolute left-0 pointer-events-none" style={{ color: "#3b82f6" }}>▋</span>
+                        <span
+                          className="animate-blink absolute left-0 pointer-events-none"
+                          style={{ color: "#e6edf3" }}
+                        >
+                          ▌
+                        </span>
                       )}
                     </div>
                   </div>
@@ -271,11 +339,24 @@ export default function ContactSection() {
 
                 {(step === "done" || step === "bye") && (
                   <div className="mt-3">
-                    <button onClick={doRestart}
-                      className="text-xs px-3 py-1 rounded border transition-all"
-                      style={{ fontFamily: "inherit", borderColor: "#22c55e", color: "#22c55e", background: "transparent" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#22c55e22"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                    <button
+                      onClick={doRestart}
+                      className="text-xs px-3 py-1 rounded border transition-colors"
+                      style={{
+                        fontFamily: "inherit",
+                        borderColor: "#30363d",
+                        color: "#8b949e",
+                        background: "transparent",
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = "#3fb950";
+                        e.currentTarget.style.color = "#3fb950";
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = "#30363d";
+                        e.currentTarget.style.color = "#8b949e";
+                      }}
+                    >
                       restart
                     </button>
                   </div>
@@ -284,39 +365,60 @@ export default function ContactSection() {
             </div>
           </div>
 
-          {/* Info card */}
+          {/* ── Info card ── */}
           <div className="lg:col-span-2">
             <div className="card-base p-8 flex flex-col items-center text-center gap-5">
               <div className="relative">
-                <img src={profileImage} alt="Mustafa Mohamed"
+                <img
+                  src={profileImage}
+                  alt="Mustafa Mohamed"
                   className="w-20 h-20 rounded-full object-cover border-2 border-border pointer-events-none"
                   style={{ objectPosition: "center 20%" }}
-                  draggable={false} onContextMenu={e => e.preventDefault()} />
-                <span className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-card animate-pulse-dot" style={{ background: "#3fb950" }} />
+                  draggable={false}
+                  onContextMenu={e => e.preventDefault()}
+                />
+                <span
+                  className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-card animate-pulse-dot"
+                  style={{ background: "#3fb950" }}
+                />
               </div>
               <div>
                 <p className="font-semibold text-foreground">Mustafa Mohamed</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Full-Stack Developer & Content Strategist</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Full-Stack Developer & Content Strategist
+                </p>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="w-2 h-2 rounded-full animate-pulse-dot" style={{ background: "#3fb950" }} />
+                <span
+                  className="w-2 h-2 rounded-full animate-pulse-dot"
+                  style={{ background: "#3fb950" }}
+                />
                 <span>{t.contact.online}</span>
               </div>
               <div className="w-full border-t border-border" />
               <div className="flex gap-3 justify-center">
                 {SOCIALS.map(({ Icon, label, href, tip }) => (
                   <div key={label} className="relative group">
-                    <a href={href} target="_blank" rel="noopener noreferrer"
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="w-10 h-10 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 transition-all"
-                      aria-label={label} data-testid={`link-social-${label.toLowerCase()}`}>
+                      aria-label={label}
+                      data-testid={`link-social-${label.toLowerCase()}`}
+                    >
                       <Icon size={18} />
                     </a>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs font-medium bg-foreground text-background whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">{tip}</div>
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs font-medium bg-foreground text-background whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      {tip}
+                    </div>
                   </div>
                 ))}
               </div>
               <div className="w-full border-t border-border" />
-              <p className="text-xs text-muted-foreground leading-relaxed italic">"{t.contact.quote}"</p>
+              <p className="text-xs text-muted-foreground leading-relaxed italic">
+                "{t.contact.quote}"
+              </p>
             </div>
           </div>
         </div>

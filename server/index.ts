@@ -3,6 +3,27 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CORS — allow Vercel frontend and any Replit dev domain to call this API
+app.use((req, res, next) => {
+  const origin = req.headers.origin ?? "";
+  const allowed =
+    !origin ||
+    origin.endsWith(".vercel.app") ||
+    origin.endsWith(".replit.dev") ||
+    origin.endsWith(".replit.app") ||
+    (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL);
+
+  if (allowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  }
+  if (req.method === "OPTIONS") return res.status(204).end();
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

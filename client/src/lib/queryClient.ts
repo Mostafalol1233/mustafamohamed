@@ -1,5 +1,15 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// When deploying the frontend to Vercel separately, set VITE_API_URL to the
+// Replit backend URL, e.g. https://your-app.replit.app
+// In development / when running together this stays empty and relative paths are used.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+
+function resolveUrl(url: string): string {
+  if (API_BASE && url.startsWith("/")) return `${API_BASE}${url}`;
+  return url;
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -12,7 +22,7 @@ export async function apiRequest(
   url: string,
   data?: unknown,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  const res = await fetch(resolveUrl(url), {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -28,7 +38,7 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const url = queryKey[0] as string;
+    const url = resolveUrl(queryKey[0] as string);
     const res = await fetch(url, { credentials: "include" });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
