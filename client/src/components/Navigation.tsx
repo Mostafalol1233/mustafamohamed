@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, Settings } from "lucide-react";
+import { Menu, X, Settings, Mail } from "lucide-react";
+import { SiX as SiXBrand, SiYoutube } from "react-icons/si";
 
 const navLinks = [
   { label: "Home", id: "home" },
@@ -72,11 +73,11 @@ export default function Navigation({ showAdminButton = true }: { showAdminButton
               <div className="hidden md:flex items-center gap-1">
                 {(
                   [
-                    { href: "https://x.com/Bemora_BEMO", label: "Twitter", icon: "ti ti-brand-x" },
-                    { href: "https://youtube.com/@Bemora-site", label: "YouTube", icon: "ti ti-brand-youtube" },
-                    { href: "mailto:overthegardenwall317@gmail.com", label: "Email", icon: "ti ti-mail" },
+                    { href: "https://x.com/Bemora_BEMO", label: "Twitter", Icon: SiXBrand },
+                    { href: "https://youtube.com/@Bemora-site", label: "YouTube", Icon: SiYoutube },
+                    { href: "mailto:overthegardenwall317@gmail.com", label: "Email", Icon: Mail },
                   ] as const
-                ).map(({ href, label, icon }) => (
+                ).map(({ href, label, Icon }) => (
                   <a
                     key={label}
                     href={href}
@@ -106,7 +107,7 @@ export default function Navigation({ showAdminButton = true }: { showAdminButton
                       e.currentTarget.style.borderColor = "#e5e5e5";
                     }}
                   >
-                    <i className={icon} style={{ fontSize: 18, lineHeight: 1 }} />
+                    <Icon size={17} />
                   </a>
                 ))}
               </div>

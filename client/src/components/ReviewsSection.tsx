@@ -77,8 +77,8 @@ function Card({ t }: { t: typeof ROW1[0] }) {
   );
 }
 
-const track1 = [...ROW1, ...ROW1];
-const track2 = [...ROW2, ...ROW2];
+const track1 = [...ROW1, ...ROW1, ...ROW1, ...ROW1];
+const track2 = [...ROW2, ...ROW2, ...ROW2, ...ROW2];
 
 export default function ReviewsSection() {
   return (

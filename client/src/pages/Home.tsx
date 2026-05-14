@@ -7,7 +7,8 @@ import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 import DragonCanvas from "@/components/DragonCanvas";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Mail } from "lucide-react";
+import { SiX, SiYoutube } from "react-icons/si";
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -68,11 +69,11 @@ export default function Home() {
             <div className="flex items-center justify-end gap-2">
               {(
                 [
-                  { href: "https://x.com/Bemora_BEMO", label: "Twitter", icon: "ti ti-brand-x" },
-                  { href: "https://youtube.com/@Bemora-site", label: "YouTube", icon: "ti ti-brand-youtube" },
-                  { href: "mailto:overthegardenwall317@gmail.com", label: "Email", icon: "ti ti-mail" },
+                  { href: "https://x.com/Bemora_BEMO", label: "Twitter", Icon: SiX },
+                  { href: "https://youtube.com/@Bemora-site", label: "YouTube", Icon: SiYoutube },
+                  { href: "mailto:overthegardenwall317@gmail.com", label: "Email", Icon: Mail },
                 ] as const
-              ).map(({ href, label, icon }) => (
+              ).map(({ href, label, Icon }) => (
                 <a
                   key={label}
                   href={href}
@@ -102,7 +103,7 @@ export default function Home() {
                     e.currentTarget.style.borderColor = "#e5e5e5";
                   }}
                 >
-                  <i className={icon} style={{ fontSize: 18, lineHeight: 1 }} />
+                  <Icon size={17} />
                 </a>
               ))}
             </div>
