@@ -66,30 +66,43 @@ export default function Home() {
 
             {/* Right: social icons */}
             <div className="flex items-center justify-end gap-2">
-              {[
-                { icon: "ti-brand-x", label: "X", href: "https://x.com/Bemora_BEMO" },
-                { icon: "ti-brand-youtube", label: "YouTube", href: "https://youtube.com/@Bemora-site" },
-                { icon: "ti-mail", label: "Email", href: "mailto:overthegardenwall317@gmail.com" },
-              ].map(({ icon, label, href }) => (
+              {(
+                [
+                  { href: "https://x.com/Bemora_BEMO", label: "Twitter", icon: "ti ti-brand-x" },
+                  { href: "https://youtube.com/@Bemora-site", label: "YouTube", icon: "ti ti-brand-youtube" },
+                  { href: "mailto:overthegardenwall317@gmail.com", label: "Email", icon: "ti ti-mail" },
+                ] as const
+              ).map(({ href, label, icon }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-primary/8"
-                  style={{ border: "0.5px solid #e5e5e5", color: "#888" }}
+                  data-testid={`footer-social-${label.toLowerCase()}`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    border: "0.5px solid #e5e5e5",
+                    color: "#888",
+                    textDecoration: "none",
+                    transition: "color 200ms, border-color 200ms",
+                    flexShrink: 0,
+                  }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "hsl(234, 89%, 57%)";
-                    e.currentTarget.style.borderColor = "hsl(234, 89%, 57% / 0.4)";
+                    e.currentTarget.style.color = "#3b82f6";
+                    e.currentTarget.style.borderColor = "#3b82f6";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#888";
                     e.currentTarget.style.borderColor = "#e5e5e5";
                   }}
-                  data-testid={`footer-social-${label.toLowerCase()}`}
                 >
-                  <i className={`ti ${icon}`} style={{ fontSize: 16 }} />
+                  <i className={icon} style={{ fontSize: 18, lineHeight: 1 }} />
                 </a>
               ))}
             </div>
