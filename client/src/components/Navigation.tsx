@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, Settings, Mail } from "lucide-react";
-import { SiX as SiXBrand, SiYoutube } from "react-icons/si";
+import { Menu, X, Settings } from "lucide-react";
 
 const navLinks = [
   { label: "Home", id: "home" },
@@ -71,45 +70,40 @@ export default function Navigation({ showAdminButton = true }: { showAdminButton
             <div className="flex items-center gap-1.5">
               {/* Social icon buttons — desktop only */}
               <div className="hidden md:flex items-center gap-1">
-                {(
-                  [
-                    { href: "https://x.com/Bemora_BEMO", label: "Twitter", Icon: SiXBrand },
-                    { href: "https://youtube.com/@Bemora-site", label: "YouTube", Icon: SiYoutube },
-                    { href: "mailto:overthegardenwall317@gmail.com", label: "Email", Icon: Mail },
-                  ] as const
-                ).map(({ href, label, Icon }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    data-testid={`nav-social-${label.toLowerCase()}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      border: "0.5px solid #e5e5e5",
-                      color: "#888",
-                      textDecoration: "none",
-                      transition: "color 200ms, border-color 200ms",
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "#3b82f6";
-                      e.currentTarget.style.borderColor = "#3b82f6";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "#888";
-                      e.currentTarget.style.borderColor = "#e5e5e5";
-                    }}
-                  >
-                    <Icon size={17} />
-                  </a>
-                ))}
+                <a
+                  href="https://x.com/Bemora_BEMO"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Twitter"
+                  data-testid="nav-social-twitter"
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+                >
+                  <i className="ti ti-brand-x" style={{ fontSize:17 }} />
+                </a>
+                <a
+                  href="https://youtube.com/@Bemora-site"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                  data-testid="nav-social-youtube"
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+                >
+                  <i className="ti ti-brand-youtube" style={{ fontSize:17 }} />
+                </a>
+                <a
+                  href="mailto:overthegardenwall317@gmail.com"
+                  aria-label="Email"
+                  data-testid="nav-social-email"
+                  style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+                >
+                  <i className="ti ti-mail" style={{ fontSize:17 }} />
+                </a>
               </div>
 
               {showAdminButton && isAuthenticated && (

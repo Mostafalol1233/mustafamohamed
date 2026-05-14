@@ -1,111 +1,69 @@
 const TESTIMONIALS = [
   {
     name: "Karim Hassan",
-    role: "Community Manager",
+    title: "Community Manager",
     company: "BRAVEZM Gaming",
-    icon: "ti-device-gamepad-2",
-    lang: "en",
-    quote: "Mustafa built our platform exactly as we envisioned. Performs great under heavy traffic and the UI keeps our community engaged.",
-  },
-  {
-    name: "أحمد سامي",
-    role: "صاحب بيزنس",
-    company: "القاهرة",
-    icon: "ti-briefcase",
-    lang: "ar",
-    quote: "شغل محترم جداً وسريع، فهم اللي أنا عايزه من أول مرة وعمل موقع أحسن مما كنت متصور.",
+    quote: "Delivered exactly what we needed, on time and with clean code. Highly recommend.",
   },
   {
     name: "Dr. Sara Mahmoud",
-    role: "Academic Director",
+    title: "Academic Director",
     company: "Ahmed Helly Academy",
-    icon: "ti-school",
-    lang: "en",
-    quote: "Our academy needed a clean, trustworthy presence. Enrollment inquiries more than doubled since launch.",
-  },
-  {
-    name: "محمود طارق",
-    role: "فريلانسر",
-    company: "الإسكندرية",
-    icon: "ti-star",
-    lang: "ar",
-    quote: "تعاملت معاه في مشروع عاجل وسلّم في الموعد بالظبط. الشغل نضيف وما فيش مشاكل تقنية خالص.",
-  },
-  {
-    name: "Layla Ibrahim",
-    role: "Campaign Lead",
-    company: "Eco Eats",
-    icon: "ti-speakerphone",
-    lang: "en",
-    quote: "Mustafa understood our sustainability mission and turned it into an impactful site. Audience feedback has been overwhelmingly positive.",
-  },
-  {
-    name: "نور الهدى",
-    role: "مديرة تسويق",
-    company: "القاهرة",
-    icon: "ti-chart-bar",
-    lang: "ar",
-    quote: "أنا مبسوطة جداً من النتيجة، الموقع بقى أحسن بكتير وعدد الزيارات زاد في أول أسبوع.",
+    quote: "Enrollment inquiries more than doubled after launch. Clean, professional, and trustworthy.",
   },
   {
     name: "Omar Khalid",
-    role: "Esports Coordinator",
+    title: "Esports Coordinator",
     company: "BestyBoy Gaming",
-    icon: "ti-device-gamepad-2",
-    lang: "en",
-    quote: "Professional and detail-oriented. He turned our concept into a real platform that our community loves.",
+    quote: "Turned our concept into a platform our community genuinely loves. Fast and detail-oriented.",
+  },
+  {
+    name: "Layla Ibrahim",
+    title: "Campaign Lead",
+    company: "Eco Eats",
+    quote: "He understood our mission and built something that resonated with our audience immediately.",
   },
   {
     name: "Ahmed Fawzy",
-    role: "Product Owner",
+    title: "Product Owner",
     company: "BMO Tools",
-    icon: "ti-settings",
-    lang: "en",
-    quote: "Building an RTL-ready Arabic tools platform is no small task. Mustafa handled every edge case with precision.",
+    quote: "RTL-ready, fully responsive, and zero bugs on launch day. Exactly what we asked for.",
   },
   {
-    name: "سارة خالد",
-    role: "مصممة مستقلة",
-    company: "الجيزة",
-    icon: "ti-palette",
-    lang: "ar",
-    quote: "بيشتغل بجدية وبيفهم التفاصيل كويس. قدّر يحوّل الفكرة بتاعتي لموقع شكله احترافي وأنيق.",
+    name: "Natasha Reed",
+    title: "Managing Director",
+    company: "MR Mohammed",
+    quote: "Professional from start to finish. The site impressed our entire team on first review.",
   },
 ];
 
 const TRACK = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
 
 function Card({ t, idx }: { t: typeof TESTIMONIALS[0]; idx: number }) {
-  const isArabic = t.lang === "ar";
   return (
     <div
-      className="flex-shrink-0 flex flex-col gap-2 rounded-lg p-4 select-none"
-      style={{
-        width: 210,
-        background: "#0d1117",
-        border: "1px solid #21262d",
-        direction: isArabic ? "rtl" : "ltr",
-      }}
+      className="flex-shrink-0 flex flex-col gap-3 rounded-lg p-5 select-none"
+      style={{ width: 230, background: "#0d1117", border: "1px solid #21262d" }}
       data-testid={`card-testimonial-${idx}`}
     >
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <span key={i} style={{ color: "#f59e0b", fontSize: 11 }}>★</span>
+          <span key={i} style={{ color: "#f59e0b", fontSize: 12 }}>★</span>
         ))}
       </div>
-      <p style={{ color: "#c9d1d9", fontSize: 12, lineHeight: "1.6", fontFamily: isArabic ? "system-ui, sans-serif" : "inherit" }}>
-        {isArabic ? `"${t.quote}"` : `"${t.quote}"`}
+      <p style={{ color: "#c9d1d9", fontSize: 13, lineHeight: "1.65" }}>
+        "{t.quote}"
       </p>
-      <div className="flex items-center gap-2 mt-auto pt-1.5">
+      <div className="flex items-center gap-2.5 mt-auto pt-2 border-t" style={{ borderColor: "#21262d" }}>
         <div
-          className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ background: "#1a1a2e" }}
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold"
+          style={{ background: "#1c2333", color: "#818cf8" }}
         >
-          <i className={`ti ${t.icon}`} style={{ color: "#818cf8", fontSize: 14 }} />
+          {t.name.charAt(0)}
         </div>
         <div className="min-w-0">
-          <p style={{ color: "#ffffff", fontWeight: 500, fontSize: 12 }} className="truncate">{t.name}</p>
-          <p style={{ color: "#555", fontSize: 10 }} className="truncate">{t.role} · {t.company}</p>
+          <p style={{ color: "#e6edf3", fontWeight: 600, fontSize: 13 }} className="truncate">{t.name}</p>
+          <p style={{ color: "#555", fontSize: 11 }} className="truncate">{t.title} · {t.company}</p>
         </div>
       </div>
     </div>
@@ -133,8 +91,8 @@ export default function ReviewsSection() {
 
         <div className="marquee-wrapper overflow-hidden">
           <div
-            className="marquee-track flex gap-3"
-            style={{ animation: "marquee-left 45s linear infinite" }}
+            className="marquee-track flex gap-4"
+            style={{ animation: "marquee-left 40s linear infinite" }}
           >
             {TRACK.map((t, i) => <Card key={i} t={t} idx={i} />)}
           </div>

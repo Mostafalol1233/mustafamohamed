@@ -7,8 +7,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import EnhancedAdminDashboard from "@/components/EnhancedAdminDashboard";
 import DragonCanvas from "@/components/DragonCanvas";
-import { ArrowUp, Mail } from "lucide-react";
-import { SiX, SiYoutube } from "react-icons/si";
+import { ArrowUp } from "lucide-react";
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -67,45 +66,40 @@ export default function Home() {
 
             {/* Right: social icons */}
             <div className="flex items-center justify-end gap-2">
-              {(
-                [
-                  { href: "https://x.com/Bemora_BEMO", label: "Twitter", Icon: SiX },
-                  { href: "https://youtube.com/@Bemora-site", label: "YouTube", Icon: SiYoutube },
-                  { href: "mailto:overthegardenwall317@gmail.com", label: "Email", Icon: Mail },
-                ] as const
-              ).map(({ href, label, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  data-testid={`footer-social-${label.toLowerCase()}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 36,
-                    height: 36,
-                    borderRadius: "50%",
-                    border: "0.5px solid #e5e5e5",
-                    color: "#888",
-                    textDecoration: "none",
-                    transition: "color 200ms, border-color 200ms",
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "#3b82f6";
-                    e.currentTarget.style.borderColor = "#3b82f6";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "#888";
-                    e.currentTarget.style.borderColor = "#e5e5e5";
-                  }}
-                >
-                  <Icon size={17} />
-                </a>
-              ))}
+              <a
+                href="https://x.com/Bemora_BEMO"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Twitter"
+                data-testid="footer-social-twitter"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-brand-x" style={{ fontSize:17 }} />
+              </a>
+              <a
+                href="https://youtube.com/@Bemora-site"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                data-testid="footer-social-youtube"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-brand-youtube" style={{ fontSize:17 }} />
+              </a>
+              <a
+                href="mailto:overthegardenwall317@gmail.com"
+                aria-label="Email"
+                data-testid="footer-social-email"
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color="#3b82f6"; e.currentTarget.style.borderColor="#3b82f6"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color="#888"; e.currentTarget.style.borderColor="#e5e5e5"; }}
+              >
+                <i className="ti ti-mail" style={{ fontSize:17 }} />
+              </a>
             </div>
           </div>
 
