@@ -1,0 +1,97 @@
+Build me a fully interactive terminal component for my portfolio's Skills section.
+Check my project files first and implement in my existing stack.
+
+CONCEPT:
+It must feel like a REAL terminal — not a visual gimmick.
+The user actually interacts with it by clicking or typing commands.
+Every action clears the screen and "types out" the new content, 
+exactly like a real CLI session changing pages.
+
+TERMINAL STRUCTURE:
+
+1. BOOT STATE (on load):
+   The terminal boots with these lines appearing one by one:
+   > Initializing portfolio.exe...
+   > Loading skill modules... done
+   > Type  help  to see available commands
+   ~ _
+
+2. AVAILABLE COMMANDS (shown when user types or clicks "help"):
+   Clear screen, then show:
+   > Available commands:
+     scan        — scan all skill categories
+     frontend    — frontend skills & stats  
+     backend     — backend skills & stats
+     tools       — dev tools & environment
+     design      — UI/UX & design skills
+     ai          — AI & data skills
+     clear       — clear terminal
+   ~ _
+
+3. COMMAND: scan
+   Clears screen, then animates this output line by line:
+   > Running skill scan...
+   > [██████████] Scanning modules...
+   ✓ frontend    — 5 skills detected
+   ✓ backend     — 5 skills detected  
+   ✓ design      — 4 skills detected
+   ✓ tools       — 5 skills detected
+   ✓ ai          — 4 skills detected
+   > Scan complete. Click any category or type its name.
+   
+   Each category name is CLICKABLE — clicking it runs that command.
+
+4. COMMAND: frontend (same pattern for all categories)
+   Clears screen, types out:
+   > Loading frontend module...
+
+   [ FRONTEND SKILLS ]
+   
+   React          [████████░░]  85%   — UI components, hooks, state
+   TypeScript     [███████░░░]  78%   — typed JS, interfaces, generics
+   Next.js        [████████░░]  82%   — SSR, routing, API routes
+   Tailwind CSS   [█████████░]  90%   — utility-first styling
+   Framer Motion  [██████░░░░]  65%   — animations, transitions
+
+   > Type  backend  to continue exploring.  
+   > Type  help  to see all commands.
+   ~ _
+
+   Progress bars animate filling up left to right on appear.
+   Each skill line is hoverable — shows a 1-line tooltip on hover.
+
+5. INPUT AREA at bottom:
+   Real text input — user can TYPE commands manually.
+   When a category name is clicked anywhere, 
+   it auto-fills the input and auto-submits (with a short typing animation).
+   Pressing Enter executes the command.
+   Unknown commands show:  > command not found: [input]  try  help
+
+6. NAVIGATION FEEL:
+   Every command transition: 
+   - Cursor blinks once
+   - Screen clears with a quick fade or wipe
+   - New content types out line by line with ~30ms stagger
+   This makes it feel like real terminal page navigation, not a static display.
+
+STYLING:
+- Background: #0d1117
+- Prompt ~  and input cursor: #58a6ff
+- Command output text: #c9d1d9
+- Category names & clickable items: #58a6ff underline on hover
+- ✓ checkmarks: #3fb950
+- Progress bar filled: #3fb950
+- Progress bar empty: #21262d  
+- Error text: #f85149
+- Section headers [ FRONTEND SKILLS ]: #f78166 bold
+- Font: JetBrains Mono or Fira Code
+- Titlebar with 3 dots (red/yellow/green) at top like macOS terminal
+
+BEHAVIOR RULES:
+- Mobile friendly — show clickable command buttons below input on small screens
+- No page reload, everything happens inside the terminal
+- Terminal has a fixed height with internal scroll if content overflows
+- Cursor always blinks at the bottom after output finishes
+
+Look at my existing code structure and match it exactly.
+Do not add libraries unless I already have them.
