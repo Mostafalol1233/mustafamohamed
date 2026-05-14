@@ -1,5 +1,4 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { staticProjects, staticCertificates, staticReviews } from "./staticData";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -11,7 +10,7 @@ async function throwIfResNotOk(res: Response) {
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown,
 ): Promise<Response> {
   const res = await fetch(url, {
     method,
@@ -19,7 +18,6 @@ export async function apiRequest(
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
-
   await throwIfResNotOk(res);
   return res;
 }
@@ -31,37 +29,14 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
-    
-    // Return static data for main endpoints - this makes the site work instantly!
-    if (url === "/api/projects") {
-      return staticProjects as any;
-    }
-    if (url === "/api/certificates") {
-      return staticCertificates as any;
-    }
-    if (url === "/api/reviews") {
-      return staticReviews as any;
-    }
-    
-    // For other endpoints, try API first but return static fallback
-    try {
-      const res = await fetch(url, {
-        credentials: "include",
-      });
+    const res = await fetch(url, { credentials: "include" });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      return await res.json();
-    } catch (error) {
-      // Fallback to static data if API fails
-      if (url === "/api/projects") return staticProjects as any;
-      if (url === "/api/certificates") return staticCertificates as any;
-      if (url === "/api/reviews") return staticReviews as any;
-      throw error;
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
+
+    await throwIfResNotOk(res);
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({

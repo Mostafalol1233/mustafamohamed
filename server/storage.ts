@@ -6,6 +6,9 @@ import {
   projects,
   notifications,
   analytics,
+  testimonials,
+  skills,
+  siteSettings,
   type User,
   type UpsertUser,
   type Certificate,
@@ -20,48 +23,48 @@ import {
   type InsertNotification,
   type Analytics,
   type InsertAnalytics,
+  type Testimonial,
+  type InsertTestimonial,
+  type Skill,
+  type InsertSkill,
+  type SiteSetting,
+  type InsertSiteSetting,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql, count, gte } from "drizzle-orm";
+import { eq, desc, count, gte } from "drizzle-orm";
 
-// Interface for storage operations
 export interface IStorage {
-  // User operations (IMPORTANT) these user operations are mandatory for Replit Auth.
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
-  // Certificate operations
+
   getCertificates(): Promise<Certificate[]>;
   createCertificate(certificate: InsertCertificate): Promise<Certificate>;
+  updateCertificate(id: number, data: Partial<InsertCertificate>): Promise<Certificate>;
   deleteCertificate(id: number): Promise<void>;
-  
-  // Review operations
+
   getApprovedReviews(): Promise<Review[]>;
   getAllReviews(): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
   approveReview(id: number): Promise<void>;
   deleteReview(id: number): Promise<void>;
-  
-  // Contact message operations
+
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   getContactMessages(): Promise<ContactMessage[]>;
   markMessageAsRead(id: number): Promise<void>;
-  
-  // Project operations
+  deleteContactMessage(id: number): Promise<void>;
+
   getVisibleProjects(): Promise<Project[]>;
   getAllProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
   deleteProject(id: number): Promise<void>;
-  
-  // Notification operations
+
   getActiveNotifications(): Promise<Notification[]>;
   getAllNotifications(): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   updateNotification(id: number, notification: Partial<InsertNotification>): Promise<Notification>;
   deleteNotification(id: number): Promise<void>;
-  
-  // Analytics operations
+
   createAnalyticsEvent(event: InsertAnalytics): Promise<Analytics>;
   getAnalytics(days?: number): Promise<Analytics[]>;
   getAnalyticsSummary(): Promise<{
@@ -71,10 +74,21 @@ export interface IStorage {
     totalContacts: number;
     recentActivity: Analytics[];
   }>;
+
+  getVisibleTestimonials(): Promise<Testimonial[]>;
+  getAllTestimonials(): Promise<Testimonial[]>;
+  createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  updateTestimonial(id: number, data: Partial<InsertTestimonial>): Promise<Testimonial>;
+  deleteTestimonial(id: number): Promise<void>;
+
+  getAllSkills(): Promise<Skill[]>;
+  updateSkill(id: number, data: Partial<InsertSkill>): Promise<Skill>;
+
+  getAllSiteSettings(): Promise<SiteSetting[]>;
+  upsertSiteSetting(key: string, value: string): Promise<SiteSetting>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations (IMPORTANT) these user operations are mandatory for Replit Auth.
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -84,216 +98,128 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .insert(users)
       .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: userData,
-      })
+      .onConflictDoUpdate({ target: users.id, set: userData })
       .returning();
     return user;
   }
 
-  // Certificate operations
   async getCertificates(): Promise<Certificate[]> {
-    return await db
-      .select()
-      .from(certificates)
-      .where(eq(certificates.isVisible, true))
-      .orderBy(desc(certificates.createdAt));
+    return db.select().from(certificates).where(eq(certificates.isVisible, true)).orderBy(desc(certificates.createdAt));
   }
 
   async createCertificate(certificate: InsertCertificate): Promise<Certificate> {
-    const [newCertificate] = await db
-      .insert(certificates)
-      .values(certificate)
-      .returning();
-    return newCertificate;
+    const [r] = await db.insert(certificates).values(certificate).returning();
+    return r;
+  }
+
+  async updateCertificate(id: number, data: Partial<InsertCertificate>): Promise<Certificate> {
+    const [r] = await db.update(certificates).set(data).where(eq(certificates.id, id)).returning();
+    return r;
   }
 
   async deleteCertificate(id: number): Promise<void> {
     await db.delete(certificates).where(eq(certificates.id, id));
   }
 
-  // Review operations
   async getApprovedReviews(): Promise<Review[]> {
-    return await db
-      .select()
-      .from(reviews)
-      .where(eq(reviews.isApproved, true))
-      .orderBy(desc(reviews.createdAt));
-  }
-
-  async approveReview(id: number): Promise<void> {
-    await db
-      .update(reviews)
-      .set({ isApproved: true } as any)
-      .where(eq(reviews.id, id));
-  }
-
-  async deleteReview(id: number): Promise<void> {
-    await db
-      .delete(reviews)
-      .where(eq(reviews.id, id));
+    return db.select().from(reviews).where(eq(reviews.isApproved, true)).orderBy(desc(reviews.createdAt));
   }
 
   async getAllReviews(): Promise<Review[]> {
-    return await db
-      .select()
-      .from(reviews)
-      .orderBy(desc(reviews.createdAt));
+    return db.select().from(reviews).orderBy(desc(reviews.createdAt));
   }
 
   async createReview(review: InsertReview): Promise<Review> {
-    const [newReview] = await db
-      .insert(reviews)
-      .values(review)
-      .returning();
-    return newReview;
+    const [r] = await db.insert(reviews).values(review).returning();
+    return r;
   }
 
-  // Contact message operations
+  async approveReview(id: number): Promise<void> {
+    await db.update(reviews).set({ isApproved: true } as any).where(eq(reviews.id, id));
+  }
+
+  async deleteReview(id: number): Promise<void> {
+    await db.delete(reviews).where(eq(reviews.id, id));
+  }
+
   async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
-    const [newMessage] = await db
-      .insert(contactMessages)
-      .values(message)
-      .returning();
-    return newMessage;
+    const [r] = await db.insert(contactMessages).values(message).returning();
+    return r;
   }
 
   async getContactMessages(): Promise<ContactMessage[]> {
-    return await db
-      .select()
-      .from(contactMessages)
-      .orderBy(desc(contactMessages.createdAt));
+    return db.select().from(contactMessages).orderBy(desc(contactMessages.createdAt));
   }
 
   async markMessageAsRead(id: number): Promise<void> {
-    await db
-      .update(contactMessages)
-      .set({ isRead: true } as any)
-      .where(eq(contactMessages.id, id));
+    await db.update(contactMessages).set({ isRead: true } as any).where(eq(contactMessages.id, id));
   }
 
-  // Project operations
+  async deleteContactMessage(id: number): Promise<void> {
+    await db.delete(contactMessages).where(eq(contactMessages.id, id));
+  }
+
   async getVisibleProjects(): Promise<Project[]> {
-    return await db
-      .select()
-      .from(projects)
-      .where(eq(projects.isVisible, true))
-      .orderBy(desc(projects.createdAt));
+    return db.select().from(projects).where(eq(projects.isVisible, true)).orderBy(desc(projects.createdAt));
   }
 
   async getAllProjects(): Promise<Project[]> {
-    return await db
-      .select()
-      .from(projects)
-      .orderBy(desc(projects.createdAt));
+    return db.select().from(projects).orderBy(desc(projects.createdAt));
   }
 
   async createProject(project: InsertProject): Promise<Project> {
-    const [newProject] = await db
-      .insert(projects)
-      .values(project)
-      .returning();
-    return newProject;
+    const [r] = await db.insert(projects).values(project).returning();
+    return r;
   }
 
   async updateProject(id: number, project: Partial<InsertProject>): Promise<Project> {
-    const [updatedProject] = await db
-      .update(projects)
-      .set(project)
-      .where(eq(projects.id, id))
-      .returning();
-    return updatedProject;
+    const [r] = await db.update(projects).set(project).where(eq(projects.id, id)).returning();
+    return r;
   }
 
   async deleteProject(id: number): Promise<void> {
     await db.delete(projects).where(eq(projects.id, id));
   }
 
-  // Notification operations
   async getActiveNotifications(): Promise<Notification[]> {
-    return await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.isActive, true))
-      .orderBy(desc(notifications.createdAt));
+    return db.select().from(notifications).where(eq(notifications.isActive, true)).orderBy(desc(notifications.createdAt));
   }
 
   async getAllNotifications(): Promise<Notification[]> {
-    return await db
-      .select()
-      .from(notifications)
-      .orderBy(desc(notifications.createdAt));
+    return db.select().from(notifications).orderBy(desc(notifications.createdAt));
   }
 
   async createNotification(notification: InsertNotification): Promise<Notification> {
-    const [newNotification] = await db
-      .insert(notifications)
-      .values(notification)
-      .returning();
-    return newNotification;
+    const [r] = await db.insert(notifications).values(notification).returning();
+    return r;
   }
 
   async updateNotification(id: number, notification: Partial<InsertNotification>): Promise<Notification> {
-    const [updatedNotification] = await db
-      .update(notifications)
-      .set(notification)
-      .where(eq(notifications.id, id))
-      .returning();
-    return updatedNotification;
+    const [r] = await db.update(notifications).set(notification).where(eq(notifications.id, id)).returning();
+    return r;
   }
 
   async deleteNotification(id: number): Promise<void> {
     await db.delete(notifications).where(eq(notifications.id, id));
   }
 
-  // Analytics operations
   async createAnalyticsEvent(event: InsertAnalytics): Promise<Analytics> {
-    const [newEvent] = await db
-      .insert(analytics)
-      .values(event)
-      .returning();
-    return newEvent;
+    const [r] = await db.insert(analytics).values(event).returning();
+    return r;
   }
 
   async getAnalytics(days: number = 30): Promise<Analytics[]> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
-    
-    return await db
-      .select()
-      .from(analytics)
-      .where(gte(analytics.createdAt, cutoffDate))
-      .orderBy(desc(analytics.createdAt))
-      .limit(1000);
+    return db.select().from(analytics).where(gte(analytics.createdAt, cutoffDate)).orderBy(desc(analytics.createdAt)).limit(1000);
   }
 
   async getAnalyticsSummary() {
-    const [viewsResult] = await db
-      .select({ count: count() })
-      .from(analytics)
-      .where(eq(analytics.eventType, 'page_view'));
-
-    const [projectsResult] = await db
-      .select({ count: count() })
-      .from(projects)
-      .where(eq(projects.isVisible, true));
-
-    const [reviewsResult] = await db
-      .select({ count: count() })
-      .from(reviews)
-      .where(eq(reviews.isApproved, true));
-
-    const [contactsResult] = await db
-      .select({ count: count() })
-      .from(contactMessages);
-
-    const recentActivity = await db
-      .select()
-      .from(analytics)
-      .orderBy(desc(analytics.createdAt))
-      .limit(10);
-
+    const [viewsResult] = await db.select({ count: count() }).from(analytics).where(eq(analytics.eventType, "page_view"));
+    const [projectsResult] = await db.select({ count: count() }).from(projects).where(eq(projects.isVisible, true));
+    const [reviewsResult] = await db.select({ count: count() }).from(reviews).where(eq(reviews.isApproved, true));
+    const [contactsResult] = await db.select({ count: count() }).from(contactMessages);
+    const recentActivity = await db.select().from(analytics).orderBy(desc(analytics.createdAt)).limit(10);
     return {
       totalViews: viewsResult?.count || 0,
       totalProjects: projectsResult?.count || 0,
@@ -301,6 +227,50 @@ export class DatabaseStorage implements IStorage {
       totalContacts: contactsResult?.count || 0,
       recentActivity,
     };
+  }
+
+  async getVisibleTestimonials(): Promise<Testimonial[]> {
+    return db.select().from(testimonials).where(eq(testimonials.visible, true)).orderBy(desc(testimonials.createdAt));
+  }
+
+  async getAllTestimonials(): Promise<Testimonial[]> {
+    return db.select().from(testimonials).orderBy(desc(testimonials.createdAt));
+  }
+
+  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
+    const [r] = await db.insert(testimonials).values(testimonial).returning();
+    return r;
+  }
+
+  async updateTestimonial(id: number, data: Partial<InsertTestimonial>): Promise<Testimonial> {
+    const [r] = await db.update(testimonials).set(data).where(eq(testimonials.id, id)).returning();
+    return r;
+  }
+
+  async deleteTestimonial(id: number): Promise<void> {
+    await db.delete(testimonials).where(eq(testimonials.id, id));
+  }
+
+  async getAllSkills(): Promise<Skill[]> {
+    return db.select().from(skills).orderBy(skills.sortOrder);
+  }
+
+  async updateSkill(id: number, data: Partial<InsertSkill>): Promise<Skill> {
+    const [r] = await db.update(skills).set(data).where(eq(skills.id, id)).returning();
+    return r;
+  }
+
+  async getAllSiteSettings(): Promise<SiteSetting[]> {
+    return db.select().from(siteSettings).orderBy(siteSettings.key);
+  }
+
+  async upsertSiteSetting(key: string, value: string): Promise<SiteSetting> {
+    const [r] = await db
+      .insert(siteSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedAt: new Date() } })
+      .returning();
+    return r;
   }
 }
 

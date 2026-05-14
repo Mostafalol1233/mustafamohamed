@@ -1,8 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Mail, Download } from "lucide-react";
+import { useLang } from "@/contexts/LanguageContext";
 
-const ROLES = ["Full-Stack Developer", "Content Strategist", "UI/UX Enthusiast", "Problem Solver"];
+const ROLES_EN = ["Full-Stack Developer", "Content Strategist", "UI/UX Enthusiast", "Problem Solver"];
+const ROLES_AR = ["مطور ويب متكامل", "استراتيجي محتوى", "مصمم واجهات", "حلّال مشكلات"];
 
 function useTypewriter(words: string[], speed = 75, pause = 2000) {
   const [display, setDisplay] = useState("");
@@ -11,7 +13,12 @@ function useTypewriter(words: string[], speed = 75, pause = 2000) {
   const [del, setDel] = useState(false);
 
   useEffect(() => {
+    setWi(0); setCi(0); setDel(false); setDisplay("");
+  }, [words]);
+
+  useEffect(() => {
     const w = words[wi];
+    if (!w) return;
     let t: ReturnType<typeof setTimeout>;
     if (!del && ci < w.length) t = setTimeout(() => setCi(c => c + 1), speed);
     else if (!del && ci === w.length) t = setTimeout(() => setDel(true), pause);
@@ -23,24 +30,26 @@ function useTypewriter(words: string[], speed = 75, pause = 2000) {
   return display;
 }
 
-const stats = [
-  { value: "4+", label: "Years" },
-  { value: "12+", label: "Projects" },
-  { value: "6+", label: "Certificates" },
-  { value: "∞", label: "Coffee" },
-];
-
-const techStack = ["React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS", "Python"];
-
 export default function HeroSection() {
-  const role = useTypewriter(ROLES);
+  const { lang, t, isRtl } = useLang();
+  const roles = lang === "ar" ? ROLES_AR : ROLES_EN;
+  const role = useTypewriter(roles);
+
+  const stats = [
+    { value: "4+", label: t.hero.stats.years },
+    { value: "12+", label: t.hero.stats.projects },
+    { value: "6+", label: t.hero.stats.certs },
+    { value: "∞", label: t.hero.stats.coffee },
+  ];
+
+  const techStack = ["React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS", "Python"];
 
   return (
     <section id="home" className="min-h-screen flex items-center pt-16 section-padding relative overflow-hidden">
-      {/* Subtle grid */}
+      {/* Grid bg */}
       <div className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(hsl(220 13% 91%) 1px, transparent 1px), linear-gradient(to right, hsl(220 13% 91%) 1px, transparent 1px)",
+          backgroundImage: "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
           maskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black 40%, transparent 100%)"
         }}
@@ -50,19 +59,18 @@ export default function HeroSection() {
         <div className="max-w-3xl">
           {/* Available badge */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-white text-xs text-muted-foreground mb-8 shadow-sm">
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground mb-8 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-dot" />
-            Available for new projects
+            {t.hero.available}
           </motion.div>
 
           {/* Name */}
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}
             className="text-5xl md:text-7xl font-bold text-foreground tracking-tight leading-[1.05] mb-4">
-            Mustafa<br />
-            <span style={{ color: "hsl(234 89% 57%)" }}>Mohamed</span>
+            {isRtl ? <>مصطفى<br /><span style={{ color: "hsl(234 89% 57%)" }}>محمد</span></> : <>Mustafa<br /><span style={{ color: "hsl(234 89% 57%)" }}>Mohamed</span></>}
           </motion.h1>
 
-          {/* Typewriter role */}
+          {/* Typewriter */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
             className="text-xl md:text-2xl text-muted-foreground font-medium mb-6 h-8 flex items-center gap-1">
             <span>{role}</span>
@@ -72,8 +80,9 @@ export default function HeroSection() {
           {/* Description */}
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}
             className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mb-8">
-            I build fast, elegant web apps and craft content that converts.
-            Precision engineering meets creative strategy — every project, every time.
+            {isRtl
+              ? "أبني تطبيقات ويب سريعة وأنيقة وأصمّم محتوى يحقق نتائج. هندسة دقيقة تلتقي باستراتيجية إبداعية — في كل مشروع."
+              : "I build fast, elegant web apps and craft content that converts. Precision engineering meets creative strategy — every project, every time."}
           </motion.p>
 
           {/* CTAs */}
@@ -81,18 +90,22 @@ export default function HeroSection() {
             className="flex flex-wrap gap-3 mb-12">
             <button onClick={() => document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth" })}
               className="btn-primary" data-testid="hero-view-work">
-              View my work <ArrowRight className="w-4 h-4" />
+              {t.hero.cta_work} <ArrowRight className="w-4 h-4" />
             </button>
             <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
               className="btn-outline" data-testid="hero-contact">
-              <Mail className="w-4 h-4" /> Contact me
+              <Mail className="w-4 h-4" /> {t.hero.cta_contact}
             </button>
+            <a href="/api/resume" target="_blank" rel="noopener noreferrer"
+              className="btn-outline" data-testid="hero-resume">
+              <Download className="w-4 h-4" /> {t.hero.cta_resume}
+            </a>
           </motion.div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             className="flex items-center gap-8 mb-10 flex-wrap">
-            {stats.map(({ value, label }, i) => (
+            {stats.map(({ value, label }) => (
               <div key={label} className="text-center">
                 <div className="text-2xl font-bold text-foreground">{value}</div>
                 <div className="text-xs text-muted-foreground">{label}</div>
@@ -100,7 +113,7 @@ export default function HeroSection() {
             ))}
           </motion.div>
 
-          {/* Tech stack pills */}
+          {/* Tech stack */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
             className="flex flex-wrap gap-2">
             {techStack.map((t) => (
@@ -110,7 +123,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Right side decorative code block */}
+      {/* Right side code block */}
       <motion.div
         initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.4 }}
         className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 w-80 bg-[#0d1117] rounded-xl shadow-2xl overflow-hidden border border-[#30363d] text-[13px] font-mono"

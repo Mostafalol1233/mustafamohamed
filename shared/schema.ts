@@ -3,6 +3,7 @@ import {
   text,
   varchar,
   timestamp,
+  timestamptz,
   jsonb,
   index,
   serial,
@@ -12,8 +13,6 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const sessions = pgTable(
   "sessions",
   {
@@ -24,8 +23,6 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -36,7 +33,6 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Certificates table
 export const certificates = pgTable("certificates", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -47,7 +43,6 @@ export const certificates = pgTable("certificates", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Reviews table
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -58,7 +53,6 @@ export const reviews = pgTable("reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Contact messages table
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -69,7 +63,6 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Portfolio projects table
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -82,27 +75,53 @@ export const projects = pgTable("projects", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Site notifications table
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   message: text("message").notNull(),
-  type: text("type").notNull().default("info"), // info, warning, success, error
+  type: text("type").notNull().default("info"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Analytics table for tracking visitor engagement
 export const analytics = pgTable("analytics", {
   id: serial("id").primaryKey(),
-  eventType: text("event_type").notNull(), // page_view, project_view, contact_submit, review_submit
-  eventData: jsonb("event_data"), // Additional event metadata
+  eventType: text("event_type").notNull(),
+  eventData: jsonb("event_data"),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Schema types
+export const testimonials = pgTable("testimonials", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  company: text("company").notNull(),
+  quote: text("quote").notNull(),
+  stars: integer("stars").notNull().default(5),
+  icon: text("icon"),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const skills = pgTable("skills", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(),
+  name: text("name").notNull(),
+  percent: integer("percent").notNull().default(80),
+  description: text("description"),
+  icon: text("icon"),
+  tags: text("tags").array(),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull().default(""),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
@@ -124,7 +143,15 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertAnalytics = typeof analytics.$inferInsert;
 export type Analytics = typeof analytics.$inferSelect;
 
-// Zod schemas
+export type InsertTestimonial = typeof testimonials.$inferInsert;
+export type Testimonial = typeof testimonials.$inferSelect;
+
+export type InsertSkill = typeof skills.$inferInsert;
+export type Skill = typeof skills.$inferSelect;
+
+export type InsertSiteSetting = typeof siteSettings.$inferInsert;
+export type SiteSetting = typeof siteSettings.$inferSelect;
+
 export const insertCertificateSchema = z.object({
   title: z.string(),
   description: z.string().optional().nullable(),
@@ -169,4 +196,29 @@ export const insertAnalyticsSchema = z.object({
   eventData: z.any().optional().nullable(),
   ipAddress: z.string().optional().nullable(),
   userAgent: z.string().optional().nullable(),
+});
+
+export const insertTestimonialSchema = z.object({
+  name: z.string(),
+  role: z.string(),
+  company: z.string(),
+  quote: z.string(),
+  stars: z.number().min(1).max(5).optional(),
+  icon: z.string().optional().nullable(),
+  visible: z.boolean().optional(),
+});
+
+export const insertSkillSchema = z.object({
+  category: z.string(),
+  name: z.string(),
+  percent: z.number().min(0).max(100),
+  description: z.string().optional().nullable(),
+  icon: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional().nullable(),
+  sortOrder: z.number().optional(),
+});
+
+export const insertSiteSettingSchema = z.object({
+  key: z.string(),
+  value: z.string(),
 });
