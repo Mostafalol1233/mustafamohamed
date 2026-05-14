@@ -1,222 +1,173 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
-import { Search, X, ExternalLink, Github, Layers } from "lucide-react";
+import { Search, X, ExternalLink, Github } from "lucide-react";
+import { DragonConsole } from "./DragonConsole";
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
-};
+/* ── 3D Tilt Card ─────────────────────────────────────────────────── */
+function TiltCard({ project }: { project: Project }) {
+  const ref = useRef<HTMLDivElement>(null);
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
-};
+  const handleMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    // Max 12° tilt
+    const rotX = ((y - cy) / cy) * -12;
+    const rotY = ((x - cx) / cx) * 12;
+    el.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(4px)`;
+    // Subtle shine
+    const shine = el.querySelector<HTMLElement>(".tilt-shine");
+    if (shine) {
+      shine.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.18) 0%, transparent 70%)`;
+    }
+  }, []);
 
+  const handleLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+    const shine = el.querySelector<HTMLElement>(".tilt-shine");
+    if (shine) shine.style.background = "none";
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      data-testid={`card-project-${project.id}`}
+      style={{ transition: "transform 0.15s ease", willChange: "transform", transformStyle: "preserve-3d" }}
+      className="relative bg-white rounded-2xl border border-border overflow-hidden group cursor-default"
+    >
+      {/* Shine overlay */}
+      <div className="tilt-shine absolute inset-0 pointer-events-none z-10 rounded-2xl" />
+
+      {/* Image */}
+      <div className="relative h-48 bg-secondary overflow-hidden">
+        {project.imageUrl ? (
+          <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl select-none">🖥️</div>
+        )}
+        {/* Hover action buttons */}
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 z-20">
+          {project.liveUrl && (
+            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-white text-foreground text-xs font-semibold px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors shadow-lg"
+              data-testid={`link-live-${project.id}`} onClick={e => e.stopPropagation()}>
+              <ExternalLink className="w-3.5 h-3.5" /> Live Demo
+            </a>
+          )}
+          {project.githubUrl && (
+            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 bg-white text-foreground text-xs font-semibold px-4 py-2 rounded-lg hover:bg-foreground hover:text-white transition-colors shadow-lg"
+              data-testid={`link-github-${project.id}`} onClick={e => e.stopPropagation()}>
+              <Github className="w-3.5 h-3.5" /> GitHub
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        <h3 className="font-semibold text-base text-foreground mb-1.5 group-hover:text-primary transition-colors">{project.title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-4 line-clamp-2">{project.description}</p>
+        {project.technologies && project.technologies.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {project.technologies.slice(0, 4).map(t => <span key={t} className="tag text-[11px]">{t}</span>)}
+            {project.technologies.length > 4 && <span className="tag text-[11px]">+{project.technologies.length - 4}</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Main Section ─────────────────────────────────────────────────── */
 function PortfolioSection() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTech, setSelectedTech] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [tech, setTech] = useState<string | null>(null);
 
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-  });
+  const { data: projects = [], isLoading } = useQuery<Project[]>({ queryKey: ["/api/projects"] });
 
-  const allTechnologies = Array.from(
-    new Set(projects.flatMap((p) => p.technologies || []))
-  ).sort();
+  const allTech = Array.from(new Set(projects.flatMap(p => p.technologies || []))).sort();
 
-  const filteredProjects = projects.filter((project) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTech =
-      selectedTech === null ||
-      (project.technologies && project.technologies.includes(selectedTech));
-    return matchesSearch && matchesTech;
+  const filtered = projects.filter(p => {
+    const s = search === "" || p.title.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
+    const t = tech === null || (p.technologies && p.technologies.includes(tech));
+    return s && t;
   });
 
   return (
-    <section id="portfolio" className="section-padding relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: "radial-gradient(hsl(239 84% 67%) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      <div className="container-max relative z-10">
+    <section id="portfolio" className="section-padding">
+      <div className="container-max">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-14"
-        >
-          <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-3">What I've built</p>
-          <h2 className="section-title gradient-text">Portfolio</h2>
-          <p className="section-subtitle mt-4">
-            Featured projects that showcase technical depth, creative thinking, and real-world impact.
+        <div className="max-w-2xl mb-14">
+          <span className="section-eyebrow">Work</span>
+          <h2 className="section-title">Portfolio</h2>
+          <p className="section-subtitle">
+            Real projects, real impact. Each one built to solve a problem and ship clean, fast, and maintainable code.
           </p>
-        </motion.div>
+        </div>
+
+        {/* Dragon Console */}
+        <div className="mb-16">
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-foreground mb-1">Interactive AI Console</p>
+            <p className="text-xs text-muted-foreground">Move your mouse over the canvas to control the physics-based dragon — a showcase of creative frontend engineering.</p>
+          </div>
+          <DragonConsole />
+        </div>
 
         {/* Search & Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-10 space-y-5"
-        >
-          <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+        <div className="mb-8 space-y-4">
+          <div className="relative max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input type="text" placeholder="Search projects..." value={search} onChange={e => setSearch(e.target.value)}
               data-testid="input-search-projects"
-              className="w-full pl-11 pr-10 py-3 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all duration-300 text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                data-testid="button-clear-search"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-              >
+              className="w-full pl-9 pr-9 py-2.5 text-sm rounded-lg border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all" />
+            {search && (
+              <button onClick={() => setSearch("")} data-testid="button-clear-search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          {allTechnologies.length > 0 && (
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button
-                onClick={() => setSelectedTech(null)}
-                data-testid="button-filter-all"
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  selectedTech === null
-                    ? "bg-primary text-white shadow-lg shadow-primary/30"
-                    : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
-                }`}
-              >
+          {allTech.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setTech(null)} data-testid="button-filter-all"
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${tech === null ? "bg-foreground text-white" : "border border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-white"}`}>
                 All
               </button>
-              {allTechnologies.map((tech) => (
-                <button
-                  key={tech}
-                  onClick={() => setSelectedTech(tech === selectedTech ? null : tech)}
-                  data-testid={`button-filter-${tech.toLowerCase().replace(/\s+/g, "-")}`}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedTech === tech
-                      ? "bg-primary text-white shadow-lg shadow-primary/30"
-                      : "bg-card border border-border text-muted-foreground hover:border-primary/40 hover:text-primary"
-                  }`}
-                >
-                  {tech}
+              {allTech.map(t => (
+                <button key={t} onClick={() => setTech(t === tech ? null : t)} data-testid={`button-filter-${t.toLowerCase().replace(/\s+/g, "-")}`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${tech === t ? "bg-foreground text-white" : "border border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground bg-white"}`}>
+                  {t}
                 </button>
               ))}
             </div>
           )}
-        </motion.div>
+        </div>
 
-        {/* Project Grid */}
+        {/* Grid */}
         {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="glass-card h-72 animate-pulse" />
-            ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-72 rounded-2xl bg-secondary animate-pulse" />)}
           </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-20 text-muted-foreground">
-            <Layers className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p className="text-lg">No projects match your search.</p>
-          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20 text-muted-foreground text-sm">No projects match your search.</div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
+          <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
-              {filteredProjects.map((project) => (
-                <motion.div
-                  key={project.id}
-                  variants={cardVariants}
-                  layout
-                  className="group gradient-border overflow-hidden flex flex-col hover:glow-primary transition-all duration-500"
-                  data-testid={`card-project-${project.id}`}
-                >
-                  {/* Image */}
-                  <div className="relative h-48 overflow-hidden bg-secondary/50">
-                    {project.imageUrl ? (
-                      <img
-                        src={project.imageUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                          <Layers className="w-8 h-8 text-primary/50" />
-                        </div>
-                      </div>
-                    )}
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-4">
-                      <div className="flex gap-3">
-                        {project.liveUrl && (
-                          <a
-                            href={project.liveUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 bg-primary text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-lg"
-                            data-testid={`link-live-${project.id}`}
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            Live Demo
-                          </a>
-                        )}
-                        {project.githubUrl && (
-                          <a
-                            href={project.githubUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 bg-secondary text-foreground text-xs font-semibold px-4 py-2 rounded-lg hover:bg-secondary/80 transition-colors border border-border"
-                            data-testid={`link-github-${project.id}`}
-                          >
-                            <Github className="w-3.5 h-3.5" />
-                            GitHub
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
-                      {project.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 flex-1">
-                      {project.description}
-                    </p>
-                    {project.technologies && project.technologies.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.technologies.slice(0, 4).map((tech) => (
-                          <span key={tech} className="tag-badge text-[11px]">{tech}</span>
-                        ))}
-                        {project.technologies.length > 4 && (
-                          <span className="tag-badge text-[11px]">+{project.technologies.length - 4}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+              {filtered.map(p => (
+                <motion.div key={p.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.25 }}>
+                  <TiltCard project={p} />
                 </motion.div>
               ))}
             </AnimatePresence>

@@ -1,120 +1,100 @@
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Code2, Database, Globe, Palette, Server, Smartphone,
-  GitBranch, Layers, Cpu, Zap
-} from "lucide-react";
 
 const skillGroups = [
   {
-    icon: Code2,
     label: "Frontend",
-    color: "from-blue-500 to-cyan-400",
-    skills: ["React", "TypeScript", "Next.js", "Vite", "HTML5", "CSS3"],
+    emoji: "🎨",
+    color: "#4f46e5",
+    bg: "#eef2ff",
+    skills: ["React", "TypeScript", "Next.js", "Vite", "Tailwind CSS", "Framer Motion"],
   },
   {
-    icon: Server,
     label: "Backend",
-    color: "from-violet-500 to-purple-400",
-    skills: ["Node.js", "Express", "REST APIs", "PostgreSQL", "Drizzle ORM"],
+    emoji: "⚙️",
+    color: "#0891b2",
+    bg: "#ecfeff",
+    skills: ["Node.js", "Express", "REST APIs", "PostgreSQL", "Drizzle ORM", "Auth"],
   },
   {
-    icon: Palette,
     label: "Design & UI",
-    color: "from-pink-500 to-rose-400",
-    skills: ["Tailwind CSS", "Framer Motion", "Figma", "Shadcn/UI", "Radix UI"],
+    emoji: "✏️",
+    color: "#db2777",
+    bg: "#fdf2f8",
+    skills: ["Figma", "Shadcn/UI", "Radix UI", "Responsive Design", "Accessibility"],
   },
   {
-    icon: Zap,
-    label: "Tools & DevOps",
-    color: "from-amber-500 to-orange-400",
+    label: "Dev Tools",
+    emoji: "🛠",
+    color: "#d97706",
+    bg: "#fffbeb",
     skills: ["Git", "GitHub", "Vercel", "Netlify", "Linux", "VS Code"],
   },
   {
-    icon: Globe,
     label: "Content & SEO",
-    color: "from-green-500 to-emerald-400",
-    skills: ["Content Strategy", "SEO", "Copywriting", "Analytics", "Social Media"],
+    emoji: "📝",
+    color: "#16a34a",
+    bg: "#f0fdf4",
+    skills: ["Content Strategy", "Copywriting", "SEO", "Analytics", "Social Media"],
   },
   {
-    icon: Cpu,
     label: "AI & Data",
-    color: "from-indigo-500 to-blue-400",
-    skills: ["Machine Learning", "Prompt Engineering", "Data Analysis", "AI Tools"],
+    emoji: "🤖",
+    color: "#7c3aed",
+    bg: "#f5f3ff",
+    skills: ["Machine Learning", "Prompt Engineering", "Data Analysis", "AI Integration"],
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) el.classList.add("visible"); }, { threshold: 0.1 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return ref;
+}
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
+function SkillCard({ group, delay }: { group: typeof skillGroups[0]; delay: number }) {
+  const ref = useReveal();
+  return (
+    <div ref={ref} className="reveal card-hover p-6" style={{ transitionDelay: `${delay}ms` }}>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg" style={{ background: group.bg }}>
+          {group.emoji}
+        </div>
+        <h3 className="font-semibold text-sm text-foreground">{group.label}</h3>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {group.skills.map((s) => (
+          <span key={s} className="text-xs px-2.5 py-1 rounded-md bg-secondary text-muted-foreground font-medium">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function SkillsSection() {
   return (
-    <section id="skills" className="section-padding relative overflow-hidden">
-      {/* Subtle bg glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-[0.04] rounded-full"
-        style={{ background: "radial-gradient(ellipse, hsl(239 84% 67%), transparent 70%)" }} />
-
-      <div className="container-max relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-3">What I work with</p>
-          <h2 className="section-title gradient-text">Skills & Expertise</h2>
-          <p className="section-subtitle mt-4">
-            A versatile toolkit built through years of building real products and shipping production-ready code.
+    <section id="skills" className="section-padding bg-[#fafafa] border-t border-b border-border">
+      <div className="container-max">
+        <div className="max-w-2xl mb-14">
+          <span className="section-eyebrow">Expertise</span>
+          <h2 className="section-title">Skills & Tools</h2>
+          <p className="section-subtitle">
+            A versatile toolkit shaped by years of shipping real products — from pixel-perfect UIs to scalable backends.
           </p>
-        </motion.div>
+        </div>
 
-        {/* Skill Groups */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {skillGroups.map(({ icon: Icon, label, color, skills }) => (
-            <motion.div
-              key={label}
-              variants={itemVariants}
-              className="gradient-border p-6 hover:glow-primary transition-all duration-500 group"
-            >
-              <div className="flex items-center gap-4 mb-5">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}>
-                  <Icon className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="font-bold text-lg text-foreground">{label}</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <span key={skill} className="tag-badge group-hover:border-primary/40 transition-colors duration-300">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {skillGroups.map((g, i) => (
+            <SkillCard key={g.label} group={g} delay={i * 80} />
           ))}
-        </motion.div>
-
-        {/* Bottom divider */}
-        <div className="mt-20 flex items-center gap-4">
-          <div className="flex-1 h-px bg-border" />
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <Layers className="w-4 h-4" />
-            <span>Always learning, always building</span>
-          </div>
-          <div className="flex-1 h-px bg-border" />
         </div>
       </div>
     </section>

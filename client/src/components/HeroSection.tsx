@@ -1,179 +1,139 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowDown, ExternalLink, Github, Mail, Sparkles } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 
-const ROLES = [
-  "Full-Stack Developer",
-  "Content Strategist",
-  "UI/UX Enthusiast",
-  "Problem Solver",
-];
+const ROLES = ["Full-Stack Developer", "Content Strategist", "UI/UX Enthusiast", "Problem Solver"];
 
-function useTypewriter(words: string[], speed = 80, pause = 1800) {
+function useTypewriter(words: string[], speed = 75, pause = 2000) {
   const [display, setDisplay] = useState("");
-  const [wordIdx, setWordIdx] = useState(0);
-  const [charIdx, setCharIdx] = useState(0);
-  const [deleting, setDeleting] = useState(false);
+  const [wi, setWi] = useState(0);
+  const [ci, setCi] = useState(0);
+  const [del, setDel] = useState(false);
 
   useEffect(() => {
-    const current = words[wordIdx];
-    let timeout: ReturnType<typeof setTimeout>;
-
-    if (!deleting && charIdx < current.length) {
-      timeout = setTimeout(() => setCharIdx((c) => c + 1), speed);
-    } else if (!deleting && charIdx === current.length) {
-      timeout = setTimeout(() => setDeleting(true), pause);
-    } else if (deleting && charIdx > 0) {
-      timeout = setTimeout(() => setCharIdx((c) => c - 1), speed / 2);
-    } else {
-      setDeleting(false);
-      setWordIdx((w) => (w + 1) % words.length);
-    }
-
-    setDisplay(current.slice(0, charIdx));
-    return () => clearTimeout(timeout);
-  }, [charIdx, deleting, wordIdx, words, speed, pause]);
-
+    const w = words[wi];
+    let t: ReturnType<typeof setTimeout>;
+    if (!del && ci < w.length) t = setTimeout(() => setCi(c => c + 1), speed);
+    else if (!del && ci === w.length) t = setTimeout(() => setDel(true), pause);
+    else if (del && ci > 0) t = setTimeout(() => setCi(c => c - 1), speed / 2);
+    else { setDel(false); setWi(i => (i + 1) % words.length); }
+    setDisplay(w.slice(0, ci));
+    return () => clearTimeout(t);
+  }, [ci, del, wi, words, speed, pause]);
   return display;
 }
 
 const stats = [
-  { value: "4+", label: "Years Exp." },
+  { value: "4+", label: "Years" },
   { value: "12+", label: "Projects" },
-  { value: "6+", label: "Certs" },
-  { value: "100%", label: "Dedicated" },
+  { value: "6+", label: "Certificates" },
+  { value: "∞", label: "Coffee" },
 ];
+
+const techStack = ["React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS", "Python"];
 
 export default function HeroSection() {
   const role = useTypewriter(ROLES);
 
-  const scrollTo = (id: string) =>
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-
   return (
-    <section
-      id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-    >
-      {/* Background orbs */}
-      <div className="hero-orb w-[600px] h-[600px] top-[-200px] left-[-200px] opacity-20"
-        style={{ background: "radial-gradient(circle, hsl(239 84% 67%), transparent 70%)" }} />
-      <div className="hero-orb w-[400px] h-[400px] bottom-[-100px] right-[-100px] opacity-15"
-        style={{ background: "radial-gradient(circle, hsl(263 70% 65%), transparent 70%)" }} />
-      <div className="hero-orb w-[300px] h-[300px] top-[30%] right-[20%] opacity-10"
-        style={{ background: "radial-gradient(circle, hsl(300 70% 65%), transparent 70%)" }} />
-
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.03]"
+    <section id="home" className="min-h-screen flex items-center pt-16 section-padding relative overflow-hidden">
+      {/* Subtle grid */}
+      <div className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: "linear-gradient(hsl(239 84% 67%) 1px, transparent 1px), linear-gradient(to right, hsl(239 84% 67%) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
+          backgroundImage: "linear-gradient(hsl(220 13% 91%) 1px, transparent 1px), linear-gradient(to right, hsl(220 13% 91%) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse 80% 70% at 50% 0%, black 40%, transparent 100%)"
         }}
       />
 
-      <div className="container-max relative z-10 pt-24 pb-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-8"
-          >
-            <Sparkles className="w-4 h-4" />
+      <div className="container-max w-full relative z-10">
+        <div className="max-w-3xl">
+          {/* Available badge */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-white text-xs text-muted-foreground mb-8 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-dot" />
             Available for new projects
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
           </motion.div>
 
           {/* Name */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none"
-          >
-            <span className="text-foreground">Mustafa</span>
-            <br />
-            <span className="gradient-text">Mohamed</span>
+          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}
+            className="text-5xl md:text-7xl font-bold text-foreground tracking-tight leading-[1.05] mb-4">
+            Mustafa<br />
+            <span style={{ color: "hsl(234 89% 57%)" }}>Mohamed</span>
           </motion.h1>
 
-          {/* Typewriter */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className="text-xl md:text-2xl text-muted-foreground font-medium mb-8 h-9"
-          >
-            <span className="text-primary font-semibold">{role}</span>
-            <span className="animate-blink text-primary ml-0.5">|</span>
+          {/* Typewriter role */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+            className="text-xl md:text-2xl text-muted-foreground font-medium mb-6 h-8 flex items-center gap-1">
+            <span>{role}</span>
+            <span className="animate-blink text-primary font-light">|</span>
           </motion.div>
 
           {/* Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.35 }}
-            className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            I craft high-performance web applications and compelling digital content that drives
-            real results. Precision, creativity, and clean code — every single time.
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}
+            className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mb-8">
+            I build fast, elegant web apps and craft content that converts.
+            Precision engineering meets creative strategy — every project, every time.
           </motion.p>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-          >
-            <button
-              onClick={() => scrollTo("portfolio")}
-              className="btn-primary"
-              data-testid="hero-cta-portfolio"
-            >
-              <ExternalLink className="w-4 h-4" />
-              View My Work
+          {/* CTAs */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}
+            className="flex flex-wrap gap-3 mb-12">
+            <button onClick={() => document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth" })}
+              className="btn-primary" data-testid="hero-view-work">
+              View my work <ArrowRight className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => scrollTo("contact")}
-              className="btn-outline"
-              data-testid="hero-cta-contact"
-            >
-              <Mail className="w-4 h-4" />
-              Let's Talk
+            <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              className="btn-outline" data-testid="hero-contact">
+              <Mail className="w-4 h-4" /> Contact me
             </button>
           </motion.div>
 
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.55 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-16"
-          >
-            {stats.map(({ value, label }) => (
-              <div key={label} className="glass-card px-4 py-5 text-center">
-                <div className="text-2xl font-bold gradient-text mb-1">{value}</div>
-                <div className="text-xs text-muted-foreground uppercase tracking-widest">{label}</div>
+          {/* Stats row */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            className="flex items-center gap-8 mb-10 flex-wrap">
+            {stats.map(({ value, label }, i) => (
+              <div key={label} className="text-center">
+                <div className="text-2xl font-bold text-foreground">{value}</div>
+                <div className="text-xs text-muted-foreground">{label}</div>
               </div>
             ))}
           </motion.div>
 
-          {/* Scroll indicator */}
-          <motion.button
-            onClick={() => scrollTo("skills")}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300 mx-auto group"
-            data-testid="hero-scroll-indicator"
-          >
-            <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
-            <ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300 animate-bounce" />
-          </motion.button>
+          {/* Tech stack pills */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+            className="flex flex-wrap gap-2">
+            {techStack.map((t) => (
+              <span key={t} className="tag">{t}</span>
+            ))}
+          </motion.div>
         </div>
       </div>
+
+      {/* Right side decorative code block */}
+      <motion.div
+        initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.4 }}
+        className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 w-80 bg-[#0d1117] rounded-xl shadow-2xl overflow-hidden border border-[#30363d] text-[13px] font-mono"
+      >
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]">
+          <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+          <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
+          <span className="w-3 h-3 rounded-full bg-[#28c840]" />
+          <span className="ml-2 text-[#8b949e] text-xs">mustafa.ts</span>
+        </div>
+        <div className="p-4 leading-relaxed">
+          <div><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">developer</span> <span className="text-white">=</span> <span className="text-[#ff7b72]">{`{`}</span></div>
+          <div className="pl-4"><span className="text-[#79c0ff]">name</span><span className="text-white">:</span> <span className="text-[#a5d6ff]">"Mustafa Mohamed"</span><span className="text-white">,</span></div>
+          <div className="pl-4"><span className="text-[#79c0ff]">role</span><span className="text-white">:</span> <span className="text-[#a5d6ff]">"Full-Stack Dev"</span><span className="text-white">,</span></div>
+          <div className="pl-4"><span className="text-[#79c0ff]">stack</span><span className="text-white">: [</span></div>
+          <div className="pl-8"><span className="text-[#a5d6ff]">"React"</span><span className="text-white">,</span> <span className="text-[#a5d6ff]">"Node.js"</span><span className="text-white">,</span></div>
+          <div className="pl-8"><span className="text-[#a5d6ff]">"TypeScript"</span><span className="text-white">,</span> <span className="text-[#a5d6ff]">"PostgreSQL"</span></div>
+          <div className="pl-4"><span className="text-white">],</span></div>
+          <div className="pl-4"><span className="text-[#79c0ff]">available</span><span className="text-white">:</span> <span className="text-[#79c0ff]">true</span></div>
+          <div><span className="text-[#ff7b72]">{`}`}</span><span className="text-white">;</span></div>
+          <div className="mt-3 text-[#8b949e]">{"// Ready to build something great"}</div>
+        </div>
+      </motion.div>
     </section>
   );
 }
