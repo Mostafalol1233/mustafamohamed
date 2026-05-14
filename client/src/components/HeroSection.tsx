@@ -1,73 +1,177 @@
-export default function HeroSection() {
-  const scrollToPortfolio = () => {
-    const element = document.getElementById('portfolio');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowDown, ExternalLink, Github, Mail, Sparkles } from "lucide-react";
 
-  const scrollToContact = () => {
-    const element = document.getElementById('contact');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const ROLES = [
+  "Full-Stack Developer",
+  "Content Strategist",
+  "UI/UX Enthusiast",
+  "Problem Solver",
+];
+
+function useTypewriter(words: string[], speed = 80, pause = 1800) {
+  const [display, setDisplay] = useState("");
+  const [wordIdx, setWordIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = words[wordIdx];
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (!deleting && charIdx < current.length) {
+      timeout = setTimeout(() => setCharIdx((c) => c + 1), speed);
+    } else if (!deleting && charIdx === current.length) {
+      timeout = setTimeout(() => setDeleting(true), pause);
+    } else if (deleting && charIdx > 0) {
+      timeout = setTimeout(() => setCharIdx((c) => c - 1), speed / 2);
+    } else {
+      setDeleting(false);
+      setWordIdx((w) => (w + 1) % words.length);
     }
-  };
+
+    setDisplay(current.slice(0, charIdx));
+    return () => clearTimeout(timeout);
+  }, [charIdx, deleting, wordIdx, words, speed, pause]);
+
+  return display;
+}
+
+const stats = [
+  { value: "4+", label: "Years Exp." },
+  { value: "12+", label: "Projects" },
+  { value: "6+", label: "Certs" },
+  { value: "100%", label: "Dedicated" },
+];
+
+export default function HeroSection() {
+  const role = useTypewriter(ROLES);
+
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center pt-20 section-padding">
-      <div className="container-max">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-slide-up">
-            <div className="space-y-4">
-              <h1 className="text-5xl lg:text-6xl font-bold text-primary leading-tight">
-                Hi, I'm <span className="text-accent">Mustafa Mohamed</span>
-              </h1>
-              <h2 className="text-2xl lg:text-3xl text-muted-foreground font-medium">
-                Full-Stack Web Developer & Content Strategist
-              </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                I build high-performance websites and craft content that converts.
-              </p>
-            </div>
-            
-            <div className="space-y-6">
-              <p className="text-lg text-foreground leading-relaxed">
-                With a unique blend of technical proficiency and creative storytelling, I specialize in developing responsive, user-centered web applications — and writing impactful content that drives engagement and delivers results.
-              </p>
-              <p className="text-lg text-foreground">
-                Whether you need a sleek landing page, a custom web solution, or compelling digital content, I bring precision, clarity, and creativity to every project.
-              </p>
-            </div>
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+    >
+      {/* Background orbs */}
+      <div className="hero-orb w-[600px] h-[600px] top-[-200px] left-[-200px] opacity-20"
+        style={{ background: "radial-gradient(circle, hsl(239 84% 67%), transparent 70%)" }} />
+      <div className="hero-orb w-[400px] h-[400px] bottom-[-100px] right-[-100px] opacity-15"
+        style={{ background: "radial-gradient(circle, hsl(263 70% 65%), transparent 70%)" }} />
+      <div className="hero-orb w-[300px] h-[300px] top-[30%] right-[20%] opacity-10"
+        style={{ background: "radial-gradient(circle, hsl(300 70% 65%), transparent 70%)" }} />
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button 
-                onClick={scrollToPortfolio}
-                className="btn-primary"
-              >
-                <i className="fas fa-eye mr-2"></i>View My Work
-              </button>
-              <button 
-                onClick={scrollToContact}
-                className="btn-secondary"
-              >
-                <i className="fas fa-envelope mr-2"></i>Contact Me
-              </button>
-            </div>
-          </div>
-          
-          <div className="relative animate-float">
-            <img 
-              src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
-              alt="Professional web development workspace" 
-              className="rounded-2xl shadow-2xl w-full h-auto"
-            />
-            <div className="absolute -top-6 -right-6 bg-accent text-accent-foreground p-4 rounded-2xl shadow-lg">
-              <i className="fas fa-code text-2xl"></i>
-            </div>
-            <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-4 rounded-2xl shadow-lg">
-              <i className="fas fa-pen-fancy text-2xl"></i>
-            </div>
-          </div>
+      {/* Grid overlay */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: "linear-gradient(hsl(239 84% 67%) 1px, transparent 1px), linear-gradient(to right, hsl(239 84% 67%) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      <div className="container-max relative z-10 pt-24 pb-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-8"
+          >
+            <Sparkles className="w-4 h-4" />
+            Available for new projects
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          </motion.div>
+
+          {/* Name */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none"
+          >
+            <span className="text-foreground">Mustafa</span>
+            <br />
+            <span className="gradient-text">Mohamed</span>
+          </motion.h1>
+
+          {/* Typewriter */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="text-xl md:text-2xl text-muted-foreground font-medium mb-8 h-9"
+          >
+            <span className="text-primary font-semibold">{role}</span>
+            <span className="animate-blink text-primary ml-0.5">|</span>
+          </motion.div>
+
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            I craft high-performance web applications and compelling digital content that drives
+            real results. Precision, creativity, and clean code — every single time.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+          >
+            <button
+              onClick={() => scrollTo("portfolio")}
+              className="btn-primary"
+              data-testid="hero-cta-portfolio"
+            >
+              <ExternalLink className="w-4 h-4" />
+              View My Work
+            </button>
+            <button
+              onClick={() => scrollTo("contact")}
+              className="btn-outline"
+              data-testid="hero-cta-contact"
+            >
+              <Mail className="w-4 h-4" />
+              Let's Talk
+            </button>
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.55 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-16"
+          >
+            {stats.map(({ value, label }) => (
+              <div key={label} className="glass-card px-4 py-5 text-center">
+                <div className="text-2xl font-bold gradient-text mb-1">{value}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-widest">{label}</div>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.button
+            onClick={() => scrollTo("skills")}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.5 }}
+            className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors duration-300 mx-auto group"
+            data-testid="hero-scroll-indicator"
+          >
+            <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
+            <ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300 animate-bounce" />
+          </motion.button>
         </div>
       </div>
     </section>

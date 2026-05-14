@@ -1,203 +1,207 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import certificateImage from "@assets/113-alx-ai-starter-kit-certificate-mustafa-muhammad.png";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import type { Certificate } from "@shared/schema";
+import { BadgeCheck, Award, Calendar, Building2 } from "lucide-react";
+import certificateImage from "@assets/113-alx-ai-starter-kit-certificate-mustafa-muhammad.png";
+
+const staticCertificates = [
+  {
+    id: "cert-1",
+    title: "ALX AI Starter Kit Certificate",
+    description: "Advanced AI fundamentals covering machine learning and deep learning applications.",
+    issuer: "ALX Africa",
+    issueDate: "2024",
+    imageUrl: certificateImage as string,
+    category: "Artificial Intelligence",
+    color: "from-violet-500 to-purple-600",
+  },
+  {
+    id: "cert-2",
+    title: "Full-Stack Web Development",
+    description: "Modern web development with React, Node.js, and database management.",
+    issuer: "Meta (Facebook)",
+    issueDate: "2023",
+    imageUrl: null,
+    category: "Web Development",
+    color: "from-blue-500 to-indigo-600",
+  },
+  {
+    id: "cert-3",
+    title: "Content Strategy & Digital Marketing",
+    description: "Professional content creation, SEO optimization, and digital brand management.",
+    issuer: "Google Digital Marketing",
+    issueDate: "2023",
+    imageUrl: null,
+    category: "Digital Marketing",
+    color: "from-green-500 to-teal-600",
+  },
+  {
+    id: "cert-4",
+    title: "Advanced JavaScript & TypeScript",
+    description: "Advanced JavaScript concepts and TypeScript implementation patterns.",
+    issuer: "Microsoft",
+    issueDate: "2022",
+    imageUrl: null,
+    category: "Programming",
+    color: "from-amber-500 to-orange-600",
+  },
+  {
+    id: "cert-5",
+    title: "Cloud Computing Fundamentals",
+    description: "AWS cloud infrastructure deployment and scalable architecture best practices.",
+    issuer: "Amazon Web Services",
+    issueDate: "2022",
+    imageUrl: null,
+    category: "Cloud",
+    color: "from-orange-500 to-red-600",
+  },
+  {
+    id: "cert-6",
+    title: "Database Design & Management",
+    description: "Professional database design, optimization and performance management.",
+    issuer: "Oracle Corporation",
+    issueDate: "2021",
+    imageUrl: null,
+    category: "Database",
+    color: "from-red-500 to-pink-600",
+  },
+];
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 export default function CertificationsSection() {
-  // Fetch certificates from database
-  const { data: dbCertificates = [], isLoading } = useQuery<Certificate[]>({
+  const { data: dbCertificates = [] } = useQuery<Certificate[]>({
     queryKey: ["/api/certificates"],
   });
 
-  // Static certificates data as fallback
-  const staticCertificates = [
-    {
-      id: "cert-1",
-      title: "ALX AI Starter Kit Certificate",
-      description: "Advanced AI fundamentals covering machine learning and deep learning applications.",
-      issuer: "ALX Africa",
-      issueDate: "2024",
-      imageUrl: certificateImage,
-      category: "Artificial Intelligence",
-      verified: true,
-      credentialId: "ALX-AI-2024-001",
-      isVisible: true,
-    },
-    {
-      id: "cert-2", 
-      title: "Full-Stack Web Development",
-      description: "Modern web development with React, Node.js, and database management.",
-      issuer: "Meta (Facebook)",
-      issueDate: "2023",
-      imageUrl: null,
-      category: "Web Development",
-      verified: true,
-      credentialId: "META-FSD-2023-456",
-      isVisible: true,
-    },
-    {
-      id: "cert-3",
-      title: "Content Strategy & Digital Marketing", 
-      description: "Professional content creation, SEO optimization, and digital brand management.",
-      issuer: "Google Digital Marketing",
-      issueDate: "2023",
-      imageUrl: null,
-      category: "Digital Marketing",
-      verified: true,
-      credentialId: "GOOGLE-DM-2023-789",
-      isVisible: true,
-    },
-    {
-      id: "cert-4",
-      title: "Advanced JavaScript & TypeScript",
-      description: "Advanced JavaScript concepts and TypeScript implementation patterns.",
-      issuer: "Microsoft",
-      issueDate: "2022", 
-      imageUrl: null,
-      category: "Programming Languages",
-      verified: true,
-      credentialId: "MS-JS-TS-2022-321",
-      isVisible: true,
-    },
-    {
-      id: "cert-5",
-      title: "Cloud Computing Fundamentals",
-      description: "AWS cloud infrastructure deployment and scalable architecture best practices.",
-      issuer: "Amazon Web Services",
-      issueDate: "2022",
-      imageUrl: null,
-      category: "Cloud Computing",
-      verified: true,
-      credentialId: "AWS-CF-2022-654",
-      isVisible: true,
-    },
-    {
-      id: "cert-6",
-      title: "Database Design & Management",
-      description: "Professional database design, optimization and performance management.",
-      issuer: "Oracle Corporation",
-      issueDate: "2021",
-      imageUrl: null,
-      category: "Database Management", 
-      verified: true,
-      credentialId: "ORACLE-DB-2021-987",
-      isVisible: true,
-    }
-  ];
+  const extraCerts = dbCertificates
+    .filter((c) => c.isVisible)
+    .map((c, i) => ({
+      id: `db-${c.id}`,
+      title: c.title,
+      description: c.description || "Professional certification",
+      issuer: "Professional Institution",
+      issueDate: c.issueDate || "Recent",
+      imageUrl: c.imageUrl || null,
+      category: "Professional Development",
+      color: "from-cyan-500 to-blue-600",
+    }));
 
-  // Combine static certificates with database certificates
-  const allCertificates = [
-    ...staticCertificates,
-    ...dbCertificates
-      .filter(cert => cert.isVisible)
-      .map(cert => ({
-        id: `db-${cert.id}`,
-        title: cert.title,
-        description: cert.description || "Professional certification",
-        issuer: "Professional Institution",
-        issueDate: cert.issueDate || "Recent",
-        imageUrl: cert.imageUrl || null,
-        category: "Professional Development",
-        verified: true,
-        credentialId: `CERT-${cert.id}`,
-        isVisible: true,
-      }))
-  ];
+  const allCerts = [...staticCertificates, ...extraCerts];
 
   return (
-    <section id="certifications" className="section-padding gradient-bg">
-      <div className="container-max">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-primary mb-4">Certifications & Achievements</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Continuous learning and professional development in cutting-edge technologies
-          </p>
-        </div>
+    <section id="certifications" className="section-padding relative overflow-hidden">
+      {/* bg tint */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent pointer-events-none" />
 
-        {isLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {allCertificates.map((certificate) => (
-            <div key={certificate.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-105 transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
-              <div className="p-0">
-                <div className="relative">
-                  {certificate.id === "cert-1" ? (
-                    // ALX AI Certificate with actual image and protection
-                    <div 
-                      className="relative select-none"
-                      onContextMenu={(e) => e.preventDefault()}
-                      onDragStart={(e) => e.preventDefault()}
-                    >
-                      <img 
-                        src={certificate.imageUrl}
-                        alt="ALX AI Starter Kit Certificate" 
-                        className="w-full h-40 object-cover pointer-events-none"
-                        draggable="false"
-                        onContextMenu={(e) => e.preventDefault()}
-                      />
-                    </div>
-                  ) : (
-                    // Other certificates with mint/teal background and green badge
-                    <div className="w-full h-40 bg-gradient-to-br from-teal-100 to-teal-200 flex items-center justify-center relative">
-                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+      <div className="container-max relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-3">Proof of expertise</p>
+          <h2 className="section-title gradient-text">Certifications</h2>
+          <p className="section-subtitle mt-4">
+            A track record of continuous learning across AI, development, marketing, and cloud technologies.
+          </p>
+        </motion.div>
+
+        {/* Certs Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-16"
+        >
+          {allCerts.map((cert) => (
+            <motion.div
+              key={cert.id}
+              variants={itemVariants}
+              className="group gradient-border overflow-hidden hover:glow-primary transition-all duration-500"
+              data-testid={`card-cert-${cert.id}`}
+            >
+              {/* Top strip */}
+              {cert.id === "cert-1" && cert.imageUrl ? (
+                <div
+                  className="relative select-none h-44 overflow-hidden"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                >
+                  <img
+                    src={cert.imageUrl}
+                    alt={cert.title}
+                    className="w-full h-full object-cover pointer-events-none group-hover:scale-105 transition-transform duration-700"
+                    draggable="false"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
                 </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg text-blue-700 mb-2">{certificate.title}</h3>
-                  <p className="text-sm text-gray-600 mb-3 leading-relaxed">{certificate.description}</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 font-medium">
-                      Issued: {certificate.issueDate}
+              ) : (
+                <div className={`h-44 bg-gradient-to-br ${cert.color} relative overflow-hidden`}>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                    <Award className="w-24 h-24 text-white" />
+                  </div>
+                  <div className="absolute bottom-4 left-5">
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full">
+                      {cert.category}
                     </span>
-                    <div className="flex items-center text-green-600">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xs font-medium">Verified</span>
-                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="p-5">
+                <h3 className="font-bold text-base text-foreground mb-1.5 group-hover:text-primary transition-colors duration-300 leading-snug">
+                  {cert.title}
+                </h3>
+                <p className="text-muted-foreground text-xs leading-relaxed mb-4">{cert.description}</p>
+
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>{cert.issuer}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-green-400 font-medium">
+                    <BadgeCheck className="w-3.5 h-3.5" />
+                    <span>{cert.issueDate}</span>
                   </div>
                 </div>
               </div>
-            </div>
-            ))}
-          </div>
-        )}
+            </motion.div>
+          ))}
+        </motion.div>
 
-        {/* Professional Summary */}
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-blue-700 mb-4">Professional Development Journey</h3>
-            <p className="text-gray-600 leading-relaxed mb-6">
-              My commitment to continuous learning drives my expertise across multiple domains. From artificial intelligence 
-              to full-stack development, each certification represents hands-on mastery of industry-leading technologies 
-              and methodologies.
-            </p>
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">{allCertificates.length}+</div>
-                <div className="text-sm text-gray-600">Professional Certifications</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">4+</div>
-                <div className="text-sm text-gray-600">Years of Experience</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">10+</div>
-                <div className="text-sm text-gray-600">Technology Stacks</div>
-              </div>
+        {/* Stats bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="gradient-border p-8 grid md:grid-cols-3 gap-6 text-center"
+        >
+          {[
+            { value: `${allCerts.length}+`, label: "Certifications", color: "text-primary" },
+            { value: "4+", label: "Years of Experience", color: "text-violet-400" },
+            { value: "10+", label: "Technology Stacks", color: "text-green-400" },
+          ].map(({ value, label, color }) => (
+            <div key={label}>
+              <div className={`text-4xl font-bold ${color} mb-1`}>{value}</div>
+              <div className="text-muted-foreground text-sm">{label}</div>
             </div>
-          </div>
-        </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

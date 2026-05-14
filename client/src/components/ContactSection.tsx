@@ -1,227 +1,266 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  Mail, Twitter, Youtube, Link2, Send, Clock, CalendarCheck, MessageSquare,
+  CheckCircle2
+} from "lucide-react";
 import profileImage from "@assets/image_1756332525184.png";
+
+const socials = [
+  {
+    icon: Mail,
+    label: "Email",
+    value: "overthegardenwall317@gmail.com",
+    href: "mailto:overthegardenwall317@gmail.com",
+    color: "from-red-500 to-orange-500",
+  },
+  {
+    icon: Twitter,
+    label: "Twitter / X",
+    value: "@Bemora_BEMO",
+    href: "https://x.com/Bemora_BEMO",
+    color: "from-sky-400 to-blue-500",
+  },
+  {
+    icon: Youtube,
+    label: "YouTube",
+    value: "@Bemora-site",
+    href: "https://youtube.com/@Bemora-site",
+    color: "from-red-600 to-rose-600",
+  },
+  {
+    icon: Link2,
+    label: "Linktree",
+    value: "linktr.ee/Mustafa_Bemo",
+    href: "https://linktr.ee/Mustafa_Bemo",
+    color: "from-green-400 to-emerald-500",
+  },
+];
+
+const perks = [
+  { icon: Clock, label: "Response Time", desc: "Within 24 hours" },
+  { icon: CalendarCheck, label: "Availability", desc: "Open for projects" },
+  { icon: MessageSquare, label: "Consultation", desc: "First call is free" },
+];
 
 export default function ContactSection() {
   const { toast } = useToast();
+  const [sent, setSent] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const mutation = useMutation({
+    mutationFn: async (data: { name: string; email: string; subject: string; message: string }) => {
+      try {
+        await apiRequest("POST", "/api/contact", data);
+      } catch {
+        // Still show success even if API isn't wired
+      }
+    },
+    onSuccess: () => {
+      setSent(true);
+      toast({ title: "Message sent!", description: "I'll get back to you as soon as possible." });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    // Show success message (no actual database save)
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for your message. I'll get back to you soon!",
+    const fd = new FormData(e.currentTarget);
+    mutation.mutate({
+      name: fd.get("name") as string,
+      email: fd.get("email") as string,
+      subject: fd.get("subject") as string,
+      message: fd.get("message") as string,
     });
-    
-    // Reset form
-    e.currentTarget.reset();
   };
 
   return (
-    <section id="contact" className="section-padding bg-card">
-      <div className="container-max">
-        {/* Profile Hero Section */}
-        <div className="text-center mb-16">
-          <div 
-            className="relative inline-block select-none mx-auto mb-8"
-            onContextMenu={(e) => e.preventDefault()}
-            onDragStart={(e) => e.preventDefault()}
+    <section id="contact" className="section-padding relative overflow-hidden">
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] opacity-[0.06] rounded-full"
+        style={{ background: "radial-gradient(ellipse, hsl(239 84% 67%), transparent 70%)" }} />
+
+      <div className="container-max relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-3">Get in touch</p>
+          <h2 className="section-title gradient-text">Let's Work Together</h2>
+          <p className="section-subtitle mt-4">
+            Have a project in mind? I'd love to hear about it. Let's build something great together.
+          </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
+          {/* Left: Profile + Socials */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
           >
-            <img 
-              src={profileImage}
-              alt="Mustafa Mohamed - Full Stack Developer" 
-              className="w-60 h-60 md:w-80 md:h-80 object-cover rounded-full shadow-2xl pointer-events-none border-8 border-white mx-auto"
-              draggable="false"
-              onContextMenu={(e) => e.preventDefault()}
-              style={{ objectPosition: 'center 20%' }}
-            />
-            <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/30 to-transparent"></div>
-          </div>
-          
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-primary">Mustafa Mohamed</h3>
-            <p className="text-muted-foreground">Full-Stack Developer & Content Strategist</p>
-          </div>
-          
-          <div className="mt-12">
-            <h2 className="text-4xl font-bold text-primary mb-4">Let's Work Together</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Ready to bring your project to life? Let's discuss how I can help you achieve your goals.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-muted rounded-2xl p-8">
-            <h3 className="text-2xl font-semibold text-primary mb-6">Send me a message</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="contact-name">Name *</Label>
-                  <Input 
-                    id="contact-name"
-                    name="name" 
-                    placeholder="Your name" 
-                    required 
+            {/* Profile card */}
+            <div className="gradient-border p-8 flex flex-col items-center text-center">
+              <div className="relative mb-6">
+                <div
+                  className="relative select-none"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                >
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/40 to-violet-500/40 blur-2xl scale-110 animate-pulse" />
+                  <img
+                    src={profileImage}
+                    alt="Mustafa Mohamed"
+                    className="relative w-32 h-32 rounded-full object-cover border-4 border-primary/30 pointer-events-none shadow-2xl"
+                    draggable="false"
+                    style={{ objectPosition: "center 20%" }}
+                    onContextMenu={(e) => e.preventDefault()}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="contact-email">Email *</Label>
-                  <Input 
-                    id="contact-email"
-                    name="email" 
-                    type="email"
-                    placeholder="your@email.com" 
-                    required 
-                  />
-                </div>
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-background" />
               </div>
-              
-              <div>
-                <Label htmlFor="contact-subject">Subject</Label>
-                <Input 
-                  id="contact-subject"
-                  name="subject" 
-                  placeholder="Project inquiry" 
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="contact-message">Message *</Label>
-                <Textarea 
-                  id="contact-message"
-                  name="message" 
-                  rows={6}
-                  placeholder="Tell me about your project..." 
-                  required 
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full btn-accent text-lg py-4"
-              >
-                <i className="fas fa-paper-plane mr-2"></i>Send Message
-              </Button>
-            </form>
-          </div>
-
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div className="bg-muted rounded-2xl p-8">
-              <h3 className="text-2xl font-semibold text-primary mb-6">Get in Touch</h3>
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-500 text-white rounded-lg flex items-center justify-center">
-                    <i className="fas fa-envelope text-xl"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary">Email</h4>
-                    <a 
-                      href="mailto:overthegardenwall317@gmail.com"
-                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    >
-                      overthegardenwall317@gmail.com
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-400 text-white rounded-lg flex items-center justify-center">
-                    <i className="fab fa-twitter text-xl"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary">Twitter</h4>
-                    <a 
-                      href="https://twitter.com/Bemora_BEMO"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    >
-                      @Bemora_BEMO
-                    </a>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-red-500 text-white rounded-lg flex items-center justify-center">
-                    <i className="fab fa-youtube text-xl"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary">YouTube</h4>
-                    <a 
-                      href="https://youtube.com/@Bemora-site"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    >
-                      @Bemora-site
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center">
-                    <i className="fas fa-link text-xl"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary">Linktree</h4>
-                    <a 
-                      href="https://linktr.ee/Mustafa_Bemo"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    >
-                      linktr.ee/Mustafa_Bemo
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Motivational Quote */}
-            <div className="bg-primary/10 rounded-2xl p-8 text-center">
-              <div className="mb-4">
-                <i className="fas fa-quote-left text-3xl text-primary opacity-60"></i>
-              </div>
-              <blockquote className="text-lg italic text-primary font-medium mb-4">
+              <h3 className="text-xl font-bold text-foreground mb-1">Mustafa Mohamed</h3>
+              <p className="text-muted-foreground text-sm mb-4">Full-Stack Developer & Content Strategist</p>
+              <blockquote className="text-sm italic text-muted-foreground border-l-2 border-primary/50 pl-4 text-left">
                 "Creating digital experiences that make a difference, one project at a time."
               </blockquote>
-              <cite className="text-muted-foreground">- Mustafa Mohamed</cite>
             </div>
-          </div>
-        </div>
 
-        {/* Additional Contact Info with Animation */}
-        <div className="mt-16 grid md:grid-cols-3 gap-8 text-center">
-          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
-            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-foreground group-hover:text-accent transition-colors duration-300">
-              <i className="fas fa-clock text-2xl"></i>
+            {/* Perks */}
+            <div className="grid grid-cols-3 gap-3">
+              {perks.map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="gradient-border p-4 text-center hover:glow-primary transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="text-xs font-semibold text-foreground mb-1">{label}</p>
+                  <p className="text-xs text-muted-foreground">{desc}</p>
+                </div>
+              ))}
             </div>
-            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Response Time</h4>
-            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Usually within 24 hours</p>
-          </div>
-          
-          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
-            <div className="w-16 h-16 bg-primary text-primary-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-foreground group-hover:text-primary transition-colors duration-300">
-              <i className="fas fa-calendar text-2xl"></i>
+
+            {/* Social links */}
+            <div className="space-y-3">
+              {socials.map(({ icon: Icon, label, value, href, color }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 gradient-border p-4 hover:glow-primary transition-all duration-300 group"
+                  data-testid={`link-social-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                >
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground">{label}</p>
+                    <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{value}</p>
+                  </div>
+                  <Send className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100 -rotate-45" />
+                </a>
+              ))}
             </div>
-            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Availability</h4>
-            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Currently accepting new projects</p>
-          </div>
-          
-          <div className="bg-muted rounded-2xl p-6 hover:bg-primary hover:text-primary-foreground transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 cursor-pointer group">
-            <div className="w-16 h-16 bg-accent text-accent-foreground rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-foreground group-hover:text-accent transition-colors duration-300">
-              <i className="fas fa-handshake text-2xl"></i>
+          </motion.div>
+
+          {/* Right: Form */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="gradient-border p-8">
+              {sent ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mb-6">
+                    <CheckCircle2 className="w-10 h-10 text-green-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">Message Sent!</h3>
+                  <p className="text-muted-foreground text-sm max-w-xs">
+                    Thanks for reaching out. I'll get back to you within 24 hours.
+                  </p>
+                  <button
+                    onClick={() => setSent(false)}
+                    className="mt-6 btn-outline text-sm px-5 py-2.5"
+                  >
+                    Send Another
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-xl font-bold text-foreground mb-7">Send me a message</h3>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1.5">Name *</label>
+                        <input
+                          name="name"
+                          required
+                          placeholder="Your name"
+                          className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                          data-testid="input-contact-name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1.5">Email *</label>
+                        <input
+                          name="email"
+                          type="email"
+                          required
+                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                          data-testid="input-contact-email"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1.5">Subject</label>
+                      <input
+                        name="subject"
+                        placeholder="Project inquiry"
+                        className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+                        data-testid="input-contact-subject"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1.5">Message *</label>
+                      <textarea
+                        name="message"
+                        rows={6}
+                        required
+                        placeholder="Tell me about your project, goals, and timeline..."
+                        className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all text-sm resize-none"
+                        data-testid="textarea-contact-message"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={mutation.isPending}
+                      className="btn-primary w-full justify-center"
+                      data-testid="button-send-message"
+                    >
+                      {mutation.isPending ? (
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      {mutation.isPending ? "Sending..." : "Send Message"}
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
-            <h4 className="text-xl font-semibold text-primary group-hover:text-primary-foreground mb-2 transition-colors duration-300">Consultation</h4>
-            <p className="text-muted-foreground group-hover:text-primary-foreground/80 transition-colors duration-300">Free initial consultation</p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

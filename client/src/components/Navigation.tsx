@@ -1,116 +1,170 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import AdminDashboard from "./AdminDashboard";
+import { Menu, X, Code2, Settings } from "lucide-react";
 
-interface NavigationProps {
-  showAdminButton?: boolean;
-}
+const navLinks = [
+  { label: "Home", id: "home" },
+  { label: "Skills", id: "skills" },
+  { label: "Portfolio", id: "portfolio" },
+  { label: "Certifications", id: "certifications" },
+  { label: "Reviews", id: "reviews" },
+  { label: "Contact", id: "contact" },
+];
 
-export default function Navigation({ showAdminButton = true }: NavigationProps) {
+export default function Navigation() {
   const { isAuthenticated } = useAuth();
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    );
+    navLinks.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMobileOpen(false);
   };
 
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 glass-effect backdrop-blur-lg border-b border-border">
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-background/90 backdrop-blur-xl border-b border-border shadow-xl shadow-black/20"
+            : "bg-transparent"
+        }`}
+      >
         <div className="container-max">
-          <div className="flex justify-between items-center py-4">
-            <div className="text-2xl font-bold text-primary">
-              <span className="text-accent">M</span>ustafa
-            </div>
-            <div className="hidden md:flex space-x-8">
-              <button 
-                onClick={() => scrollToSection('home')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                Home
-              </button>
-              <button 
-                onClick={() => scrollToSection('about')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                About
-              </button>
-              <button 
-                onClick={() => scrollToSection('certifications')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                Certifications
-              </button>
-              <button 
-                onClick={() => scrollToSection('portfolio')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                Portfolio
-              </button>
-              <button 
-                onClick={() => scrollToSection('reviews')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                Reviews
-              </button>
-              <button 
-                onClick={() => scrollToSection('contact')} 
-                className="text-foreground hover:text-accent transition-colors duration-300"
-              >
-                Contact
-              </button>
-            </div>
-            <div className="flex items-center space-x-4">
-              {showAdminButton && isAuthenticated && (
-                <button 
-                  onClick={() => setIsAdminOpen(true)}
-                  className="bg-accent text-accent-foreground px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors duration-300"
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <button
+              onClick={() => scrollTo("home")}
+              className="flex items-center gap-2.5 group"
+              data-testid="nav-logo"
+            >
+              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center group-hover:bg-primary/20 transition-all duration-300">
+                <Code2 className="w-5 h-5 text-primary" />
+              </div>
+              <span className="font-bold text-xl">
+                <span className="gradient-text">Mustafa</span>
+                <span className="text-muted-foreground font-normal text-sm ml-1">dev</span>
+              </span>
+            </button>
+
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map(({ label, id }) => (
+                <button
+                  key={id}
+                  onClick={() => scrollTo(id)}
+                  data-testid={`nav-link-${id}`}
+                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                    activeSection === id
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  }`}
                 >
-                  <i className="fas fa-cog mr-2"></i>Admin
+                  {label}
+                  {activeSection === id && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                  )}
                 </button>
-              )}
-              {showAdminButton && !isAuthenticated && (
-                <a 
-                  href="/api/login"
-                  className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors duration-300"
+              ))}
+            </div>
+
+            {/* Right Side */}
+            <div className="flex items-center gap-3">
+              {isAuthenticated && (
+                <a
+                  href="/admin"
+                  data-testid="nav-admin"
+                  className="hidden md:flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all duration-300"
                 >
-                  <i className="fas fa-sign-in-alt mr-2"></i>Login
+                  <Settings className="w-4 h-4" />
+                  Admin
                 </a>
               )}
-              <button className="md:hidden text-foreground">
-                <i className="fas fa-bars text-xl"></i>
+              <button
+                onClick={() => setMobileOpen((o) => !o)}
+                className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:border-primary/50 hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all duration-300"
+                data-testid="nav-mobile-toggle"
+              >
+                {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Pass admin modal state to parent or handle globally */}
-      {isAdminOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0" 
-            onClick={() => setIsAdminOpen(false)}
-          ></div>
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden relative z-10">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-primary">Admin Dashboard</h2>
-              <button 
-                onClick={() => setIsAdminOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+      {/* Mobile Menu */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+        <div
+          className={`absolute top-0 right-0 h-full w-72 bg-card border-l border-border shadow-2xl transition-transform duration-300 ${
+            mobileOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between p-5 border-b border-border">
+            <span className="font-bold text-lg gradient-text">Menu</span>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary/50 text-muted-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="p-4 space-y-1">
+            {navLinks.map(({ label, id }) => (
+              <button
+                key={id}
+                onClick={() => scrollTo(id)}
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeSection === id
+                    ? "bg-primary/15 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
               >
-                <i className="fas fa-times text-xl"></i>
+                {label}
               </button>
-            </div>
-            <div className="p-0">
-              <AdminDashboard />
-            </div>
+            ))}
+            {isAuthenticated && (
+              <a
+                href="/admin"
+                className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 mt-2 border border-border"
+              >
+                <Settings className="w-4 h-4" />
+                Admin Dashboard
+              </a>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }
