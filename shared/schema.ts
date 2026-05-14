@@ -122,6 +122,21 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull().default(""),
+  coverImage: text("cover_image"),
+  tags: text("tags").array(),
+  author: text("author").notNull().default("Mustafa Mohamed"),
+  isPublished: boolean("is_published").default(true),
+  readTime: integer("read_time").default(5),
+  publishedAt: timestamp("published_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
@@ -221,4 +236,19 @@ export const insertSkillSchema = z.object({
 export const insertSiteSettingSchema = z.object({
   key: z.string(),
   value: z.string(),
+});
+
+export type InsertBlogPost = typeof blogPosts.$inferInsert;
+export type BlogPost = typeof blogPosts.$inferSelect;
+
+export const insertBlogPostSchema = z.object({
+  title: z.string(),
+  slug: z.string(),
+  excerpt: z.string(),
+  content: z.string().optional(),
+  coverImage: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional().nullable(),
+  author: z.string().optional(),
+  isPublished: z.boolean().optional(),
+  readTime: z.number().optional(),
 });

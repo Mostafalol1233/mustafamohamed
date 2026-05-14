@@ -22,16 +22,14 @@ export function LanguageProvider({ children, initialLang = "en" }: { children: R
     setLangState(l);
     localStorage.setItem("portfolio-lang", l);
     document.documentElement.setAttribute("lang", l);
-    document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
   };
 
   useEffect(() => {
     document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
   }, [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: lang === "ar" }}>
+    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: false }}>
       {children}
     </LanguageContext.Provider>
   );

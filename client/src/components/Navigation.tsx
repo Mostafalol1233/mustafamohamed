@@ -4,7 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 
-export default function Navigation({ showAdminButton = true }: { showAdminButton?: boolean }) {
+export default function Navigation({ showAdminButton = false }: { showAdminButton?: boolean }) {
   const { isDark, toggle: toggleTheme } = useTheme();
   const { lang, setLang, t } = useLang();
   const [, setLocation] = useLocation();
@@ -152,11 +152,6 @@ export default function Navigation({ showAdminButton = true }: { showAdminButton
                 {label}
               </button>
             ))}
-            <div className="pt-3 mt-3 border-t border-border">
-              <a href="/admin" className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground">
-                <Settings className="w-4 h-4" /> {t.nav.admin}
-              </a>
-            </div>
           </div>
         </div>
       </div>
