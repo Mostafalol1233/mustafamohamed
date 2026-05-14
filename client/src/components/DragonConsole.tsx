@@ -1,506 +1,484 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
-// Advanced Realistic Dragon Console with Physics Engine
+// ─── Original spring-chain physics (ported from script.js) ───────────────────
+// N = 28 segments (shorter tail; original demo used 40)
+const N = 28;
+
+// Scale from original: s = (162 + 4*(1-i)) / 50
+// → body half-width = s * 7px (i=1: ~23px, i=27: ~8px)
+function segW(i: number): number {
+  return Math.max(2.5, ((162 + 4 * (1 - i)) / 50) * 7);
+}
+
+interface El { x: number; y: number; }
+interface Food { id: number; x: number; y: number; eaten: boolean; }
+interface Spark { x: number; y: number; vx: number; vy: number; life: number; }
+
 export function DragonConsole() {
+  const wrapRef   = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const timeRef = useRef(0);
-  const mouseRef = useRef({ x: 400, y: 200 });
-  
-  // Advanced physics-based dragon system
-  const dragonRef = useRef({
-    head: { x: 400, y: 200, vx: 0, vy: 0, targetX: 400, targetY: 200 },
-    spine: Array.from({ length: 12 }, (_, i) => ({
-      x: 400 - i * 15,
-      y: 200,
-      vx: 0,
-      vy: 0,
-      angle: 0,
-      springForce: 0.15,
-      damping: 0.85
-    })),
-    tail: Array.from({ length: 8 }, (_, i) => ({
-      x: 400 - 180 - i * 20,
-      y: 200,
-      vx: 0,
-      vy: 0,
-      wavePhase: i * 0.5
-    })),
-    wings: {
-      left: { angle: 0, targetAngle: 0, beat: 0 },
-      right: { angle: 0, targetAngle: 0, beat: 0 }
-    },
-    jaw: { openness: 0, targetOpenness: 0 },
-    eyes: { blink: 0, sparkle: Math.random() },
-    breathing: { intensity: 0, particles: [] as any[] }
-  });
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = wrapRef.current ? wrapRef.current.querySelector('canvas')! : canvasRef.current!;
+    const wrap   = wrapRef.current;
+    if (!canvas || !wrap) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const ctx = canvas.getContext('2d')!;
+    let W = 0, H = 0;
 
-    // Set canvas size
-    canvas.width = 800;
-    canvas.height = 400;
+    const resize = () => {
+      W = wrap.clientWidth;
+      H = wrap.clientHeight;
+      canvas.width  = W;
+      canvas.height = H;
+    };
+    resize();
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseRef.current = {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height)
-      };
+    // ── State ─────────────────────────────────────────────────────────────────
+    const pointer = { x: W / 2, y: H / 2 };
+
+    // e[0] = virtual mouse-guide (not drawn)
+    const elems: El[] = Array.from({ length: N }, (_, i) => ({
+      x: W / 2 - i * 22,
+      y: H / 2,
+    }));
+
+    let frm    = Math.random();
+    let rad    = 0;
+    let bootT  = 0;
+    let blinkCD = 150 + Math.random() * 180;
+    let blinkPh = 0;
+    let blinking = false;
+
+    let score = 0;
+    const foods: Food[] = [];
+    let foodId = 0;
+    const sparks: Spark[] = [];
+
+    // ── Events ────────────────────────────────────────────────────────────────
+    const onMove = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect();
+      pointer.x = (e.clientX - r.left) * (W / r.width);
+      pointer.y = (e.clientY - r.top)  * (H / r.height);
+      rad = 0;
+    };
+    const onClick = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect();
+      foods.push({
+        id: foodId++,
+        x: (e.clientX - r.left) * (W / r.width),
+        y: (e.clientY - r.top)  * (H / r.height),
+        eaten: false,
+      });
+      if (foods.length > 6) foods.shift();
     };
 
-    canvas.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', onMove);
+    canvas.addEventListener('click', onClick);
+    window.addEventListener('resize', resize);
 
-    const animate = (currentTime: number) => {
-      timeRef.current = currentTime * 0.001;
-      
-      updateDragonPhysics();
-      drawDragon(ctx);
-      
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function burst(x: number, y: number) {
+      for (let k = 0; k < 14; k++) {
+        const a = (Math.PI * 2 * k) / 14 + Math.random() * 0.4;
+        const s = 1.5 + Math.random() * 3;
+        sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1 });
       }
-    };
-  }, []);
-
-  // Advanced physics simulation for realistic dragon movement
-  const updateDragonPhysics = () => {
-    const dragon = dragonRef.current;
-    const time = timeRef.current;
-    const mouse = mouseRef.current;
-
-    // Head tracking with spring physics
-    const headToMouse = {
-      x: mouse.x - dragon.head.x,
-      y: mouse.y - dragon.head.y
-    };
-    const distance = Math.sqrt(headToMouse.x ** 2 + headToMouse.y ** 2);
-    
-    // Spring force towards mouse with inertia
-    dragon.head.vx += headToMouse.x * 0.002;
-    dragon.head.vy += headToMouse.y * 0.002;
-    
-    // Apply damping
-    dragon.head.vx *= 0.92;
-    dragon.head.vy *= 0.92;
-    
-    dragon.head.x += dragon.head.vx;
-    dragon.head.y += dragon.head.vy;
-
-    // Spinal flexibility with realistic curvature
-    for (let i = 0; i < dragon.spine.length; i++) {
-      const segment = dragon.spine[i];
-      const target = i === 0 ? dragon.head : dragon.spine[i - 1];
-      
-      const dx = target.x - segment.x;
-      const dy = target.y - segment.y;
-      const dist = Math.sqrt(dx ** 2 + dy ** 2);
-      const targetDist = 18;
-      
-      if (dist > targetDist) {
-        const angle = Math.atan2(dy, dx);
-        segment.x = target.x - Math.cos(angle) * targetDist;
-        segment.y = target.y - Math.sin(angle) * targetDist;
-      }
-      
-      // Add spinal curve simulation
-      segment.angle = Math.atan2(dy, dx);
-      
-      // Apply oscillation for natural movement
-      segment.x += Math.sin(time + i * 0.3) * 0.8;
-      segment.y += Math.cos(time + i * 0.2) * 0.6;
     }
 
-    // Autonomous tail wave motion
-    for (let i = 0; i < dragon.tail.length; i++) {
-      const tailSegment = dragon.tail[i];
-      const prevSegment = i === 0 ? dragon.spine[dragon.spine.length - 1] : dragon.tail[i - 1];
-      
-      // Wave motion independent of mouse
-      const waveOffset = Math.sin(time * 2 + tailSegment.wavePhase) * 25;
-      const baseX = prevSegment.x - 25;
-      const baseY = prevSegment.y + waveOffset;
-      
-      tailSegment.vx += (baseX - tailSegment.x) * 0.1;
-      tailSegment.vy += (baseY - tailSegment.y) * 0.1;
-      
-      tailSegment.vx *= 0.88;
-      tailSegment.vy *= 0.88;
-      
-      tailSegment.x += tailSegment.vx;
-      tailSegment.y += tailSegment.vy;
+    // ── Draw ─────────────────────────────────────────────────────────────────
+
+    function drawGrid() {
+      const sz = 50;
+      ctx.strokeStyle = 'rgba(255,215,0,0.04)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < W; x += sz) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += sz) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
     }
 
-    // Wing beat animation
-    dragon.wings.left.beat = Math.sin(time * 4) * 0.6;
-    dragon.wings.right.beat = Math.sin(time * 4 + Math.PI) * 0.6;
-    
-    // Jaw movement based on distance to mouse
-    dragon.jaw.targetOpenness = Math.min(distance / 100, 1);
-    dragon.jaw.openness += (dragon.jaw.targetOpenness - dragon.jaw.openness) * 0.08;
-    
-    // Eye blinking and sparkle
-    if (Math.random() < 0.01) dragon.eyes.blink = 1;
-    dragon.eyes.blink *= 0.85;
-    dragon.eyes.sparkle = Math.sin(time * 8) * 0.5 + 0.5;
+    function drawHead() {
+      const ep = elems[0], e = elems[1];
+      const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
+      const a  = Math.atan2(ep.y - e.y, ep.x - e.x); // forward dir
 
-    // Fire breathing particles
-    if (Math.random() < 0.3) {
-      dragon.breathing.particles.push({
-        x: dragon.head.x + 30,
-        y: dragon.head.y + 10,
-        vx: (Math.random() - 0.5) * 4 + 2,
-        vy: (Math.random() - 0.5) * 2,
-        life: 1,
-        size: Math.random() * 4 + 2
+      // blink
+      blinkCD--;
+      if (blinkCD <= 0 && !blinking) { blinking = true; blinkPh = 0; blinkCD = 150 + Math.random() * 200; }
+      if (blinking) { blinkPh += 0.14; if (blinkPh > Math.PI) blinking = false; }
+      const blinkY = blinking ? Math.max(0, Math.sin(blinkPh)) : 1;
+
+      ctx.save();
+      ctx.translate(mx, my);
+      ctx.rotate(a);
+
+      // glow halo
+      const halo = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
+      halo.addColorStop(0, 'rgba(255,215,0,0.18)');
+      halo.addColorStop(1, 'rgba(255,215,0,0)');
+      ctx.fillStyle = halo;
+      ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.fill();
+
+      // head body
+      const headGrad = ctx.createRadialGradient(-4, -4, 0, 0, 0, 24);
+      headGrad.addColorStop(0, 'rgba(255,240,80,0.95)');
+      headGrad.addColorStop(0.6, 'rgba(210,160,10,0.9)');
+      headGrad.addColorStop(1, 'rgba(130,90,0,0.85)');
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,215,0,0.5)'; ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.moveTo(26, 0); ctx.lineTo(18, -10); ctx.lineTo(4, -15);
+      ctx.lineTo(-14, -13); ctx.lineTo(-22, -5); ctx.lineTo(-22, 5);
+      ctx.lineTo(-14, 12); ctx.lineTo(4, 13); ctx.lineTo(18, 9);
+      ctx.closePath();
+      ctx.fillStyle = headGrad; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,235,100,0.7)'; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.restore();
+
+      // horn
+      ctx.fillStyle = 'rgba(200,160,10,0.9)';
+      ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(4, -26); ctx.lineTo(8, -15); ctx.fill();
+
+      // jaw
+      ctx.save();
+      ctx.translate(10, 8);
+      ctx.strokeStyle = 'rgba(255,215,0,0.7)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(-14, 0); ctx.quadraticCurveTo(0, 7, 14, 0); ctx.stroke();
+      // teeth
+      for (let k = 0; k < 4; k++) {
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.beginPath();
+        ctx.moveTo(-10 + k * 7, 0); ctx.lineTo(-8 + k * 7, 5); ctx.lineTo(-6 + k * 7, 0);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // eyes
+      [[9, -7], [9, 6]].forEach(([ex, ey]) => {
+        ctx.save();
+        ctx.shadowColor = '#ff2000'; ctx.shadowBlur = 14;
+        ctx.fillStyle = '#dd1100';
+        ctx.beginPath(); ctx.ellipse(ex, ey, 4.5, 4.5 * blinkY, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = '#ff3a00';
+        ctx.beginPath(); ctx.ellipse(ex, ey, 2.8, 2.8 * blinkY, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.beginPath(); ctx.ellipse(ex + 0.8, ey, 1, 2.4 * blinkY, 0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,200,100,0.7)';
+        ctx.beginPath(); ctx.ellipse(ex - 1.2, ey - 1.5 * blinkY, 0.9, 0.9 * blinkY, 0, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // nostril flame flicker
+      if (Math.random() < 0.6) {
+        ctx.save();
+        ctx.shadowColor = '#ff6600'; ctx.shadowBlur = 10;
+        ctx.fillStyle = 'rgba(255,110,0,0.7)';
+        ctx.beginPath(); ctx.arc(24, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    function drawWingAt(si: number) {
+      const ep = elems[si - 1], e = elems[si];
+      const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
+      const a   = Math.atan2(e.y - ep.y, e.x - ep.x);
+      const t   = Date.now();
+      const bR  = segW(si) * 0.6;
+      const spd = Math.hypot(elems[0].x - elems[1].x, elems[0].y - elems[1].y);
+      const spread  = 50 + Math.min(spd * 1.8, 55);
+      const flapOff = Math.sin(t / 480) * (8 + Math.min(spd * 0.4, 16));
+
+      for (const side of [-1, 1] as const) {
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.rotate(a);
+
+        const rY  = side * bR;
+        const jx  = -12, jy  = side * (bR + spread * 0.5) + flapOff * side;
+        const tipX = -3, tipY = side * (bR + spread) + flapOff * side * 1.1;
+        const t1x = -28, t1y = side * (bR + spread * 0.35) + flapOff * side * 0.5;
+        const t2x = -46, t2y = side * (bR + spread * 0.12);
+        const taX = -42, taY = side * bR * 0.2;
+
+        // membrane
+        ctx.save();
+        ctx.shadowColor = 'rgba(255,160,0,0.2)'; ctx.shadowBlur = 16;
+        ctx.beginPath();
+        ctx.moveTo(0, rY);
+        ctx.quadraticCurveTo(jx * 0.4, (rY + jy) * 0.5, jx, jy);
+        ctx.quadraticCurveTo((jx + tipX) / 2, (jy + tipY) / 2, tipX, tipY);
+        ctx.quadraticCurveTo((tipX + t1x) / 2, (tipY + t1y) / 2, t1x, t1y);
+        ctx.quadraticCurveTo((t1x + t2x) / 2, (t1y + t2y) / 2, t2x, t2y);
+        ctx.quadraticCurveTo((t2x + taX) / 2, (t2y + taY) / 2, taX, taY);
+        ctx.quadraticCurveTo(-20, rY * 0.5, 0, rY);
+        ctx.closePath();
+        ctx.fillStyle   = 'rgba(139,69,19,0.28)';
+        ctx.strokeStyle = 'rgba(255,215,0,0.3)';
+        ctx.lineWidth   = 0.8;
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // ribs (golden bone lines)
+        ctx.strokeStyle = 'rgba(255,200,50,0.55)'; ctx.lineWidth = 1;
+        [[jx, jy], [tipX * 0.9, tipY * 0.9], [t1x, t1y], [t2x, t2y]].forEach(([rx, ry]) => {
+          ctx.beginPath(); ctx.moveTo(0, rY); ctx.lineTo(rx, ry); ctx.stroke();
+        });
+
+        ctx.restore();
+      }
+    }
+
+    function drawBody() {
+      // Glow pass
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,215,0,0.18)'; ctx.shadowBlur = 20;
+      for (let i = 2; i < N; i++) {
+        const ep = elems[i - 1], e = elems[i];
+        const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
+        const nep = elems[i];
+        const ne  = i < N - 1 ? elems[i + 1] : { x: e.x + (e.x - ep.x), y: e.y + (e.y - ep.y) };
+        const nmx = (nep.x + ne.x) / 2, nmy = (nep.y + ne.y) / 2;
+        ctx.beginPath();
+        ctx.moveTo(mx, my);
+        ctx.quadraticCurveTo(e.x, e.y, nmx, nmy);
+        ctx.strokeStyle = 'rgba(200,150,10,0.5)';
+        ctx.lineWidth = segW(i) * 2;
+        ctx.lineCap = 'round'; ctx.stroke();
+      }
+      ctx.restore();
+
+      // Solid body pass
+      for (let i = 2; i < N; i++) {
+        const ep = elems[i - 1], e = elems[i];
+        const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
+        const nep = elems[i];
+        const ne  = i < N - 1 ? elems[i + 1] : { x: e.x + (e.x - ep.x), y: e.y + (e.y - ep.y) };
+        const nmx = (nep.x + ne.x) / 2, nmy = (nep.y + ne.y) / 2;
+        ctx.beginPath();
+        ctx.moveTo(mx, my);
+        ctx.quadraticCurveTo(e.x, e.y, nmx, nmy);
+        // gradient color: gold at head fading to amber at tail
+        const t = i / N;
+        const r = Math.floor(210 - t * 60);
+        const g = Math.floor(140 - t * 80);
+        ctx.strokeStyle = `rgba(${r},${g},10,0.85)`;
+        ctx.lineWidth = segW(i) * 1.6;
+        ctx.lineCap = 'round'; ctx.stroke();
+      }
+
+      // Bone detail overlay (spine lines)
+      for (let i = 2; i < N - 1; i += 2) {
+        const ep = elems[i - 1], e = elems[i];
+        const mx = (ep.x + e.x) / 2, my = (ep.y + e.y) / 2;
+        const a  = Math.atan2(e.y - ep.y, e.x - ep.x);
+        const w  = segW(i) * 0.55;
+        ctx.save();
+        ctx.translate(mx, my); ctx.rotate(a);
+        ctx.strokeStyle = `rgba(255,235,100,${0.35 - i * 0.008})`;
+        ctx.lineWidth = 0.8;
+        // spine line
+        ctx.beginPath(); ctx.moveTo(-w, 0); ctx.lineTo(w, 0); ctx.stroke();
+        // ribs
+        if (i < 12) {
+          ctx.strokeStyle = `rgba(200,165,55,${0.28 - i * 0.01})`;
+          [[-1], [1]].forEach(([s]) => {
+            ctx.beginPath();
+            ctx.moveTo(-w * 0.4, 0);
+            ctx.quadraticCurveTo(-w * 0.2, s * w * 0.8, -w * 0.9, s * w * 0.7);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(w * 0.4, 0);
+            ctx.quadraticCurveTo(w * 0.2, s * w * 0.8, w * 0.9, s * w * 0.7);
+            ctx.stroke();
+          });
+        }
+        ctx.restore();
+      }
+
+      // Tail spike
+      const tl = elems[N - 1], tp = elems[N - 2];
+      const tailA = Math.atan2(tl.y - tp.y, tl.x - tp.x);
+      ctx.beginPath();
+      ctx.moveTo(tl.x, tl.y);
+      ctx.lineTo(tl.x + Math.cos(tailA) * 14, tl.y + Math.sin(tailA) * 14);
+      ctx.strokeStyle = 'rgba(200,130,10,0.7)'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.stroke();
+    }
+
+    function drawFood() {
+      const now = Date.now();
+      foods.forEach(f => {
+        if (f.eaten) return;
+        const pulse = 0.6 + 0.4 * Math.sin(now / 300 + f.id * 1.4);
+        const r = 10 + pulse * 3;
+
+        ctx.save();
+        ctx.shadowColor = '#ffaa00'; ctx.shadowBlur = 22 * pulse;
+        ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,170,0,${0.18 * pulse})`; ctx.fill();
+
+        ctx.shadowBlur = 14;
+        ctx.beginPath(); ctx.arc(f.x, f.y, 7, 0, Math.PI * 2);
+        ctx.fillStyle = '#cc7700'; ctx.fill();
+        ctx.beginPath(); ctx.arc(f.x, f.y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffcc00'; ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.beginPath(); ctx.arc(f.x - 2, f.y - 2, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,240,180,0.8)'; ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.font = "9px 'JetBrains Mono',monospace";
+        ctx.fillStyle = `rgba(255,200,50,${0.6 + 0.4 * pulse})`;
+        ctx.fillText('◆ FEED', f.x - 16, f.y - 16);
+        ctx.restore();
       });
     }
 
-    // Update fire particles
-    dragon.breathing.particles = dragon.breathing.particles
-      .map(p => ({
-        ...p,
-        x: p.x + p.vx,
-        y: p.y + p.vy,
-        life: p.life - 0.02
-      }))
-      .filter(p => p.life > 0);
-  };
-
-  // Advanced dragon rendering with realistic textures and lighting
-  const drawDragon = (ctx: CanvasRenderingContext2D) => {
-    const dragon = dragonRef.current;
-    const time = timeRef.current;
-    
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    
-    // Dynamic lighting setup
-    const lightSource = { x: mouseRef.current.x, y: mouseRef.current.y };
-    
-    // Draw mystical background aura
-    ctx.save();
-    const gradient = ctx.createRadialGradient(
-      dragon.head.x, dragon.head.y, 0,
-      dragon.head.x, dragon.head.y, 150
-    );
-    gradient.addColorStop(0, 'rgba(255, 215, 0, 0.1)');
-    gradient.addColorStop(0.5, 'rgba(255, 140, 0, 0.05)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.restore();
-
-    // Draw fire breathing particles first (behind dragon)
-    dragon.breathing.particles.forEach(particle => {
-      ctx.save();
-      ctx.globalAlpha = particle.life;
-      const fireGradient = ctx.createRadialGradient(
-        particle.x, particle.y, 0,
-        particle.x, particle.y, particle.size
-      );
-      fireGradient.addColorStop(0, '#ff6b35');
-      fireGradient.addColorStop(0.5, '#ffa500');
-      fireGradient.addColorStop(1, 'rgba(255, 165, 0, 0)');
-      ctx.fillStyle = fireGradient;
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    });
-
-    // Draw spine with realistic bone texture
-    for (let i = dragon.spine.length - 1; i >= 0; i--) {
-      const segment = dragon.spine[i];
-      const nextSegment = dragon.spine[i + 1] || dragon.tail[0];
-      
-      if (nextSegment) {
-        drawBoneSegment(ctx, segment, nextSegment, i, lightSource);
+    function drawSparks() {
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.life -= 0.028;
+        if (p.life <= 0) { sparks.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.shadowColor = '#ffa000'; ctx.shadowBlur = 8;
+        ctx.fillStyle = p.life > 0.5 ? '#ffcc00' : '#ff8800';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
       }
     }
 
-    // Draw tail with serpentine texture
-    for (let i = dragon.tail.length - 1; i >= 0; i--) {
-      const segment = dragon.tail[i];
-      const nextSegment = dragon.tail[i + 1];
-      
-      if (nextSegment) {
-        drawTailSegment(ctx, segment, nextSegment, i, lightSource);
+    function drawHUD() {
+      // Boot text (fades out after 5s)
+      if (bootT < 5) {
+        const alpha = bootT < 4 ? 1 : Math.max(0, 1 - (bootT - 4));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.font = "12px 'JetBrains Mono','Fira Code',monospace";
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText('> Advanced Physics Engine Activated...', 18, 30);
+        if (bootT > 0.7) { ctx.fillStyle = '#ffe066'; ctx.fillText('> Skeletal_Dragon_v2.0 initialized', 18, 50); }
+        if (bootT > 1.5) { ctx.fillStyle = '#ffc830'; ctx.fillText('> Real-time physics simulation: ENABLED', 18, 70); }
+        if (bootT > 2.3) { ctx.fillStyle = '#ffaa00'; ctx.fillText('> Ancient Dragon consciousness: AWAKENED', 18, 90); }
+        if (bootT > 3.0) { ctx.fillStyle = '#ff8800'; ctx.fillText('> click to place food · move to guide', 18, 110); }
+        ctx.restore();
+      }
+
+      // Score
+      if (score > 0) {
+        ctx.save();
+        ctx.font = "11px 'JetBrains Mono','Fira Code',monospace";
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(`> devoured: ${score}`, W - 140, 30);
+        ctx.restore();
       }
     }
 
-    // Draw wings with membrane texture
-    drawWing(ctx, dragon.head.x - 40, dragon.head.y - 20, dragon.wings.left.beat, 'left', lightSource);
-    drawWing(ctx, dragon.head.x - 40, dragon.head.y - 20, dragon.wings.right.beat, 'right', lightSource);
+    // ── RAF loop ──────────────────────────────────────────────────────────────
+    let lastT = performance.now();
+    let raf: number;
 
-    // Draw dragon head with detailed features
-    drawDragonHead(ctx, dragon, lightSource, time);
+    const loop = (now: number) => {
+      const dt = Math.min((now - lastT) / 1000, 0.05);
+      lastT = now;
+      bootT += dt;
 
-    // Draw ribs extending from spine
-    dragon.spine.forEach((segment, i) => {
-      if (i % 2 === 0 && i < 8) {
-        drawRibs(ctx, segment, i, lightSource);
+      // ── Original spring-chain physics ─────────────────────────────────────
+      const maxRad = Math.min(pointer.x, pointer.y, W - pointer.x, H - pointer.y) - 20;
+      if (rad < maxRad) rad++;
+      frm += 0.003;
+      if (rad > 60) {
+        pointer.x += (W / 2 - pointer.x) * 0.05;
+        pointer.y += (H / 2 - pointer.y) * 0.05;
       }
-    });
-  };
 
-  // Draw individual bone segment with texture and lighting
-  const drawBoneSegment = (ctx: CanvasRenderingContext2D, segment: any, nextSegment: any, index: number, light: any) => {
-    ctx.save();
-    
-    // Calculate lighting intensity
-    const lightDist = Math.sqrt((segment.x - light.x) ** 2 + (segment.y - light.y) ** 2);
-    const lightIntensity = Math.max(0.3, 1 - lightDist / 200);
-    
-    // Bone texture with cracks
-    const angle = Math.atan2(nextSegment.y - segment.y, nextSegment.x - segment.x);
-    ctx.translate(segment.x, segment.y);
-    ctx.rotate(angle);
-    
-    // Main bone structure
-    ctx.strokeStyle = `rgba(255, 215, 0, ${0.9 * lightIntensity})`;
-    ctx.lineWidth = 4;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(-8, 0);
-    ctx.lineTo(8, 0);
-    ctx.stroke();
-    
-    // Bone detail and cracks
-    ctx.strokeStyle = `rgba(200, 180, 50, ${0.7 * lightIntensity})`;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-6, -2);
-    ctx.lineTo(6, -2);
-    ctx.moveTo(-6, 2);
-    ctx.lineTo(6, 2);
-    ctx.stroke();
-    
-    // Joint nodes
-    ctx.fillStyle = `rgba(255, 235, 100, ${0.8 * lightIntensity})`;
-    ctx.beginPath();
-    ctx.arc(0, 0, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
-  };
+      const ax = (Math.cos(3 * frm) * rad * W) / H;
+      const ay = (Math.sin(4 * frm) * rad * H) / W;
 
-  // Draw tail segment with serpentine scales
-  const drawTailSegment = (ctx: CanvasRenderingContext2D, segment: any, nextSegment: any, index: number, light: any) => {
-    ctx.save();
-    
-    const lightDist = Math.sqrt((segment.x - light.x) ** 2 + (segment.y - light.y) ** 2);
-    const lightIntensity = Math.max(0.2, 1 - lightDist / 250);
-    
-    const angle = Math.atan2(nextSegment.y - segment.y, nextSegment.x - segment.x);
-    ctx.translate(segment.x, segment.y);
-    ctx.rotate(angle);
-    
-    // Tail spine
-    ctx.strokeStyle = `rgba(255, 140, 0, ${0.8 * lightIntensity})`;
-    ctx.lineWidth = Math.max(1, 6 - index);
-    ctx.beginPath();
-    ctx.moveTo(-10, 0);
-    ctx.lineTo(10, 0);
-    ctx.stroke();
-    
-    // Scale texture
-    for (let i = 0; i < 3; i++) {
-      ctx.strokeStyle = `rgba(180, 120, 20, ${0.4 * lightIntensity})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(-5 + i * 5, 0, 2, 0, Math.PI);
-      ctx.stroke();
-    }
-    
-    ctx.restore();
-  };
+      elems[0].x += (ax + pointer.x - elems[0].x) / 10;
+      elems[0].y += (ay + pointer.y - elems[0].y) / 10;
 
-  // Draw wing with realistic membrane
-  const drawWing = (ctx: CanvasRenderingContext2D, x: number, y: number, beat: number, side: string, light: any) => {
-    ctx.save();
-    
-    const lightIntensity = Math.max(0.3, 1 - Math.sqrt((x - light.x) ** 2 + (y - light.y) ** 2) / 200);
-    const wingX = side === 'left' ? x - 60 : x + 60;
-    const wingY = y + beat * 20;
-    
-    // Wing membrane (semi-transparent)
-    ctx.fillStyle = `rgba(139, 69, 19, ${0.3 * lightIntensity})`;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(wingX - 20, wingY - 30, wingX, wingY);
-    ctx.quadraticCurveTo(wingX - 10, wingY + 40, x - (side === 'left' ? 20 : -20), y + 30);
-    ctx.fill();
-    
-    // Wing bone structure
-    ctx.strokeStyle = `rgba(255, 215, 0, ${0.7 * lightIntensity})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(wingX, wingY);
-    ctx.moveTo(x, y);
-    ctx.lineTo(wingX - 10, wingY + 20);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - (side === 'left' ? 20 : -20), y + 30);
-    ctx.stroke();
-    
-    ctx.restore();
-  };
+      for (let i = 1; i < N; i++) {
+        const e = elems[i], ep = elems[i - 1];
+        const a = Math.atan2(e.y - ep.y, e.x - ep.x);
+        e.x += (ep.x - e.x + Math.cos(a) * (100 - i) / 5) / 4;
+        e.y += (ep.y - e.y + Math.sin(a) * (100 - i) / 5) / 4;
+      }
 
-  // Draw detailed dragon head
-  const drawDragonHead = (ctx: CanvasRenderingContext2D, dragon: any, light: any, time: number) => {
-    const head = dragon.head;
-    const lightIntensity = Math.max(0.4, 1 - Math.sqrt((head.x - light.x) ** 2 + (head.y - light.y) ** 2) / 150);
-    
-    ctx.save();
-    ctx.translate(head.x, head.y);
-    
-    // Head outline with gradient
-    const headGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 25);
-    headGradient.addColorStop(0, `rgba(255, 215, 0, ${0.9 * lightIntensity})`);
-    headGradient.addColorStop(1, `rgba(184, 134, 11, ${0.6 * lightIntensity})`);
-    
-    ctx.fillStyle = headGradient;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 25, 15, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.strokeStyle = `rgba(255, 235, 100, ${0.8 * lightIntensity})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Jaw movement
-    ctx.save();
-    ctx.translate(0, 8);
-    ctx.rotate(dragon.jaw.openness * 0.3);
-    
-    ctx.strokeStyle = `rgba(255, 215, 0, ${0.7 * lightIntensity})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-15, 0);
-    ctx.quadraticCurveTo(0, 8, 15, 0);
-    ctx.stroke();
-    
-    // Teeth
-    for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * lightIntensity})`;
-      ctx.beginPath();
-      ctx.moveTo(-12 + i * 6, 0);
-      ctx.lineTo(-10 + i * 6, 6);
-      ctx.lineTo(-8 + i * 6, 0);
-      ctx.fill();
-    }
-    ctx.restore();
-    
-    // Eyes with blinking and sparkle
-    const eyeOpacity = 1 - dragon.eyes.blink;
-    ctx.fillStyle = `rgba(255, 0, 0, ${0.9 * eyeOpacity * lightIntensity})`;
-    ctx.beginPath();
-    ctx.arc(-8, -5, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.fillStyle = `rgba(200, 0, 0, ${0.8 * eyeOpacity * lightIntensity})`;
-    ctx.beginPath();
-    ctx.arc(8, -5, 3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Eye sparkle effect
-    if (dragon.eyes.sparkle > 0.7) {
-      ctx.fillStyle = `rgba(255, 255, 255, ${dragon.eyes.sparkle * lightIntensity})`;
-      ctx.beginPath();
-      ctx.arc(-8, -5, 1, 0, Math.PI * 2);
-      ctx.arc(8, -5, 1, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Nostril flames
-    if (Math.random() < 0.7) {
-      ctx.fillStyle = `rgba(255, 100, 0, ${0.6 * lightIntensity})`;
-      ctx.beginPath();
-      ctx.arc(15, -2, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    ctx.restore();
-  };
+      // ── Food eating ───────────────────────────────────────────────────────
+      const headX = (elems[0].x + elems[1].x) / 2;
+      const headY = (elems[0].y + elems[1].y) / 2;
+      foods.forEach(f => {
+        if (f.eaten) return;
+        if (Math.hypot(headX - f.x, headY - f.y) < 28) {
+          f.eaten = true; score++; burst(f.x, f.y);
+        }
+      });
 
-  // Draw ribs extending from spine
-  const drawRibs = (ctx: CanvasRenderingContext2D, segment: any, index: number, light: any) => {
-    const lightIntensity = Math.max(0.2, 1 - Math.sqrt((segment.x - light.x) ** 2 + (segment.y - light.y) ** 2) / 200);
-    
-    ctx.save();
-    ctx.translate(segment.x, segment.y);
-    
-    ctx.strokeStyle = `rgba(205, 165, 55, ${0.5 * lightIntensity})`;
-    ctx.lineWidth = 1.5;
-    
-    // Upper ribs
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(-15, -20, -25, -15);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(15, -20, 25, -15);
-    ctx.stroke();
-    
-    // Lower ribs
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(-12, 15, -20, 12);
-    ctx.stroke();
-    
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(12, 15, 20, 12);
-    ctx.stroke();
-    
-    ctx.restore();
-  };
+      // ── Draw ──────────────────────────────────────────────────────────────
+      // Background
+      ctx.fillStyle = '#0a0800';
+      ctx.fillRect(0, 0, W, H);
+
+      // Ambient glow around head
+      const aura = ctx.createRadialGradient(headX, headY, 0, headX, headY, 160);
+      aura.addColorStop(0, 'rgba(255,215,0,0.09)');
+      aura.addColorStop(0.5, 'rgba(255,140,0,0.04)');
+      aura.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = aura; ctx.fillRect(0, 0, W, H);
+
+      drawGrid();
+      drawFood();
+      drawWingAt(8);
+      drawWingAt(14);
+      drawBody();
+      drawHead();
+      drawSparks();
+      drawHUD();
+
+      raf = requestAnimationFrame(loop);
+    };
+
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('mousemove', onMove);
+      canvas.removeEventListener('click', onClick);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
 
   return (
-    <div className="relative w-full h-96 bg-black rounded-xl overflow-hidden border border-yellow-600/50 shadow-2xl cursor-none">
-      {/* Mystical Background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0" style={{
+    <div
+      ref={wrapRef}
+      className="relative w-full bg-black rounded-xl overflow-hidden border border-yellow-600/50 shadow-2xl cursor-none"
+      style={{ height: '420px' }}
+    >
+      {/* Subtle crosshatch background */}
+      <div
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{
           backgroundImage: `
-            repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255, 215, 0, 0.1) 20px, rgba(255, 215, 0, 0.1) 21px),
-            repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(184, 134, 11, 0.1) 20px, rgba(184, 134, 11, 0.1) 21px)
-          `
-        }}></div>
-      </div>
-      
-      {/* Advanced Dragon Console Text */}
-      <div className="absolute top-4 left-4 text-yellow-400 font-mono text-sm space-y-1 z-10">
-        <div className="animate-pulse">{'> Advanced Physics Engine Activated...'}</div>
-        <div className="text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }}>{'> Skeletal_Dragon_v2.0 initialized'}</div>
-        <div className="text-amber-300 animate-pulse" style={{ animationDelay: '1s' }}>{'> Real-time physics simulation: ENABLED'}</div>
-        <div className="text-orange-300 animate-pulse" style={{ animationDelay: '1.5s' }}>{'> Ancient Dragon consciousness: AWAKENED'}</div>
-      </div>
-
-      {/* Advanced Dragon Canvas */}
-      <canvas 
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
-        style={{ imageRendering: 'auto' }}
+            repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,215,0,0.07) 20px, rgba(255,215,0,0.07) 21px),
+            repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(184,134,11,0.07) 20px, rgba(184,134,11,0.07) 21px)
+          `,
+        }}
       />
 
-      {/* Advanced Status Panel */}
-      <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 border border-yellow-600/40 z-10">
+      {/* Dragon canvas */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        data-testid="canvas-dragon-console"
+      />
+
+      {/* Status panel */}
+      <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 border border-yellow-600/40 z-10 pointer-events-none">
         <div className="flex justify-between items-center text-xs font-mono">
-          <span className="text-yellow-400">Physics Engine: ACTIVE</span>
+          <span className="text-yellow-400">Physics Engine: <span className="text-green-400">ACTIVE</span></span>
           <span className="text-amber-400">Skeletal Dragon v2.0</span>
           <span className="text-orange-400">Reality Level: MAXIMUM</span>
         </div>
