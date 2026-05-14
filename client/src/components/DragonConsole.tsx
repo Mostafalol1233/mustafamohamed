@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-// ─── N = 20 segments (compact tail) ──────────────────────────────────────────
-const N = 20;
+// N = 14 segments — compact body, fits well in the larger console
+const N = 14;
+
+// Scale multiplier — shrinks the entire dragon proportionally
+const SCALE_MULT = 0.52;
 
 export function DragonConsole() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -9,7 +12,6 @@ export function DragonConsole() {
   const [bootVisible, setBootVisible] = useState(true);
   const [score, setScore] = useState(0);
 
-  // Fade boot text out after 5 s
   useEffect(() => {
     const t = setTimeout(() => setBootVisible(false), 5000);
     return () => clearTimeout(t);
@@ -28,7 +30,6 @@ export function DragonConsole() {
 
     const screen = svg.querySelector('g#screen') as SVGGElement;
 
-    // ── Chain elements ────────────────────────────────────────────────────────
     const elems: { use: SVGUseElement | null; x: number; y: number }[] =
       Array.from({ length: N }, () => ({ use: null, x: W / 2, y: H / 2 }));
 
@@ -36,16 +37,16 @@ export function DragonConsole() {
     let frm = Math.random();
     let rad = 0;
 
-    // Create <use> elements — same logic as original script.js
+    // One wing at segment 6 only — uses the new single-sided Aleta1 shape
     for (let i = 1; i < N; i++) {
       const el = document.createElementNS(xmlns, 'use');
       elems[i].use = el;
-      const shape = i === 1 ? 'Cabeza' : (i === 8 || i === 14) ? 'Aletas' : 'Espina';
+      const shape = i === 1 ? 'Cabeza' : i === 6 ? 'Aleta1' : 'Espina';
       el.setAttributeNS(xlinkns, 'xlink:href', '#' + shape);
       screen.prepend(el);
     }
 
-    // ── Food ──────────────────────────────────────────────────────────────────
+    // ── Food ─────────────────────────────────────────────────────────────────
     interface FoodItem {
       g: SVGGElement;
       glowEl: SVGCircleElement;
@@ -97,7 +98,7 @@ export function DragonConsole() {
       }
     };
 
-    // ── Events ────────────────────────────────────────────────────────────────
+    // ── Events ───────────────────────────────────────────────────────────────
     const onMove = (e: MouseEvent) => {
       const r   = svg.getBoundingClientRect();
       pointer.x = e.clientX - r.left;
@@ -117,7 +118,7 @@ export function DragonConsole() {
     wrap.addEventListener('click', onClickWrap);
     window.addEventListener('resize', onResize);
 
-    // ── RAF loop — exact original physics ────────────────────────────────────
+    // ── RAF loop ──────────────────────────────────────────────────────────────
     let raf: number;
 
     const run = () => {
@@ -127,18 +128,17 @@ export function DragonConsole() {
       const ax     = (Math.cos(3 * frm) * rad * W) / H;
       const ay     = (Math.sin(4 * frm) * rad * H) / W;
 
-      // e[0] = virtual guide chasing pointer
       elems[0].x += (ax + pointer.x - elems[0].x) / 10;
       elems[0].y += (ay + pointer.y - elems[0].y) / 10;
 
-      // Body chain — identical to original script.js
       for (let i = 1; i < N; i++) {
         const e  = elems[i];
         const ep = elems[i - 1];
         const a  = Math.atan2(e.y - ep.y, e.x - ep.x);
         e.x += (ep.x - e.x + Math.cos(a) * (100 - i) / 5) / 4;
         e.y += (ep.y - e.y + Math.sin(a) * (100 - i) / 5) / 4;
-        const s = (162 + 4 * (1 - i)) / 50;
+        // Scale formula multiplied by SCALE_MULT to shrink the dragon
+        const s = ((162 + 4 * (1 - i)) / 50) * SCALE_MULT;
         e.use!.setAttributeNS(
           null, 'transform',
           `translate(${(ep.x + e.x) / 2},${(ep.y + e.y) / 2}) rotate(${(180 / Math.PI) * a}) scale(${s})`
@@ -152,20 +152,16 @@ export function DragonConsole() {
         pointer.y += (H / 2 - pointer.y) * 0.05;
       }
 
-      // Head position (midpoint of e[0] and e[1])
       const headX = (elems[0].x + elems[1].x) / 2;
       const headY = (elems[0].y + elems[1].y) / 2;
 
-      // Animate + eat food
       const now = Date.now();
       foods.forEach(f => {
         if (f.eaten) return;
-        // Pulse glow radius
         const pulse = 1 + 0.4 * Math.sin(now / 300 + f.id * 1.4);
         f.glowEl.setAttribute('r', String(14 * pulse));
         f.glowEl.setAttribute('fill', `rgba(255,200,0,${0.15 * pulse})`);
-        // Eat detection
-        if (Math.hypot(headX - f.x, headY - f.y) < 32) {
+        if (Math.hypot(headX - f.x, headY - f.y) < 24) {
           f.eaten = true;
           f.g.remove();
           localScore++;
@@ -190,7 +186,7 @@ export function DragonConsole() {
     <div
       ref={wrapRef}
       className="relative w-full bg-black rounded-xl overflow-hidden border border-yellow-600/50 shadow-2xl cursor-none"
-      style={{ height: '280px' }}
+      style={{ height: '420px' }}
     >
       {/* Crosshatch bg */}
       <div
@@ -203,16 +199,15 @@ export function DragonConsole() {
         }}
       />
 
-      {/* ── SVG Dragon (original shapes, golden palette) ────────────────────── */}
+      {/* ── SVG Dragon ────────────────────────────────────────────────────────── */}
       <svg
         ref={svgRef}
         className="absolute inset-0 w-full h-full"
         style={{ overflow: 'hidden', cursor: 'none' }}
       >
         <defs>
-          {/* ── Cabeza (Head) — white→gold, black→dark amber ── */}
-          <g id="Cabeza" transform="matrix(1,0,0,1,0,0)">
-            {/* teeth / jaw highlights */}
+          {/* ── Cabeza (Head) ── */}
+          <g id="Cabeza">
             <path
               style={{ fill: '#ffe08c', fillOpacity: 1 }}
               d="M-28.9,-1.1L-28.55 -1.95Q-28.1 -3.1 -27.25 -2.95L-26.7 -2.95Q-27.7 -1.65 -28.9 -1.1
@@ -220,7 +215,6 @@ export function DragonConsole() {
                  M-18.35,1.1Q-15.1 5.45 -9.6 5.35Q-15.1 9.55 -18.35 1.1
                  M-26.7,2.2L-27.25 2.25Q-28.1 2.4 -28.55 1.2L-28.9 0.35Q-27.7 0.9 -26.7 2.2"
             />
-            {/* main head body */}
             <path
               style={{ fill: '#1a1000', fillOpacity: 1 }}
               d="M-21.05,-8.25Q-13.6 -15.95 -1.3 -12.1Q-7.85 -8.5 -5.85 -4.35Q-2.3 -4.85 10.5 0.15
@@ -233,19 +227,52 @@ export function DragonConsole() {
             />
           </g>
 
-          {/* ── Aletas (Wings) — gradient gold→dark amber ── */}
-          <g id="Aletas" transform="matrix(1,0,0,1,0,0)">
-            <linearGradient id="GradWing" gradientUnits="userSpaceOnUse"
-              gradientTransform="matrix(0.0935974,0,0,0.188782,-20.55,0)"
-              spreadMethod="pad" x1="-819.2" y1="0" x2="819.2" y2="0">
-              <stop offset="0" style={{ stopColor: '#ffc830', stopOpacity: 1 }} />
-              <stop offset="1" style={{ stopColor: '#1a0d00', stopOpacity: 0.88 }} />
+          {/* ── Aleta1 — single wing, sweeps upward only ────────────────────── */}
+          <g id="Aleta1">
+            <linearGradient id="GradWing1" gradientUnits="userSpaceOnUse"
+              x1="-10" y1="0" x2="-10" y2="-68">
+              <stop offset="0"   style={{ stopColor: '#ffc830', stopOpacity: 1 }} />
+              <stop offset="0.6" style={{ stopColor: '#e08000', stopOpacity: 0.9 }} />
+              <stop offset="1"   style={{ stopColor: '#1a0d00', stopOpacity: 0.75 }} />
             </linearGradient>
-            <path style={{ fill: 'url(#GradWing)' }} d="M29.75,-36.85Q-17.75 -61.45 -42.05 -40.95L-45.35 -38.35L-53.7 -41.15L-51.15 -44.85Q-34.85 -68.4 21 -57.8Q-32.2 -72.1 -50.25 -50Q-53.85 -45.65 -56.05 -41.95L-64.7 -43.35L-60.6 -50.3Q-45.9 -75.55 5.1 -79.35Q-2.2 -79.8 -9.45 -79.15Q-16.2 -78.55 -22.85 -77.15Q-29.85 -75.65 -36.5 -73Q-43.05 -70.4 -48.8 -66.85Q-54.55 -63.35 -56.8 -60.3L-60.5 -55.4Q-62.95 -52.1 -67 -43.55L-70.55 -43.55L-76.35 -42.95Q-74.6 -49.1 -71.85 -54.85Q-68.9 -61.25 -64.8 -67.1Q-60.8 -73 -55.45 -77.55Q-49.9 -82.35 -43.65 -85.85L-30.6 -92.7Q-24.05 -95.95 -17 -98.25Q-63.75 -86.35 -73.65 -57.1Q-75.75 -50.75 -77.45 -42.75Q-82.9 -41.75 -88 -39.65Q-87.65 -46.65 -86.3 -53.05Q-79.8 -89.8 -36.65 -117.2Q-80.65 -94.5 -87.55 -59.55Q-88.65 -54.15 -88.95 -39.4L-89.8 -38.85L-92.7 -37.6Q-93.75 -44.35 -94.1 -51.15Q-94.4 -58.2 -93.25 -65.1Q-92.15 -72.5 -90.05 -79.65Q-88.05 -86.55 -85 -93Q-82.1 -99.3 -78.45 -105.15Q-74.6 -111.35 -70.25 -117.25Q-65.95 -123.1 -61.1 -128.55Q-70.3 -119.35 -77.9 -108.7Q-86 -97.3 -90.8 -84.05Q-95.8 -70.5 -96 -56.15Q-96.1 -46 -94.05 -36.05L-93.25 -31.55Q-93.5 -35.65 -92.35 -36Q-79.85 -42 -66.6 -40.45Q-52.45 -38.85 -39.2 -33.25Q-28.3 -29.9 -21.25 -24.15Q-17.8 -23.3 -8.6 -15.6Q-12.1 -20.75 -16.75 -24.5Q-24.55 -30.7 -34.25 -34.05L-42.55 -37Q-38.9 -41.25 -31.5 -43.25Q-24.05 -45.3 -16.2 -46.3Q-8.35 -47.35 -1 -46Q5.95 -44.75 12.75 -42.85Q19.85 -40.9 29.75 -36.85M-92.45,-27.35L-94.95 -36.25Q-109.7 -105 -27.95 -154.65Q-98.65 -103.8 -91.75 -39.4L-89.95 -40.2Q-92.2 -105.25 -5.6 -130.9Q-78.8 -99.95 -87.45 -40.9Q-83.15 -42.95 -78.45 -43.95Q-70 -101.3 17.65 -103.8Q-56.9 -93.4 -74.5 -44.55L-67.4 -45.45Q-49.1 -94.95 39.25 -75.65Q-36.75 -84.35 -62.25 -44.25L-57.3 -43.6Q-31.65 -86.5 56.15 -46.05Q-20.3 -73.35 -51.35 -41.7L-45.95 -39.75Q-17.85 -71.35 51.85 -24.8Q-8.7 -56.4 -39.75 -37.05Q-28.15 -34.05 -14.25 -24.45Q-8.6 -19.85 -5.8 -16.95Q5.95 -2.4 20 0Q5.95 2.4 -5.8 16.95Q-8.6 19.85 -14.25 24.45Q-28.15 34.05 -39.75 37.05Q-8.7 56.4 51.85 24.8Q-17.85 71.35 -45.95 39.75L-51.35 41.7Q-20.3 73.35 56.15 46.1Q-31.65 86.5 -57.3 43.65L-62.25 44.3Q-36.75 84.35 39.25 75.7Q-49.1 94.95 -67.4 45.5L-74.5 44.6Q-56.9 93.4 17.65 103.85Q-70 101.3 -78.45 43.95Q-83.15 42.95 -87.45 40.9Q-78.8 99.95 -5.6 130.9Q-92.2 105.25 -89.95 40.25L-91.75 39.4Q-98.65 103.8 -27.95 154.65Q-109.7 105 -94.95 36.3L-92.45 27.35Q-93.05 33.9 -92.05 34.75Q-91.1 35.55 -88.95 36.7L-87.95 37Q-83.7 38.25 -79.05 38.8L-77.25 38.95Q-72.55 39.3 -67.5 38.85L-65.45 38.65Q-44.4 36.05 -17.8 19.6Q-9.9 12.8 -15.15 4.4Q-18.15 3.15 -19 0Q-18.15 -3.15 -15.15 -4.4Q-9.9 -12.8 -17.8 -19.6L-17.8 -19.55Q-44.4 -36.05 -65.45 -38.6L-67.5 -38.8Q-72.55 -39.3 -77.25 -38.95L-79.05 -38.75Q-83.7 -38.25 -87.95 -36.95L-88.95 -36.65Q-91.1 -35.55 -92.05 -34.7Q-93.05 -33.9 -92.45 -27.35M-8.6,15.6Q-17.8 23.3 -21.25 24.2Q-28.3 29.9 -39.2 33.3Q-52.45 38.85 -66.6 40.5Q-79.85 42 -92.35 36Q-93.5 35.65 -93.25 31.55L-94.05 36.1Q-96.1 46.05 -96 56.15Q-95.8 70.5 -90.8 84.1Q-86 97.3 -77.9 108.75Q-70.3 119.35 -61.1 128.6Q-65.95 123.1 -70.25 117.25Q-74.6 111.35 -78.45 105.15Q-82.1 99.3 -85 93Q-88.05 86.55 -90.05 79.7Q-92.15 72.5 -93.25 65.1Q-94.4 58.2 -94.1 51.2Q-93.75 44.35 -92.7 37.6L-89.8 38.9L-88.95 39.45Q-88.65 54.15 -87.55 59.55Q-80.65 94.5 -36.65 117.25Q-79.8 89.8 -86.3 53.1Q-87.65 46.65 -88 39.65Q-82.9 41.75 -77.45 42.75Q-75.75 50.75 -73.65 57.15Q-63.75 86.35 -17 98.3Q-24.05 95.95 -30.6 92.75L-43.65 85.9Q-49.9 82.35 -55.45 77.6Q-60.8 73 -64.8 67.15Q-68.9 61.25 -71.85 54.85Q-74.6 49.1 -76.35 42.95L-70.55 43.6L-67 43.6Q-62.95 52.1 -60.5 55.4L-56.8 60.35Q-54.55 63.35 -48.8 66.9Q-43.05 70.4 -36.5 73Q-29.85 75.65 -22.85 77.15Q-16.2 78.55 -9.45 79.15Q-2.2 79.8 5.1 79.35Q-45.9 75.55 -60.6 50.3L-64.7 43.4L-56.05 41.95Q-53.85 45.65 -50.25 50Q-32.2 72.1 21 57.85Q-34.85 68.4 -51.15 44.85L-53.7 41.2L-45.35 38.35L-42.05 40.95Q-17.75 61.45 29.75 36.85Q19.85 40.9 12.75 42.9Q5.95 44.75 -1 46Q-8.35 47.35 -16.2 46.35Q-24.05 45.3 -31.5 43.3Q-38.9 41.25 -42.55 37.05L-34.25 34.05Q-24.55 30.7 -16.75 24.5Q-12.1 20.75 -8.6 15.6" />
+
+            {/* Main membrane — single upward wing */}
+            <path
+              style={{ fill: 'url(#GradWing1)' }}
+              d="M0,0
+                 Q-6,-14 -14,-28
+                 Q-20,-42 -16,-60
+                 Q-8,-72  4,-68
+                 Q16,-64  20,-50
+                 Q24,-36  16,-22
+                 Q10,-12   0,0 Z"
+            />
+
+            {/* Wing ribs — thin gold lines */}
+            <line x1="0" y1="0" x2="-14" y2="-58"
+              stroke="rgba(255,180,0,0.45)" strokeWidth="0.9" strokeLinecap="round" />
+            <line x1="0" y1="0" x2="16" y2="-52"
+              stroke="rgba(255,150,0,0.35)" strokeWidth="0.7" strokeLinecap="round" />
+            <line x1="0" y1="0" x2="4" y2="-68"
+              stroke="rgba(200,100,0,0.3)"  strokeWidth="0.6" strokeLinecap="round" />
+
+            {/* Wing tip claw */}
+            <path
+              d="M4,-68 L0,-76 M4,-68 L10,-74"
+              stroke="rgba(255,190,0,0.5)" strokeWidth="0.8" strokeLinecap="round"
+              fill="none"
+            />
+
+            {/* Subtle edge highlight */}
+            <path
+              d="M0,0 Q-6,-14 -14,-28 Q-20,-42 -16,-60 Q-8,-72 4,-68"
+              stroke="rgba(255,220,80,0.3)" strokeWidth="0.6"
+              fill="none" strokeLinecap="round"
+            />
           </g>
 
           {/* ── Espina (Spine) — gold gradient ── */}
-          <g id="Espina" transform="matrix(1,0,0,1,0,0)">
+          <g id="Espina">
             <linearGradient id="GradSpineUp" gradientUnits="userSpaceOnUse"
               gradientTransform="matrix(0.0229492,0,0,-0.0152893,0,0.05)"
               spreadMethod="pad" x1="-819.2" y1="0" x2="819.2" y2="0">
@@ -269,11 +296,10 @@ export function DragonConsole() {
           </g>
         </defs>
 
-        {/* All <use> elements are prepended here by the effect */}
         <g id="screen" />
       </svg>
 
-      {/* ── Boot text overlay (fades after 5 s) ────────────────────────────── */}
+      {/* ── Boot text overlay ─────────────────────────────────────────────────── */}
       <div
         className="absolute top-4 left-4 font-mono text-sm space-y-1 z-10 pointer-events-none transition-opacity duration-1000"
         style={{ opacity: bootVisible ? 1 : 0 }}
@@ -283,7 +309,7 @@ export function DragonConsole() {
           {'> Skeletal_Dragon_v2.0 initialized'}
         </div>
         <div className="text-amber-300 animate-pulse" style={{ animationDelay: '1s' }}>
-          {'> Real-time physics simulation: ENABLED'}
+          {'> Single-Wing Mode: ENGAGED'}
         </div>
         <div className="text-orange-300 animate-pulse" style={{ animationDelay: '1.5s' }}>
           {'> Ancient Dragon consciousness: AWAKENED'}
@@ -303,7 +329,7 @@ export function DragonConsole() {
         </div>
       )}
 
-      {/* ── Status panel ────────────────────────────────────────────────────── */}
+      {/* ── Status panel ──────────────────────────────────────────────────────── */}
       <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 border border-yellow-600/40 z-10 pointer-events-none">
         <div className="flex justify-between items-center text-xs font-mono">
           <span className="text-yellow-400">Physics Engine: <span className="text-green-400">ACTIVE</span></span>
@@ -312,7 +338,7 @@ export function DragonConsole() {
         </div>
         <div className="flex justify-between items-center text-xs font-mono mt-1 opacity-70">
           <span className="text-green-400">Spring Physics: ON</span>
-          <span className="text-blue-400">Spinal Flexibility: ON</span>
+          <span className="text-yellow-300">Wing Mode: SINGLE</span>
           <span className="text-red-400">Fire Breath: ON</span>
         </div>
       </div>
