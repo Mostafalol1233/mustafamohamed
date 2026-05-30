@@ -320,7 +320,6 @@ export default function ContactSection() {
                           color: "#e6edf3",
                           caretColor: "#e6edf3",
                         }}
-                        autoFocus
                         autoComplete="off"
                         spellCheck={false}
                         data-testid="input-terminal"

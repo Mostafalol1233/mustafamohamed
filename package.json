@@ -68,7 +68,7 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.453.0",
-    "marked": "^18.0.3",
+    "marked": "^18.0.4",
     "memoizee": "^0.4.17",
     "memorystore": "^1.6.7",
     "multer": "^2.0.0",

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mustafa Mohamed — Resume</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 10.5pt; }
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.5;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 48px 52px;
+    }
+
+    /* ── Header ── */
+    header { margin-bottom: 22px; }
+    h1 {
+      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      font-size: 24pt;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #111;
+      margin-bottom: 4px;
+    }
+    .tagline {
+      font-size: 10.5pt;
+      color: #444;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .contact-row {
+      font-family: 'Arial', sans-serif;
+      font-size: 9pt;
+      color: #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 18px;
+    }
+    .contact-row a { color: #1a5fb4; text-decoration: none; }
+    .contact-row a:hover { text-decoration: underline; }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1.5px solid #222;
+      margin: 14px 0 16px;
+    }
+    .section-divider {
+      border-top: 0.5px solid #ccc;
+      margin: 10px 0 14px;
+    }
+
+    /* ── Section heading ── */
+    h2 {
+      font-family: 'Arial', 'Helvetica Neue', sans-serif;
+      font-size: 10pt;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #111;
+      margin-bottom: 10px;
+    }
+
+    /* ── Section ── */
+    section { margin-bottom: 20px; }
+
+    /* ── Summary ── */
+    .summary { font-size: 10pt; color: #222; line-height: 1.6; }
+
+    /* ── Experience / Project entry ── */
+    .entry { margin-bottom: 14px; }
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .entry-title {
+      font-family: 'Arial', sans-serif;
+      font-weight: 700;
+      font-size: 10.5pt;
+      color: #111;
+    }
+    .entry-date {
+      font-family: 'Arial', sans-serif;
+      font-size: 9pt;
+      color: #555;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .entry-sub {
+      font-family: 'Arial', sans-serif;
+      font-size: 9.5pt;
+      color: #444;
+      font-style: italic;
+      margin-bottom: 5px;
+    }
+    ul {
+      padding-left: 16px;
+      list-style-type: disc;
+    }
+    ul li {
+      font-size: 9.5pt;
+      color: #222;
+      margin-bottom: 3px;
+      line-height: 1.55;
+    }
+
+    /* ── Skills ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 5px 12px;
+      font-size: 9.5pt;
+    }
+    .skill-label {
+      font-family: 'Arial', sans-serif;
+      font-weight: 700;
+      color: #111;
+    }
+    .skill-value { color: #333; }
+
+    /* ── Certs ── */
+    .cert-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 9.5pt;
+    }
+    .cert-name { font-weight: 600; font-family: 'Arial', sans-serif; color: #111; }
+    .cert-issuer { color: #444; font-style: italic; }
+    .cert-date { color: #555; font-size: 9pt; white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Print ── */
+    @media print {
+      body { padding: 28px 36px; }
+      a { color: #1a5fb4 !important; }
+      @page { margin: 0.5in 0.6in; size: Letter; }
+    }
+
+    /* ── Download bar (screen only) ── */
+    .print-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #111;
+      color: #fff;
+      font-family: 'Arial', sans-serif;
+      font-size: 11px;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 999;
+    }
+    .print-bar button {
+      background: #fff;
+      color: #111;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 14px;
+      cursor: pointer;
+      font-family: 'Arial', sans-serif;
+    }
+    .print-bar button:hover { background: #e5e5e5; }
+    @media print { .print-bar { display: none; } }
+    body { padding-top: 68px; }
+    @media print { body { padding-top: 48px; } }
+  </style>
+</head>
+<body>
+
+<div class="print-bar">
+  <span>To save as PDF: click Print → change destination to "Save as PDF"</span>
+  <button onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header>
+  <h1>Mustafa Mohamed</h1>
+  <p class="tagline">Full-Stack Developer &amp; Content Strategist</p>
+  <div class="contact-row">
+    <span><a href="mailto:overthegardenwall317@gmail.com">overthegardenwall317@gmail.com</a></span>
+    <span><a href="https://github.com/Bemora" target="_blank">github.com/Bemora</a></span>
+    <span><a href="https://linkedin.com/in/mustafa-bemo" target="_blank">linkedin.com/in/mustafa-bemo</a></span>
+    <span><a href="https://x.com/Bemora_BEMO" target="_blank">x.com/Bemora_BEMO</a></span>
+  </div>
+</header>
+
+<hr />
+
+<!-- ══════════════════ SUMMARY ══════════════════ -->
+<section>
+  <h2>Professional Summary</h2>
+  <p class="summary">
+    Self-driven full-stack developer with 4+ years building production web applications — from database design and
+    REST APIs to pixel-level UI. I work primarily in React, TypeScript, and Node.js, and I have a strong habit of
+    shipping things rather than perfecting them in isolation. Alongside development, I run digital-content projects
+    for gaming and e-commerce brands, which means I understand both the technical and the audience side of a product.
+    I care about readable code, honest timelines, and building things that actually get used.
+  </p>
+</section>
+
+<!-- ══════════════════ SKILLS ══════════════════ -->
+<section>
+  <h2>Technical Skills</h2>
+  <div class="skills-grid">
+    <span class="skill-label">Frontend</span>
+    <span class="skill-value">React, TypeScript, Next.js, Tailwind CSS, Shadcn/UI, Radix UI, Framer Motion, HTML5, CSS3</span>
+
+    <span class="skill-label">Backend</span>
+    <span class="skill-value">Node.js, Express, REST API design, PostgreSQL, Supabase, Drizzle ORM, MongoDB</span>
+
+    <span class="skill-label">Tooling</span>
+    <span class="skill-value">Git, GitHub Actions, Vite, Docker (basic), Vercel, Netlify, Railway, Linux CLI</span>
+
+    <span class="skill-label">AI &amp; Automation</span>
+    <span class="skill-value">OpenAI / Claude APIs, prompt engineering, LLM integration, workflow automation</span>
+
+    <span class="skill-label">Design</span>
+    <span class="skill-value">Figma, responsive/mobile-first layouts, accessibility, UI/UX principles</span>
+
+    <span class="skill-label">Content</span>
+    <span class="skill-value">YouTube content strategy, Arabic &amp; English copywriting, SEO basics, social media growth</span>
+  </div>
+</section>
+
+<!-- ══════════════════ EXPERIENCE ══════════════════ -->
+<section>
+  <h2>Experience</h2>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">Freelance Full-Stack Developer</span>
+      <span class="entry-date">2021 – Present</span>
+    </div>
+    <p class="entry-sub">Independent / Remote — Various clients</p>
+    <ul>
+      <li>Delivered 12+ client and personal web projects from initial brief through to production deployment,
+          covering frontend, backend, and database layers.</li>
+      <li>Built a multi-tenant gaming community platform (BRAVEZM) handling real-time leaderboard data and
+          a custom admin panel; currently serving active daily users.</li>
+      <li>Developed an Arabic-first educational platform (Ahmed Helly Academy) with course management and
+          a clean enrollment flow — built with Next.js and PostgreSQL.</li>
+      <li>Created BMO Tools, an Arabic-language utility suite with RTL layout, keyboard shortcuts, and
+          offline-capable features — reached 1,000+ monthly sessions within 3 months of launch.</li>
+      <li>Managed full deployment pipelines on Vercel and Netlify, including environment variable management,
+          preview deployments, and custom domain configuration.</li>
+      <li>Regularly integrated third-party APIs: Supabase Auth, Stripe (basic), OpenAI, and social OAuth.</li>
+    </ul>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">Digital Content Creator &amp; Brand Strategist</span>
+      <span class="entry-date">2020 – Present</span>
+    </div>
+    <p class="entry-sub">Bemora — Self-directed brand (YouTube, X, Web)</p>
+    <ul>
+      <li>Grew the Bemora YouTube channel covering gaming and tech content, building an engaged audience
+          through consistent uploads and data-driven topic selection.</li>
+      <li>Managed brand partnerships and community growth across YouTube and X, handling content calendar,
+          editing workflow, and analytics review each month.</li>
+      <li>Built and maintained bemora.netlify.app — the brand's landing page — iterating on it based on
+          real visitor data and feedback from the community.</li>
+      <li>Developed content strategies for two gaming communities (BRAVEZM and BestyBoy), focusing on
+          retention and organic growth rather than paid promotion.</li>
+    </ul>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">E-commerce Web Developer</span>
+      <span class="entry-date">2022 – 2023</span>
+    </div>
+    <p class="entry-sub">Diaa Elden Shop &amp; MR Mohammed — Client projects</p>
+    <ul>
+      <li>Built product catalog and storefront pages for two independent e-commerce clients, with custom
+          filtering, mobile-first design, and WhatsApp-based order flow.</li>
+      <li>Handled image optimization and page speed improvements that reduced load time from ~4 s to under
+          1.5 s on mobile.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════ PROJECTS ══════════════════ -->
+<section>
+  <h2>Selected Projects</h2>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">Personal Portfolio — mustaf.vercel.app</span>
+      <span class="entry-date">2024 – 2025</span>
+    </div>
+    <ul>
+      <li>Designed and built a full-stack portfolio site with React, TypeScript, Express, and Supabase —
+          featuring a custom admin dashboard for managing projects, reviews, and certificates.</li>
+      <li>Implemented an interactive terminal-style contact form, multi-language support (Arabic/English),
+          and a custom blog engine with Markdown rendering.</li>
+      <li>Configured CI/CD via Vercel with automatic preview URLs per pull request.</li>
+    </ul>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">Eco Eats — Food Waste Awareness Campaign</span>
+      <span class="entry-date">2023</span>
+    </div>
+    <ul>
+      <li>Created a public-facing awareness web app promoting sustainable food consumption, with interactive
+          statistics, actionable tips, and a shareable pledge form.</li>
+      <li>Used animated scroll-based reveals and a mobile-first layout to maximize engagement on social
+          traffic sources.</li>
+    </ul>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">OneTeam — Team Collaboration SaaS</span>
+      <span class="entry-date">2024</span>
+    </div>
+    <ul>
+      <li>Built the marketing site and onboarding flow for a team management product deployed at
+          oneteamss.vercel.app.</li>
+      <li>Integrated Supabase Auth for user sign-up / sign-in and wrote the initial project and member
+          management API routes in Express.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════ CERTIFICATIONS ══════════════════ -->
+<section>
+  <h2>Certifications</h2>
+
+  <div class="cert-entry">
+    <span><span class="cert-name">Responsive Web Design</span> <span class="cert-issuer">— freeCodeCamp</span></span>
+    <span class="cert-date">2022</span>
+  </div>
+  <div class="cert-entry">
+    <span><span class="cert-name">JavaScript Algorithms and Data Structures</span> <span class="cert-issuer">— freeCodeCamp</span></span>
+    <span class="cert-date">2022</span>
+  </div>
+  <div class="cert-entry">
+    <span><span class="cert-name">Front End Development Libraries</span> <span class="cert-issuer">— freeCodeCamp</span></span>
+    <span class="cert-date">2023</span>
+  </div>
+  <div class="cert-entry">
+    <span><span class="cert-name">Back End Development and APIs</span> <span class="cert-issuer">— freeCodeCamp</span></span>
+    <span class="cert-date">2023</span>
+  </div>
+  <div class="cert-entry">
+    <span><span class="cert-name">React — The Complete Guide</span> <span class="cert-issuer">— Udemy / Academind</span></span>
+    <span class="cert-date">2023</span>
+  </div>
+  <div class="cert-entry">
+    <span><span class="cert-name">Node.js, Express, MongoDB &amp; More</span> <span class="cert-issuer">— Udemy / Jonas Schmedtmann</span></span>
+    <span class="cert-date">2024</span>
+  </div>
+</section>
+
+<!-- ══════════════════ EDUCATION ══════════════════ -->
+<section>
+  <h2>Education</h2>
+  <div class="entry">
+    <div class="entry-header">
+      <span class="entry-title">Self-Directed Study — Web Development &amp; Computer Science</span>
+      <span class="entry-date">2021 – Present</span>
+    </div>
+    <p class="entry-sub">Online (freeCodeCamp, Udemy, The Odin Project, MDN Web Docs)</p>
+    <ul>
+      <li>Completed structured curricula in full-stack web development, algorithms, and data structures.</li>
+      <li>Applied learning immediately to real client and personal projects — each certificate was earned
+          alongside live work, not in isolation.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══════════════════ LANGUAGES ══════════════════ -->
+<section>
+  <h2>Languages</h2>
+  <div class="skills-grid">
+    <span class="skill-label">Arabic</span>
+    <span class="skill-value">Native</span>
+    <span class="skill-label">English</span>
+    <span class="skill-value">Professional — strong written and spoken communication in technical contexts</span>
+  </div>
+</section>
+
+</body>
+</html>
