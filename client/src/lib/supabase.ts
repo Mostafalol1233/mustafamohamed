@@ -198,6 +198,86 @@ export async function deleteBlogPost(id: number) {
   if (error) throw new Error(error.message);
 }
 
+// ─── Profile Settings ─────────────────────────────────────────────────────────
+
+export interface ProfileSettings {
+  id: number;
+  displayName: string;
+  role: string;
+  email: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  whatsappUrl: string;
+  contactQuote: string;
+  isAvailable: boolean;
+  avatarUrl: string | null;
+  logoText: string;
+  siteName: string;
+}
+
+const PROFILE_DEFAULTS: ProfileSettings = {
+  id: 1,
+  displayName: "Mustafa Mohamed",
+  role: "Full-Stack Developer",
+  email: "overthegardenwall317@gmail.com",
+  githubUrl: "https://github.com/Bemora",
+  linkedinUrl: "https://linkedin.com/in/mustafa-bemo",
+  whatsappUrl: "https://wa.me/",
+  contactQuote: "I build things that didn't exist before I opened my editor.",
+  isAvailable: true,
+  avatarUrl: null,
+  logoText: "M",
+  siteName: "mmohamed ~/.",
+};
+
+function toProfileSettings(r: any): ProfileSettings {
+  return {
+    id: r.id ?? 1,
+    displayName: r.display_name ?? PROFILE_DEFAULTS.displayName,
+    role: r.role ?? PROFILE_DEFAULTS.role,
+    email: r.email ?? PROFILE_DEFAULTS.email,
+    githubUrl: r.github_url ?? PROFILE_DEFAULTS.githubUrl,
+    linkedinUrl: r.linkedin_url ?? PROFILE_DEFAULTS.linkedinUrl,
+    whatsappUrl: r.whatsapp_url ?? PROFILE_DEFAULTS.whatsappUrl,
+    contactQuote: r.contact_quote ?? PROFILE_DEFAULTS.contactQuote,
+    isAvailable: r.is_available ?? PROFILE_DEFAULTS.isAvailable,
+    avatarUrl: r.avatar_url ?? null,
+    logoText: r.logo_text ?? PROFILE_DEFAULTS.logoText,
+    siteName: r.site_name ?? PROFILE_DEFAULTS.siteName,
+  };
+}
+
+export async function fetchProfileSettings(): Promise<ProfileSettings> {
+  try {
+    const { data, error } = await supabase
+      .from("profile_settings")
+      .select("*")
+      .eq("id", 1)
+      .single();
+    if (error || !data) return PROFILE_DEFAULTS;
+    return toProfileSettings(data);
+  } catch {
+    return PROFILE_DEFAULTS;
+  }
+}
+
+export async function updateProfileSettings(settings: Partial<Omit<ProfileSettings, "id">>) {
+  const patch: Record<string, any> = { id: 1 };
+  if (settings.displayName  !== undefined) patch.display_name  = settings.displayName;
+  if (settings.role         !== undefined) patch.role          = settings.role;
+  if (settings.email        !== undefined) patch.email         = settings.email;
+  if (settings.githubUrl    !== undefined) patch.github_url    = settings.githubUrl;
+  if (settings.linkedinUrl  !== undefined) patch.linkedin_url  = settings.linkedinUrl;
+  if (settings.whatsappUrl  !== undefined) patch.whatsapp_url  = settings.whatsappUrl;
+  if (settings.contactQuote !== undefined) patch.contact_quote = settings.contactQuote;
+  if (settings.isAvailable  !== undefined) patch.is_available  = settings.isAvailable;
+  if (settings.avatarUrl    !== undefined) patch.avatar_url    = settings.avatarUrl;
+  if (settings.logoText     !== undefined) patch.logo_text     = settings.logoText;
+  if (settings.siteName     !== undefined) patch.site_name     = settings.siteName;
+  const { error } = await supabase.from("profile_settings").upsert(patch);
+  if (error) throw new Error(error.message);
+}
+
 // Notifications CRUD (admin)
 export async function createNotification(n: { title: string; message: string; type?: string }) {
   const { data, error } = await supabase.from("notifications").insert([{

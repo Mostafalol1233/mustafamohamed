@@ -30,66 +30,31 @@ function useTypewriter(words: string[], speed = 75, pause = 2000) {
   return display;
 }
 
-type Tok = { t: string; c: string };
-const K  = (t: string): Tok => ({ t, c: "#ff7b72" });
-const FN = (t: string): Tok => ({ t, c: "#d2a8ff" });
-const BI = (t: string): Tok => ({ t, c: "#79c0ff" });
-const OP = (t: string): Tok => ({ t, c: "#e6edf3" });
-const CM = (t: string): Tok => ({ t, c: "#8b949e" });
-const ST = (t: string): Tok => ({ t, c: "#a5d6ff" });
-const NM = (t: string): Tok => ({ t, c: "#f8c555" });
 
-const CODE_LINES: Tok[][] = [
-  [CM("# game_ai/pathfinder.py")],
-  [K("import"), OP(" heapq")],
-  [],
-  [K("def "), FN("a_star"), OP("(grid, start, goal):")],
-  [OP("    h "), K("= lambda"), OP(" n: "), BI("abs"), OP("(n["), NM("0"), OP("]-goal["), NM("0"), OP("]) + "), BI("abs"), OP("(n["), NM("1"), OP("]-goal["), NM("1"), OP("])")],
-  [OP("    pq = [("), NM("0"), OP(", start)]")],
-  [OP("    dist, prev = {start: "), NM("0"), OP("}, {}")],
-  [],
-  [K("    while"), OP(" pq:")],
-  [OP("        _, cur = heapq."), BI("heappop"), OP("(pq)")],
-  [K("        if"), OP(" cur == goal:"), K(" return"), OP(" "), BI("build_path"), OP("(prev, cur)")],
-  [K("        for"), OP(" dx, dy "), K("in"), OP(" (("), NM("0"), OP(","), NM("1"), OP("),("), NM("1"), OP(","), NM("0"), OP("),("), NM("0"), OP(",-"), NM("1"), OP("),(-"), NM("1"), OP(","), NM("0"), OP(")):")],
-  [OP("            nb = (cur["), NM("0"), OP("]+dx, cur["), NM("1"), OP("]+dy)")],
-  [K("            if"), OP(" grid."), BI("walkable"), OP("(nb) "), K("and"), OP(" dist[cur]+"), NM("1"), OP(" < dist."), BI("get"), OP("(nb, "), NM("9e9"), OP("):")],
-  [OP("                prev[nb] = cur; dist[nb] = dist[cur]+"), NM("1")],
-  [OP("                heapq."), BI("heappush"), OP("(pq, (dist[nb] + h(nb), nb))")],
-];
-
-function CodeCard() {
+function QuoteCard() {
   return (
     <motion.div
       initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.4 }}
-      className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 w-[400px] flex-col"
-      style={{ background: "#0d1117", border: "1px solid #30363d", borderRadius: "14px", overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.35)" }}
+      className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 w-80 flex-col"
+      style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: "16px", overflow: "hidden", boxShadow: "0 24px 60px rgba(0,0,0,0.35)" }}
     >
-      <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: "1px solid #21262d" }}>
-        <span className="w-3 h-3 rounded-full" style={{ background: "#ff5f57" }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: "#febc2e" }} />
-        <span className="w-3 h-3 rounded-full" style={{ background: "#28c840" }} />
-        <span className="ml-3 text-xs select-none" style={{ color: "#8b949e", fontFamily: "monospace" }}>game_ai/pathfinder.py</span>
-        <span className="ml-auto text-xs px-2 py-0.5 rounded" style={{ background: "#1f2937", color: "#58a6ff", fontFamily: "monospace" }}>Python</span>
-      </div>
-      <div className="p-4 overflow-auto" style={{ fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace", fontSize: "11px", lineHeight: "1.75" }}>
-        {CODE_LINES.map((line, i) => (
-          <div key={i} className="flex">
-            <span className="select-none w-5 mr-3 text-right flex-shrink-0" style={{ color: "#30363d" }}>{i + 1}</span>
-            <span>
-              {line.length === 0
-                ? <>&nbsp;</>
-                : line.map((tok, j) => <span key={j} style={{ color: tok.c }}>{tok.t}</span>)
-              }
-            </span>
+      <div style={{ height: "3px", background: "linear-gradient(90deg, #58a6ff 0%, #bc8cff 50%, #3fb950 100%)" }} />
+
+      <div className="p-6 flex flex-col gap-5">
+        <div style={{ borderLeft: "2px solid #30363d", paddingLeft: "14px" }}>
+          <p style={{ color: "#c9d1d9", fontSize: "13.5px", lineHeight: "1.8", fontWeight: 400, letterSpacing: "0.01em" }}>
+            The difference between the novice and the master is that the master has failed more times than the novice has tried.
+          </p>
+        </div>
+
+        <div style={{ borderTop: "1px solid #161b22", paddingTop: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#161b22", border: "1px solid #30363d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
+            🎯
           </div>
-        ))}
-        <div className="mt-3 pt-3 flex items-center gap-2" style={{ borderTop: "1px solid #21262d" }}>
-          <span style={{ color: "#3fb950", fontSize: "10px", fontFamily: "monospace" }}>● ALGO</span>
-          <span style={{ color: "#484f58", fontSize: "10px" }}>·</span>
-          <span style={{ color: "#58a6ff", fontSize: "10px", fontFamily: "monospace" }}>A* Search</span>
-          <span style={{ color: "#484f58", fontSize: "10px" }}>·</span>
-          <span style={{ color: "#8b949e", fontSize: "10px", fontFamily: "monospace" }}>O(E log V)</span>
+          <div>
+            <p style={{ color: "#58a6ff", fontSize: "12px", fontWeight: 600, letterSpacing: "0.03em" }}>Korosensei</p>
+            <p style={{ color: "#484f58", fontSize: "11px", marginTop: "2px", fontStyle: "italic" }}>Assassination Classroom</p>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -180,7 +145,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      <CodeCard />
+      <QuoteCard />
     </section>
   );
 }

@@ -1,0 +1,3 @@
+- [Profile settings table](profile-settings-table.md) — profile_settings SQL needed in Supabase before admin Profile tab works; falls back to defaults if missing.
+- [Theme 3-state](theme-3-state.md) — useTheme now cycles light→dark→system; always use `mode` not `isDark` to drive the toggle icon.
+- [SkillsSection modules](skills-modules.md) — consolidated from 8 to 5 modules (frontend/backend/languages/tools/specialty); scanLines count is 25, not 36.

@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import {
   fetchProjects, fetchBlogPosts, fetchNotifications,
-  fetchMessages, getAdminUser, toNotification, supabase,
+  fetchMessages, getAdminUser, toNotification, supabase, fetchProfileSettings,
 } from "@/lib/supabase";
 
 export async function apiRequest(
@@ -34,8 +34,9 @@ async function resolveQuery(url: string): Promise<unknown> {
     if (error) throw new Error(error.message);
     return (data ?? []).map(toNotification);
   }
-  if (url === "/api/contact")  return fetchMessages();
-  if (url === "/api/auth/user") return getAdminUser();
+  if (url === "/api/contact")          return fetchMessages();
+  if (url === "/api/auth/user")         return getAdminUser();
+  if (url === "/api/profile-settings")  return fetchProfileSettings();
 
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) {

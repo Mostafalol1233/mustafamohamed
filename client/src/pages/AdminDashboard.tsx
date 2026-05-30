@@ -8,7 +8,7 @@ import {
 import {
   LayoutDashboard, FolderOpen, Star, MessageSquare, Award, Bell, BarChart2,
   Download, Settings, LogOut, Plus, Trash2, CheckCircle, Eye, EyeOff,
-  RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink,
+  RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink, User, Save, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import type { Project, ContactMessage, Notification, BlogPost } from "@shared/schema";
 import {
@@ -16,8 +16,10 @@ import {
   createProject, updateProject, deleteProject,
   createBlogPost, updateBlogPost, deleteBlogPost,
   createNotification, deleteNotification,
+  updateProfileSettings,
   supabase,
 } from "@/lib/supabase";
+import type { ProfileSettings } from "@/lib/supabase";
 import { queryClient as qcInstance } from "@/lib/queryClient";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -93,6 +95,7 @@ const TABS = [
   { id: "articles",      label: "Articles",       icon: FileText },
   { id: "messages",      label: "Messages",       icon: MessageSquare },
   { id: "notifications", label: "Notifications",  icon: Bell },
+  { id: "profile",       label: "Profile",        icon: User },
   { id: "analytics",     label: "Analytics",      icon: BarChart2 },
   { id: "settings",      label: "Settings",       icon: Settings },
 ] as const;
@@ -709,6 +712,124 @@ function AnalyticsTab() {
   );
 }
 
+// ─── Profile Tab ──────────────────────────────────────────────────────────────
+
+function ProfileTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: profile } = useQuery<ProfileSettings>({ queryKey: ["/api/profile-settings"] });
+
+  const [form, setForm] = useState<Partial<Omit<ProfileSettings, "id">>>({});
+  const [saved, setSaved] = useState(false);
+
+  const set = (k: keyof Omit<ProfileSettings, "id">, v: any) =>
+    setForm(f => ({ ...f, [k]: v }));
+
+  const val = (k: keyof Omit<ProfileSettings, "id">) =>
+    form[k] !== undefined ? form[k] : (profile?.[k] ?? "");
+
+  const saveMut = useMutation({
+    mutationFn: () => updateProfileSettings(form),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/profile-settings"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      toast({ title: "Profile saved" });
+      setForm({});
+    },
+    onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
+  });
+
+  const Field = ({ label, field, placeholder, type = "text" }: {
+    label: string; field: keyof Omit<ProfileSettings, "id">; placeholder?: string; type?: string;
+  }) => (
+    <div>
+      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+      <input
+        type={type}
+        value={val(field) as string}
+        onChange={e => set(field, e.target.value)}
+        placeholder={placeholder}
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+      />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 max-w-xl">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-gray-900">Profile & Contact</h2>
+        <Btn onClick={() => saveMut.mutate()} disabled={saveMut.isPending || Object.keys(form).length === 0}>
+          {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> Save Changes</>}
+        </Btn>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <h3 className="font-medium text-gray-900 text-sm">Identity</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Display Name" field="displayName" placeholder="Mustafa Mohamed" />
+          <Field label="Role / Title" field="role" placeholder="Full-Stack Developer" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Logo Text (nav)" field="logoText" placeholder="M" />
+          <Field label="Site Name (nav)" field="siteName" placeholder="mmohamed ~/." />
+        </div>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <h3 className="font-medium text-gray-900 text-sm">Contact Links</h3>
+        <Field label="Email" field="email" placeholder="you@example.com" type="email" />
+        <Field label="GitHub URL" field="githubUrl" placeholder="https://github.com/username" />
+        <Field label="LinkedIn URL" field="linkedinUrl" placeholder="https://linkedin.com/in/..." />
+        <Field label="WhatsApp URL" field="whatsappUrl" placeholder="https://wa.me/+1234567890" />
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <h3 className="font-medium text-gray-900 text-sm">Card Quote & Status</h3>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Contact Section Quote</label>
+          <textarea
+            rows={2}
+            value={val("contactQuote") as string}
+            onChange={e => set("contactQuote", e.target.value)}
+            placeholder="I build things that didn't exist before I opened my editor."
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Avatar URL (optional)</label>
+          <input
+            type="url"
+            value={val("avatarUrl") as string}
+            onChange={e => set("avatarUrl", e.target.value || null)}
+            placeholder="https://..."
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+          />
+        </div>
+        <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+          <div>
+            <p className="text-sm font-medium text-gray-900">Available for new projects</p>
+            <p className="text-xs text-gray-500">Controls the green dot on your contact card</p>
+          </div>
+          <button
+            onClick={() => set("isAvailable", !(val("isAvailable") as boolean))}
+            className="text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            {val("isAvailable")
+              ? <ToggleRight size={28} className="text-green-500" />
+              : <ToggleLeft size={28} className="text-gray-400" />
+            }
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 leading-relaxed">
+        <strong>Note:</strong> Run this SQL in your Supabase SQL Editor first if the profile table doesn't exist yet. See the code sent in the chat below.
+      </div>
+    </div>
+  );
+}
+
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
 function SettingsTab() {
@@ -835,6 +956,7 @@ export default function AdminDashboard() {
     articles:      <ArticlesTab />,
     messages:      <MessagesTab />,
     notifications: <NotificationsTab />,
+    profile:       <ProfileTab />,
     analytics:     <AnalyticsTab />,
     settings:      <SettingsTab />,
   };

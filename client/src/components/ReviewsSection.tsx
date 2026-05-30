@@ -1,233 +1,111 @@
-import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
 
-const REVIEWS_EN = [
-  { id: "031", name: "Karim Hassan",    title: "Community Manager",     company: "BRAVEZM Gaming",      quote: "Delivered exactly what we needed, on time and with clean code. Highly recommend." },
-  { id: "029", name: "Dr. Sara Mahmoud", title: "Academic Director",    company: "Ahmed Helly Academy", quote: "Enrollment inquiries more than doubled after launch. Clean, professional, and trustworthy." },
-  { id: "027", name: "Omar Khalid",     title: "Esports Coordinator",   company: "BestyBoy Gaming",     quote: "Turned our concept into a platform our community genuinely loves. Fast and detail-oriented." },
-  { id: "024", name: "Layla Ibrahim",   title: "Campaign Lead",         company: "Eco Eats",            quote: "He understood our mission and built something that resonated with our audience immediately." },
-  { id: "021", name: "Ahmed Fawzy",     title: "Product Owner",         company: "BMO Tools",           quote: "RTL-ready, fully responsive, and zero bugs on launch day. Exactly what we asked for." },
-  { id: "018", name: "Natasha Reed",    title: "Managing Director",     company: "MR Mohammed",         quote: "Professional from start to finish. The site impressed our entire team on first review." },
+const BRANDS = [
+  { name: "BRAVEZM Gaming",      initials: "BZ", color: "#ff4444" },
+  { name: "BestyBoy Gaming",     initials: "BB", color: "#ff6b35" },
+  { name: "Ahmed Helly Academy", initials: "AH", color: "#4f9eff" },
+  { name: "Eco Eats",            initials: "EE", color: "#22c55e" },
+  { name: "BMO Tools",           initials: "BM", color: "#a855f7" },
+  { name: "OneTeam",             initials: "OT", color: "#f59e0b" },
+  { name: "Bemora",              initials: "BR", color: "#06b6d4" },
+  { name: "MR Mohammed",         initials: "MM", color: "#ec4899" },
+  { name: "Diaa Elden Shop",     initials: "DE", color: "#84cc16" },
 ];
 
-const REVIEWS_AR = [
-  { id: "031", name: "كريم حسن",        title: "مدير مجتمع",              company: "BRAVEZM Gaming",       quote: "سلّم بالظبط اللي احنا محتاجينه، في الوقت المحدد وبكود نضيف. بنصح بيه جداً." },
-  { id: "029", name: "د. سارة محمود",   title: "مدير أكاديمي",            company: "أكاديمية أحمد هيلي",   quote: "استفسارات التسجيل زادت أكتر من ضعفين بعد الإطلاق. شغل نضيف ومحترف وجدير بالثقة." },
-  { id: "027", name: "عمر خالد",        title: "منسق رياضات إلكترونية",  company: "BestyBoy Gaming",      quote: "حوّل فكرتنا لمنصة مجتمعنا بيحبها فعلاً. سريع ومهتم بأدق التفاصيل." },
-  { id: "024", name: "ليلى إبراهيم",    title: "مسؤولة حملات",            company: "Eco Eats",             quote: "فهم رسالتنا وبنى حاجة لاقت صدى عند جمهورنا فوراً." },
-  { id: "021", name: "أحمد فوزي",       title: "مالك المنتج",             company: "BMO Tools",            quote: "جاهز للـ RTL، متجاوب تماماً، وصفر أخطاء يوم الإطلاق. بالظبط اللي طلبناه." },
-  { id: "018", name: "ناتاشا ريد",      title: "مدير تنفيذي",             company: "MR Mohammed",          quote: "محترف من أول لآخر. الموقع أدهش كل فريقنا من أول نظرة." },
+const STATS = [
+  { value: "9+",   label: "projects delivered" },
+  { value: "100%", label: "on-time delivery" },
+  { value: "0",    label: "launch-day bugs" },
+  { value: "4+",   label: "years active" },
 ];
 
-function githubHandle(name: string) {
-  const parts = name.replace(/^د\.\s*/, "").split(" ");
-  return parts.length >= 2
-    ? `@${parts[0].toLowerCase()}_${parts[1].toLowerCase()}`
-    : `@${parts[0].toLowerCase()}`;
+function BrandChip({ name, initials, color, dark }: { name: string; initials: string; color: string; dark: boolean }) {
+  const bg     = dark ? "#0d1117" : "#ffffff";
+  const border = dark ? "#21262d" : "#e5e7eb";
+  const text   = dark ? "#e6edf3" : "#111827";
+  const sub    = dark ? "#484f58" : "#9ca3af";
+
+  return (
+    <div
+      className="flex items-center gap-3 px-5 py-3 rounded-xl flex-shrink-0 select-none"
+      style={{ background: bg, border: `1px solid ${border}`, boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.25)" : "0 2px 12px rgba(0,0,0,0.06)" }}
+    >
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        style={{ background: color }}
+      >
+        {initials}
+      </div>
+      <div>
+        <p className="text-sm font-semibold whitespace-nowrap" style={{ color: text }}>{name}</p>
+        <p className="text-xs whitespace-nowrap" style={{ color: sub }}>client project</p>
+      </div>
+    </div>
+  );
 }
 
 export default function ReviewsSection() {
   const { isDark } = useTheme();
-  const { lang, t } = useLang();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { t } = useLang();
 
-  const reviews = lang === "ar" ? REVIEWS_AR : REVIEWS_EN;
-
-  const bg        = isDark ? "#0d1117"  : "#ffffff";
-  const headerBg  = isDark ? "#161b22"  : "#f6f8fa";
-  const border    = isDark ? "#21262d"  : "#d0d7de";
-  const textPri   = isDark ? "#e6edf3"  : "#24292f";
-  const textSec   = isDark ? "#8b949e"  : "#57606a";
-  const textFaint = isDark ? "#484f58"  : "#8c959f";
-  const rowHover  = isDark ? "rgba(22,27,34,0.6)" : "rgba(246,248,250,0.7)";
+  const bg    = isDark ? "#080c12" : "#f9fafb";
+  const text  = isDark ? "#e6edf3" : "#111827";
+  const muted = isDark ? "#8b949e" : "#6b7280";
+  const statBorder = isDark ? "#21262d" : "#e5e7eb";
+  const statBg     = isDark ? "#0d1117" : "#ffffff";
 
   return (
-    <section id="reviews" className="section-padding bg-background border-t border-border">
-      <div className="container-max mb-10">
+    <section id="reviews" className="section-padding border-t border-border overflow-hidden" style={{ background: bg }}>
+      <div className="container-max mb-12">
         <span className="section-eyebrow">{t.reviews.eyebrow}</span>
-        <h2 className="section-title">{t.reviews.title}</h2>
-        <p className="section-subtitle">{t.reviews.subtitle}</p>
+        <h2 className="section-title" style={{ color: text }}>Built for real clients</h2>
+        <p className="section-subtitle" style={{ color: muted }}>
+          From gaming communities to e-commerce platforms — shipped, live, and used by real people.
+        </p>
       </div>
 
-      <div className="container-max">
-        <div
-          style={{
-            border: `1px solid ${border}`,
-            borderRadius: 10,
-            overflow: "hidden",
-            background: bg,
-            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-          }}
-        >
-          {/* Terminal / repo header */}
-          <div
-            style={{
-              background: headerBg,
-              borderBottom: `1px solid ${border}`,
-              padding: "10px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
-            <span className="w-3 h-3 rounded-full" style={{ background: "#ff5f57", flexShrink: 0 }} />
-            <span className="w-3 h-3 rounded-full" style={{ background: "#febc2e", flexShrink: 0 }} />
-            <span className="w-3 h-3 rounded-full" style={{ background: "#28c840", flexShrink: 0 }} />
-            <span style={{ color: textSec, fontSize: 12, marginLeft: 8 }}>
-              $ git log --clients --merged --rating=5
-            </span>
-            <span
-              style={{
-                marginLeft: "auto",
-                color: "#3fb950",
-                fontSize: 11,
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-              }}
-            >
-              <span
-                style={{
-                  width: 6, height: 6, borderRadius: "50%",
-                  background: "#3fb950", display: "inline-block",
-                }}
-              />
-              {reviews.length} merged
-            </span>
-          </div>
-
-          {/* Issue list */}
-          {reviews.map((r, i) => (
-            <div
-              key={r.id}
-              data-testid={`card-review-${r.id}`}
-              onMouseEnter={() => setHoveredId(r.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              style={{
-                borderBottom: i < reviews.length - 1 ? `1px solid ${border}` : "none",
-                padding: "14px 16px",
-                display: "flex",
-                gap: 12,
-                background: hoveredId === r.id ? rowHover : "transparent",
-                transition: "background 0.15s ease",
-                cursor: "default",
-              }}
-            >
-              {/* Merged checkmark */}
-              <div style={{ flexShrink: 0, marginTop: 1 }}>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    background: "rgba(63,185,80,0.12)",
-                    border: "1px solid rgba(63,185,80,0.28)",
-                    color: "#3fb950",
-                    fontSize: 10,
-                    fontWeight: 700,
-                  }}
-                >
-                  ✓
-                </span>
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Title row */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 5,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "#3fb950",
-                      fontSize: 10,
-                      fontFamily: "monospace",
-                      background: "rgba(63,185,80,0.1)",
-                      border: "1px solid rgba(63,185,80,0.2)",
-                      borderRadius: 4,
-                      padding: "1px 7px",
-                      letterSpacing: "0.03em",
-                    }}
-                  >
-                    merged
-                  </span>
-                  <span style={{ color: textFaint, fontSize: 11, fontFamily: "monospace" }}>
-                    #{r.id}
-                  </span>
-                  <span style={{ color: textPri, fontSize: 13, fontWeight: 600 }}>
-                    {r.company}
-                  </span>
-                  <span
-                    style={{
-                      color: "#818cf8",
-                      fontSize: 10,
-                      background: "rgba(129,140,248,0.1)",
-                      border: "1px solid rgba(129,140,248,0.2)",
-                      borderRadius: 4,
-                      padding: "1px 7px",
-                    }}
-                  >
-                    {r.title}
-                  </span>
-                </div>
-
-                {/* Quote */}
-                <p
-                  style={{
-                    color: textSec,
-                    fontSize: 12,
-                    lineHeight: 1.7,
-                    marginBottom: 7,
-                    paddingLeft: 14,
-                    borderLeft: `2px solid ${border}`,
-                  }}
-                >
-                  {r.quote}
-                </p>
-
-                {/* Meta row */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 11,
-                    color: textFaint,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span style={{ color: "#58a6ff" }}>{githubHandle(r.name)}</span>
-                  <span>·</span>
-                  <span>{r.name}</span>
-                  <span style={{ marginLeft: "auto", color: "#f59e0b", letterSpacing: 2 }}>★★★★★</span>
-                </div>
-              </div>
+      {/* Stats row */}
+      <div className="container-max mb-14">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {STATS.map(({ value, label }) => (
+            <div key={label} className="rounded-xl p-5 text-center" style={{ background: statBg, border: `1px solid ${statBorder}` }}>
+              <div className="text-3xl font-bold mb-1" style={{ color: "hsl(var(--primary))" }}>{value}</div>
+              <div className="text-xs font-medium" style={{ color: muted }}>{label}</div>
             </div>
           ))}
+        </div>
+      </div>
 
-          {/* Footer */}
+      {/* Scrolling marquee */}
+      <div className="relative">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: `linear-gradient(to right, ${bg}, transparent)` }} />
+        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: `linear-gradient(to left, ${bg}, transparent)` }} />
+
+        <div className="overflow-hidden">
           <div
+            className="flex gap-4"
             style={{
-              background: headerBg,
-              borderTop: `1px solid ${border}`,
-              padding: "8px 16px",
+              animation: "marquee 30s linear infinite",
+              width: "max-content",
             }}
           >
-            <span style={{ color: textFaint, fontSize: 11, fontFamily: "monospace" }}>
-              {`> ${reviews.length} issues closed · avg rating 5.0 · 0 bugs reported`}
-            </span>
+            {[...BRANDS, ...BRANDS, ...BRANDS].map((b, i) => (
+              <BrandChip key={i} {...b} dark={isDark} />
+            ))}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(calc(-100% / 3)); }
+        }
+      `}</style>
     </section>
   );
 }

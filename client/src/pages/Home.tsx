@@ -6,8 +6,47 @@ import PortfolioSection from "@/components/PortfolioSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import BlogSection from "@/components/BlogSection";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, X, Info, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import type { Notification } from "@shared/schema";
+
+function AnnouncementBanner() {
+  const { data: notifs = [] } = useQuery<Notification[]>({ queryKey: ["/api/notifications"] });
+  const [dismissed, setDismissed] = useState<number[]>([]);
+
+  const active = notifs.filter(n => n.isActive && !dismissed.includes(n.id));
+  if (active.length === 0) return null;
+
+  const n = active[0];
+  const configs: Record<string, { bg: string; border: string; text: string; sub: string; Icon: any }> = {
+    info:    { bg: "hsl(211 90% 57% / 0.08)", border: "hsl(211 90% 57% / 0.25)", text: "#58a6ff", sub: "#8b949e", Icon: Info },
+    success: { bg: "hsl(140 60% 40% / 0.08)", border: "hsl(140 60% 40% / 0.25)", text: "#3fb950", sub: "#8b949e", Icon: CheckCircle },
+    warning: { bg: "hsl(36 95% 60% / 0.08)",  border: "hsl(36 95% 60% / 0.25)",  text: "#e3b341", sub: "#8b949e", Icon: AlertTriangle },
+    error:   { bg: "hsl(0 62% 50% / 0.08)",   border: "hsl(0 62% 50% / 0.25)",   text: "#f85149", sub: "#8b949e", Icon: XCircle },
+  };
+  const c = configs[n.type] ?? configs.info;
+
+  return (
+    <div
+      className="fixed top-16 left-0 right-0 z-40 px-4 py-2.5 flex items-center gap-3"
+      style={{ background: c.bg, borderBottom: `1px solid ${c.border}`, backdropFilter: "blur(8px)" }}
+    >
+      <c.Icon size={14} style={{ color: c.text, flexShrink: 0 }} />
+      <div className="flex-1 flex items-center gap-2 min-w-0">
+        <span className="text-sm font-semibold" style={{ color: c.text }}>{n.title}</span>
+        <span className="text-sm" style={{ color: c.sub }}>{n.message}</span>
+      </div>
+      <button
+        onClick={() => setDismissed(d => [...d, n.id])}
+        className="flex-shrink-0 p-0.5 rounded hover:opacity-70 transition-opacity"
+        style={{ color: c.sub }}
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -62,6 +101,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background" dir="ltr">
       <Navigation />
+      <AnnouncementBanner />
       <main>
         <HeroSection />
         <SkillsSection />

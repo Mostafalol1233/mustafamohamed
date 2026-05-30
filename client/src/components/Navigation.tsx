@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Settings, Moon, Sun, Globe } from "lucide-react";
+import { Menu, X, Settings, Moon, Sun, Monitor, Globe } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 
 export default function Navigation({ showAdminButton = false }: { showAdminButton?: boolean }) {
-  const { isDark, toggle: toggleTheme } = useTheme();
+  const { isDark, mode: themeMode, toggle: toggleTheme } = useTheme();
   const { lang, setLang, t } = useLang();
   const [, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -142,14 +142,16 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
                 <Globe className="w-4 h-4" />
               </button>
 
-              {/* Dark mode */}
+              {/* Theme cycle: light → dark → system */}
               <button
                 onClick={toggleTheme}
                 className={utilBtn}
-                title={isDark ? "Light mode" : "Dark mode"}
+                title={themeMode === "light" ? "Switch to dark" : themeMode === "dark" ? "Follow system" : "Switch to light"}
                 data-testid="nav-theme"
               >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {themeMode === "light"  && <Moon className="w-4 h-4" />}
+                {themeMode === "dark"   && <Sun className="w-4 h-4" />}
+                {themeMode === "system" && <Monitor className="w-4 h-4" />}
               </button>
 
               {/* Admin */}
