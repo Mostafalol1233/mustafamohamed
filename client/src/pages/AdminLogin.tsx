@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { adminLogin } from "@/lib/supabase";
-import { queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function AdminLogin() {
   const { toast } = useToast();
@@ -15,7 +14,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     try {
-      await adminLogin(email, password);
+      await apiRequest("POST", "/api/admin/login", { email, password });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: "Welcome back!", description: "Logged in successfully." });
       setLocation("/admin");
@@ -32,7 +31,7 @@ export default function AdminLogin() {
         <div className="mb-8 text-center">
           <div className="w-12 h-12 rounded-xl bg-foreground flex items-center justify-center text-background font-bold text-xl mx-auto mb-4">M</div>
           <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
-          <p className="text-sm text-muted-foreground mt-1">Sign in with your Supabase account</p>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to your dashboard</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -40,7 +39,7 @@ export default function AdminLogin() {
             <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
             <input
               type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              placeholder="you@example.com"
+              placeholder="admin@portfolio.com"
               className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
