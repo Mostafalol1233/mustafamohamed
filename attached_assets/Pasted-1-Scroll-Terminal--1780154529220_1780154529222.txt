@@ -1,0 +1,71 @@
+1. مشكلة الـ Scroll التلقائي في الـ Terminal (الكونسول)
+السبب في المشكلة دي إن الكونسول غالباً معمول فيه حركة إن أول ما يخلص كتابة الـ text (الـ Typing effect) بيعمل focus() على الـ input أو بيعمل scrollIntoView() تلقائي عشان يوريك آخر السطر، فده بيجبر المتصفح إنه ينزل لآخر الصفحة أول ما تفتح!
+
+عشان تخليني أحلها لك بالكود، انسخ الرسالة دي وابعتها في شات جديد أو هنا مع الكود بتاع الـ Contact component:
+
+"I have a bug in my React portfolio. In the Contact section (which is styled as a Terminal/Console), when the page initially loads and the terminal finishes rendering or animating, it automatically scrolls the entire window down to the bottom of the page, bypassing the Hero section. I want the page to stay at the top on load, and only scroll if the user explicitly interacts with the terminal. Here is my code:"
+[حط الكود بتاع الكونسول هنا]
+
+2. الـ CV المحترم اللي بيعدي الـ ATS (أنظمة الفرز الآلي)
+عشان الـ CV بتاعك يعدي من الـ ATS (Applicant Tracking Systems) ويتقبل من غير ما الذكاء الاصطناعي يرفضه، لازم تلتزم بقواعد صارمة جداً:
+
+أ) القواعد الأساسية للـ ATS (الشكل والنظام)
+ابدأ من الصفر: الـ ATS بيكره الألوان الكتير، الجداول المعقدة، الأعمدة (Two columns)، والـ Progress bars. الـ CV لازم يكون صفحة واحدة، عمود واحد (Single Column)، خلفية بيضاء، خط أسود كلاسيك (زي Arial أو Times New Roman).
+
+صيغة الملف: ارفعه دايماً بصيغة PDF، وتأكد إن الكلام ينفع يتعلم عليه ويتنسخ (مش متثبت كصورة).
+
+ب) اللينكات اللي لازم تحطها في الـ CV
+تحطها فوق خالص تحت اسمك مباشرة وبتكون Text عادي جواه Hyperlink:
+
+GitHub: أساسي ومهم جداً، والـ HR التقني بيدخل يشوف الكود والـ Commits بتاعتك.
+
+LinkedIn: البروفايل المهني بتاعك (لازم يكون متظبط وكاتب فيه نفس تفاصيل الـ CV).
+
+Portfolio Link: لينك موقعك الشخصي اللي شغالين عليه ده.
+
+Email & Phone Number: وسيلة التواصل الأساسية (مع كتابة كود الدولة +20).
+
+Twitter/X: تحطه فقط لو بتنزل عليه محتوى تقني، نصائح برمجة، أو بتشارك في الـ Tech Community. لو أكونت شخصي للهزار والميمز شيله فوراً.
+
+ج) يكتب فيه إيه بالظبط؟ (الهيكل الاحترافي)
+رتب الـ CV بتاعك بالترتيب ده بالظبط بالإنجليزية:
+
+1. Header (البيانات الشخصية)
+Mustafa Mohamed
+Full-Stack Developer | [Email] | [Phone] | [LinkedIn] | [GitHub] | [Portfolio]
+
+2. Summary (الملخص المهني)
+سيرتين ذاتيتين محترمتين من سطرين لثلاثة بدون كلام منفوخ:
+
+"Detail-oriented Full-Stack Developer with hands-on experience in building scalable web applications and community-driven platforms. Proficient in modern JavaScript frameworks, optimizing database performance, and creating secure payment integrations. Passionate about writing clean, maintainable code and solving complex architectural challenges."
+
+3. Technical Skills (المهارات التقنية)
+اكتبها في سطور سادة (Bullet points) متقسمة صح عشان الـ ATS بيلقط الـ Keywords دي:
+
+Languages: JavaScript (ES6+), TypeScript, HTML5, CSS3, SQL.
+
+Frontend: React.js, Next.js, Tailwind CSS, Redux Toolkit.
+
+Backend & Databases: Node.js, Express.js, MongoDB, PostgreSQL, RESTful APIs.
+
+Tools & Platforms: Git, GitHub, Linux/Terminal, Paymob Integration, SEO Optimization.
+
+4. Experience & Projects (المشاريع والخبرة)
+الـ ATS بيموت في الـ Action Verbs (أفعال الحركة) والأرقام. رتب مشاريعك الكبيرة (زي منصة الشحن أو الـ Wiki) بالشكل ده:
+
+[Project Name / Platform] — Full-Stack Developer & Admin
+
+Developed and deployed a fully functional e-commerce platform and community wiki, managing end-to-end development.
+
+Integrated Paymob payment gateway, securing seamless transactions and improving user checkout experience.
+
+Optimized platform SEO and performance, leading to increased organic traffic and faster page load speeds.
+
+Designed and managed a scalable database architecture using [MongoDB/SQL] to handle user data efficiently.
+
+5. Education (التعليم)
+بما إنك في مرحلة الدراسة الثانوية (Languages - Math branch)، اكتبها بشكل شيك وبسيط يوضح إنك شغال على نفسك بجانب الدراسة:
+
+High School Diploma (Mathematics Branch) — [School Name] | Expected Graduation: 2026.
+
+(اختياري) ضيف سطر تحتها لو واخد شهادات معتمدة: Self-Taught in Software Engineering through verified online specializations (e.g., Meta, Google, or freeCodeCamp).

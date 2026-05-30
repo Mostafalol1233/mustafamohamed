@@ -70,7 +70,7 @@ export default function ContactSection() {
     }
     setBusy(false);
     if (next) setStep(next);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 50);
   };
 
   const progressBar = (): Promise<void> =>

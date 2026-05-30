@@ -162,8 +162,11 @@ export default function HeroSection() {
 
           {/* Divider */}
           <div style={{ borderTop: "1px solid #21262d", paddingTop: "14px" }}>
-            <p style={{ color: "#8b949e", fontSize: "11px", fontFamily: "monospace", letterSpacing: "0.04em" }}>
-              — a reminder I keep close
+            <p style={{ color: "#58a6ff", fontSize: "11px", fontFamily: "monospace", letterSpacing: "0.04em" }}>
+              — Korosensei
+            </p>
+            <p style={{ color: "#484f58", fontSize: "10px", fontFamily: "monospace", marginTop: "2px" }}>
+              Assassination Classroom
             </p>
           </div>
         </div>
