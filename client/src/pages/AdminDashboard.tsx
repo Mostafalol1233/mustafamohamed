@@ -11,16 +11,40 @@ import {
   RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink, User, Save, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import type { Project, ContactMessage, Notification, BlogPost } from "@shared/schema";
-import {
-  adminLogin, adminLogout, getAdminUser,
-  createProject, updateProject, deleteProject,
-  createBlogPost, updateBlogPost, deleteBlogPost,
-  createNotification, deleteNotification,
-  updateProfileSettings,
-  supabase,
-} from "@/lib/supabase";
-import type { ProfileSettings } from "@/lib/supabase";
-import { queryClient as qcInstance } from "@/lib/queryClient";
+import { apiRequest, queryClient as qcInstance } from "@/lib/queryClient";
+
+interface ProfileSettings {
+  id: number;
+  displayName: string;
+  role: string;
+  email: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  whatsappUrl: string;
+  contactQuote: string;
+  isAvailable: boolean;
+  avatarUrl: string | null;
+  logoText: string;
+  siteName: string;
+}
+
+async function expressLogin(email: string, password: string) {
+  const res = await fetch("/api/admin/login", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: "Login failed" }));
+    throw new Error(err.message || "Invalid credentials");
+  }
+  return res.json();
+}
+
+async function expressLogout() {
+  await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -166,43 +190,51 @@ function OverviewTab() {
 function ProjectsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: projects = [], isLoading } = useQuery<Project[]>({ queryKey: ["/api/admin/projects"] });
+  const { data: projects = [], isLoading } = useQuery<Project[]>({ queryKey: ["/api/projects/all"] });
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({ title: "", description: "", technologies: "", liveUrl: "", githubUrl: "", imageUrl: "", isVisible: true });
   const [showForm, setShowForm] = useState(false);
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+    qc.invalidateQueries({ queryKey: ["/api/projects/all"] });
     qc.invalidateQueries({ queryKey: ["/api/projects"] });
   };
 
   const createMut = useMutation({
-    mutationFn: () => createProject({
-      title: form.title, description: form.description,
-      technologies: form.technologies.split(",").map(t => t.trim()).filter(Boolean),
-      liveUrl: form.liveUrl, githubUrl: form.githubUrl, imageUrl: form.imageUrl,
-    }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/projects", {
+        title: form.title, description: form.description,
+        technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
+        liveUrl: form.liveUrl || null, githubUrl: form.githubUrl || null, isVisible: true,
+      });
+      return res.json();
+    },
     onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Project created" }); },
     onError: (e: any) => toast({ title: "Failed to create project", description: e.message, variant: "destructive" }),
   });
 
   const updateMut = useMutation({
-    mutationFn: (id: number) => updateProject(id, {
-      title: form.title, description: form.description,
-      technologies: form.technologies.split(",").map(t => t.trim()).filter(Boolean),
-      liveUrl: form.liveUrl, githubUrl: form.githubUrl, imageUrl: form.imageUrl, isVisible: form.isVisible,
-    }),
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("PATCH", `/api/projects/${id}`, {
+        title: form.title, description: form.description,
+        technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
+        liveUrl: form.liveUrl || null, githubUrl: form.githubUrl || null, isVisible: form.isVisible,
+      });
+      return res.json();
+    },
     onSuccess: () => { invalidate(); setEditId(null); setShowForm(false); toast({ title: "Project updated" }); },
     onError: (e: any) => toast({ title: "Failed to update", description: e.message, variant: "destructive" }),
   });
 
   const toggleMut = useMutation({
-    mutationFn: ({ id, isVisible }: { id: number; isVisible: boolean }) => updateProject(id, { isVisible }),
+    mutationFn: async ({ id, isVisible }: { id: number; isVisible: boolean }) => {
+      await apiRequest("PATCH", `/api/projects/${id}`, { isVisible });
+    },
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: number) => deleteProject(id),
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/projects/${id}`); },
     onSuccess: () => { invalidate(); toast({ title: "Project deleted" }); },
     onError: (e: any) => toast({ title: "Failed to delete", description: e.message, variant: "destructive" }),
   });
@@ -313,7 +345,7 @@ function ProjectsTab() {
 function ArticlesTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({ queryKey: ["/api/admin/blog"] });
+  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({ queryKey: ["/api/blog/all"] });
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({
@@ -322,39 +354,48 @@ function ArticlesTab() {
   });
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/admin/blog"] });
+    qc.invalidateQueries({ queryKey: ["/api/blog/all"] });
     qc.invalidateQueries({ queryKey: ["/api/blog"] });
   };
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
   const createMut = useMutation({
-    mutationFn: () => createBlogPost({
-      ...form,
-      tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
-      slug: form.slug || slugify(form.title),
-    }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/blog", {
+        ...form,
+        tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+        slug: form.slug || slugify(form.title),
+        author: "Mustafa Mohamed",
+      });
+      return res.json();
+    },
     onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Article created" }); },
     onError: (e: any) => toast({ title: "Failed to create article", description: e.message, variant: "destructive" }),
   });
 
   const updateMut = useMutation({
-    mutationFn: (id: number) => updateBlogPost(id, {
-      ...form,
-      tags: form.tags.split(",").map(t => t.trim()).filter(Boolean),
-    }),
+    mutationFn: async (id: number) => {
+      const res = await apiRequest("PATCH", `/api/blog/${id}`, {
+        ...form,
+        tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+      });
+      return res.json();
+    },
     onSuccess: () => { invalidate(); setShowForm(false); setEditId(null); resetForm(); toast({ title: "Article updated" }); },
     onError: (e: any) => toast({ title: "Failed to update article", description: e.message, variant: "destructive" }),
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: number) => deleteBlogPost(id),
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/blog/${id}`); },
     onSuccess: () => { invalidate(); toast({ title: "Article deleted" }); },
     onError: (e: any) => toast({ title: "Failed to delete", description: e.message, variant: "destructive" }),
   });
 
   const togglePublish = useMutation({
-    mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) => updateBlogPost(id, { isPublished }),
+    mutationFn: async ({ id, isPublished }: { id: number; isPublished: boolean }) => {
+      await apiRequest("PATCH", `/api/blog/${id}`, { isPublished });
+    },
     onSuccess: invalidate,
   });
 
@@ -500,16 +541,14 @@ function MessagesTab() {
 
   const readMut = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from("contact_messages").update({ is_read: true }).eq("id", id);
-      if (error) throw new Error(error.message);
+      await apiRequest("PATCH", `/api/contact/${id}/read`, {});
     },
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from("contact_messages").delete().eq("id", id);
-      if (error) throw new Error(error.message);
+      await apiRequest("DELETE", `/api/contact/${id}`);
     },
     onSuccess: () => { invalidate(); setSelected(null); toast({ title: "Message deleted" }); },
   });
@@ -574,31 +613,32 @@ function MessagesTab() {
 function NotificationsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: notifs = [], isLoading } = useQuery<Notification[]>({ queryKey: ["/api/admin/notifications"] });
+  const { data: notifs = [], isLoading } = useQuery<Notification[]>({ queryKey: ["/api/notifications/all"] });
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", message: "", type: "info" as "info" | "success" | "warning" | "error" });
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/admin/notifications"] });
+    qc.invalidateQueries({ queryKey: ["/api/notifications/all"] });
     qc.invalidateQueries({ queryKey: ["/api/notifications"] });
   };
 
   const createMut = useMutation({
-    mutationFn: () => createNotification(form),
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/notifications", form);
+    },
     onSuccess: () => { invalidate(); setShowForm(false); setForm({ title: "", message: "", type: "info" }); toast({ title: "Notification created" }); },
     onError: (e: any) => toast({ title: "Failed to create", description: e.message, variant: "destructive" }),
   });
 
   const toggleMut = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      const { error } = await supabase.from("notifications").update({ is_active: isActive }).eq("id", id);
-      if (error) throw new Error(error.message);
+      await apiRequest("PATCH", `/api/notifications/${id}`, { isActive });
     },
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: number) => deleteNotification(id),
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/notifications/${id}`); },
     onSuccess: () => { invalidate(); toast({ title: "Notification deleted" }); },
   });
 
@@ -729,7 +769,9 @@ function ProfileTab() {
     form[k] !== undefined ? form[k] : (profile?.[k] ?? "");
 
   const saveMut = useMutation({
-    mutationFn: () => updateProfileSettings(form),
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/profile-settings", form);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/profile-settings"] });
       setSaved(true);
@@ -823,9 +865,6 @@ function ProfileTab() {
         </div>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 leading-relaxed">
-        <strong>Note:</strong> Run this SQL in your Supabase SQL Editor first if the profile table doesn't exist yet. See the code sent in the chat below.
-      </div>
     </div>
   );
 }
@@ -838,22 +877,18 @@ function SettingsTab() {
       <h2 className="font-semibold text-gray-900">Settings</h2>
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 max-w-md">
-        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2"><Key size={14} /> Admin Password</h3>
+        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2"><Key size={14} /> Admin Credentials</h3>
         <p className="text-xs text-blue-700 leading-relaxed">
-          Your login is managed via <strong>Supabase Auth</strong>.<br /><br />
-          To change your password: <a href="https://supabase.com/dashboard/project/fvuaiwxfdgerjbuszgpf/auth/users" target="_blank" rel="noopener noreferrer" className="underline">open Supabase Auth Users</a> → find your email → Reset password.
+          Your admin login is managed via the Express server session.<br /><br />
+          Credentials are configured in <code className="bg-blue-100 px-1 rounded">server/adminAuth.ts</code>. Default: <code className="bg-blue-100 px-1 rounded">admin@portfolio.com</code>.
         </p>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-md space-y-2">
         <h3 className="font-semibold text-gray-900 text-sm">Database</h3>
         <p className="text-xs text-gray-500">
-          All portfolio data is stored in Supabase. Browse and edit rows directly in the Table Editor.
+          All portfolio data is stored in your local PostgreSQL database via Drizzle ORM. Use the <code className="bg-gray-100 px-1 rounded">DATABASE_URL</code> environment variable to connect.
         </p>
-        <a href="https://supabase.com/dashboard/project/fvuaiwxfdgerjbuszgpf/editor" target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline">
-          <ExternalLink size={13} /> Open Table Editor
-        </a>
       </div>
     </div>
   );
@@ -873,7 +908,7 @@ function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await adminLogin(form.email, form.password);
+      await expressLogin(form.email, form.password);
       qc.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: "Welcome back!" });
     } catch (e: any) {
@@ -935,7 +970,7 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logoutMut = useMutation({
-    mutationFn: adminLogout,
+    mutationFn: expressLogout,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: "Logged out" });

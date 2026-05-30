@@ -618,6 +618,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch { res.status(500).json({ message: "Bulk delete failed" }); }
   });
 
+  // ── Profile Settings ─────────────────────────────────────────────────────────
+
+  app.get("/api/profile-settings", async (req, res) => {
+    try {
+      const all = await storage.getAllSiteSettings();
+      const m: Record<string, string> = {};
+      for (const s of all) m[s.key] = s.value;
+      res.json({
+        id: 1,
+        displayName:  m.display_name   ?? "Mustafa Mohamed",
+        role:         m.role           ?? "Full-Stack Developer",
+        email:        m.email          ?? "overthegardenwall317@gmail.com",
+        githubUrl:    m.github_url     ?? "https://github.com/Bemora",
+        linkedinUrl:  m.linkedin_url   ?? "https://linkedin.com/in/mustafa-bemo",
+        whatsappUrl:  m.whatsapp_url   ?? "https://wa.me/",
+        contactQuote: m.contact_quote  ?? "I build things that didn't exist before I opened my editor.",
+        isAvailable:  m.available_for_projects !== "false",
+        avatarUrl:    m.profile_image_url ?? null,
+        logoText:     m.logo_text      ?? "M",
+        siteName:     m.site_name      ?? "mmohamed ~/.",
+      });
+    } catch { res.status(500).json({ message: "Failed to fetch profile settings" }); }
+  });
+
+  app.post("/api/profile-settings", requireAdminAuth, async (req, res) => {
+    try {
+      const { displayName, role, email, githubUrl, linkedinUrl, whatsappUrl, contactQuote,
+              isAvailable, avatarUrl, logoText, siteName } = req.body;
+      const pairs: [string, string][] = [];
+      if (displayName  !== undefined) pairs.push(["display_name",          String(displayName)]);
+      if (role         !== undefined) pairs.push(["role",                  String(role)]);
+      if (email        !== undefined) pairs.push(["email",                 String(email)]);
+      if (githubUrl    !== undefined) pairs.push(["github_url",            String(githubUrl)]);
+      if (linkedinUrl  !== undefined) pairs.push(["linkedin_url",          String(linkedinUrl)]);
+      if (whatsappUrl  !== undefined) pairs.push(["whatsapp_url",          String(whatsappUrl)]);
+      if (contactQuote !== undefined) pairs.push(["contact_quote",         String(contactQuote)]);
+      if (isAvailable  !== undefined) pairs.push(["available_for_projects", String(isAvailable)]);
+      if (avatarUrl    !== undefined) pairs.push(["profile_image_url",     String(avatarUrl ?? "")]);
+      if (logoText     !== undefined) pairs.push(["logo_text",             String(logoText)]);
+      if (siteName     !== undefined) pairs.push(["site_name",             String(siteName)]);
+      for (const [k, v] of pairs) await storage.upsertSiteSetting(k, v);
+      res.json({ message: "Profile settings saved" });
+    } catch { res.status(500).json({ message: "Failed to save profile settings" }); }
+  });
+
   // ── Blog Posts ────────────────────────────────────────────────────────────────
 
   app.get("/api/blog", async (req, res) => {

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Mail, Download } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
-import { getDailyQuote } from "@/data/animeQuotes";
+import { getDailyWisdom } from "@/data/wisdomQuotes";
 
 const ROLES_EN = ["Full-Stack Developer", "Game Developer", "Bot & Automation Engineer", "Software Engineer"];
 const ROLES_AR = ["مطور ويب متكامل", "مطور ألعاب", "مهندس أتمتة وبوتات", "مهندس برمجيات"];
@@ -33,7 +33,7 @@ function useTypewriter(words: string[], speed = 75, pause = 2000) {
 }
 
 function QuoteCard() {
-  const quote = getDailyQuote();
+  const quote = getDailyWisdom();
 
   return (
     <motion.div
@@ -72,7 +72,7 @@ function QuoteCard() {
             <polyline points="14 2 14 8 20 8" />
           </svg>
           <span style={{ fontSize: "11px", color: "hsl(215 18% 62%)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}>
-            wisdom.anime
+            wisdom.md
           </span>
           <span style={{ fontSize: "10px", color: "hsl(215 18% 45%)", marginLeft: 2 }}>×</span>
         </div>
@@ -117,7 +117,7 @@ function QuoteCard() {
             </div>
             <div>
               <p style={{ color: "hsl(211 90% 65%)", fontSize: "11.5px", fontWeight: 600, fontFamily: "monospace" }}>
-                — {quote.character}
+                — {quote.author}
               </p>
             </div>
           </div>

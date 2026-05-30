@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { adminLogin } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
 
 export default function AdminLogin() {
@@ -15,7 +14,16 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     try {
-      await adminLogin(email, password);
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Login failed" }));
+        throw new Error(err.message || "Invalid credentials");
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({ title: "Welcome back!" });
       setLocation("/admin");
