@@ -9,6 +9,7 @@ import {
   testimonials,
   skills,
   siteSettings,
+  clients,
   blogPosts,
   type User,
   type UpsertUser,
@@ -30,6 +31,8 @@ import {
   type InsertSkill,
   type SiteSetting,
   type InsertSiteSetting,
+  type Client,
+  type InsertClient,
   type BlogPost,
   type InsertBlogPost,
 } from "@shared/schema";
@@ -89,6 +92,12 @@ export interface IStorage {
 
   getAllSiteSettings(): Promise<SiteSetting[]>;
   upsertSiteSetting(key: string, value: string): Promise<SiteSetting>;
+
+  getVisibleClients(): Promise<Client[]>;
+  getAllClients(): Promise<Client[]>;
+  createClient(client: InsertClient): Promise<Client>;
+  updateClient(id: number, data: Partial<InsertClient>): Promise<Client>;
+  deleteClient(id: number): Promise<void>;
 
   getPublishedBlogPosts(): Promise<BlogPost[]>;
   getAllBlogPosts(): Promise<BlogPost[]>;
@@ -281,6 +290,28 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({ target: siteSettings.key, set: { value, updatedAt: new Date() } })
       .returning();
     return r;
+  }
+
+  async getVisibleClients(): Promise<Client[]> {
+    return db.select().from(clients).where(eq(clients.isVisible, true)).orderBy(clients.sortOrder, desc(clients.createdAt));
+  }
+
+  async getAllClients(): Promise<Client[]> {
+    return db.select().from(clients).orderBy(clients.sortOrder, desc(clients.createdAt));
+  }
+
+  async createClient(client: InsertClient): Promise<Client> {
+    const [r] = await db.insert(clients).values(client).returning();
+    return r;
+  }
+
+  async updateClient(id: number, data: Partial<InsertClient>): Promise<Client> {
+    const [r] = await db.update(clients).set(data).where(eq(clients.id, id)).returning();
+    return r;
+  }
+
+  async deleteClient(id: number): Promise<void> {
+    await db.delete(clients).where(eq(clients.id, id));
   }
 
   async getPublishedBlogPosts(): Promise<BlogPost[]> {

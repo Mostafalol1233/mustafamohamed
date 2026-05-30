@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { sendContactMessage } from "@/lib/supabase";
 import { Mail } from "lucide-react";
 import { SiGithub, SiLinkedin, SiWhatsapp } from "react-icons/si";
-import profileImage from "@assets/image_1756332525184.png";
+import fallbackProfileImage from "@assets/image_1756332525184.png";
 import { useLang } from "@/contexts/LanguageContext";
+import type { SiteSetting } from "@shared/schema";
 
 type LineType = "out" | "user" | "ok" | "err" | "blank";
 interface TLine { id: number; text: string; type: LineType; display: string; isProgress?: boolean; }
@@ -28,6 +29,12 @@ export default function ContactSection() {
   const { t } = useLang();
   const tRef = useRef(t);
   useEffect(() => { tRef.current = t; }, [t]);
+
+  const { data: siteSettings = [] } = useQuery<SiteSetting[]>({
+    queryKey: ["/api/site-settings"],
+    staleTime: 60_000,
+  });
+  const profileImageUrl = siteSettings.find(s => s.key === "profile_image_url")?.value || fallbackProfileImage;
 
   const [lines, setLines]       = useState<TLine[]>([]);
   const [val, setVal]           = useState("");
@@ -376,7 +383,7 @@ export default function ContactSection() {
             >
               <div className="relative">
                 <img
-                  src={profileImage}
+                  src={profileImageUrl}
                   alt="Mustafa Mohamed"
                   className="w-20 h-20 rounded-full object-cover pointer-events-none"
                   style={{

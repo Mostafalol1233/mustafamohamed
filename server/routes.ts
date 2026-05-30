@@ -13,6 +13,7 @@ import {
   insertTestimonialSchema,
   insertSkillSchema,
   insertSiteSettingSchema,
+  insertClientSchema,
   insertBlogPostSchema,
   type InsertAnalytics,
 } from "@shared/schema";
@@ -273,6 +274,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/notifications/:id", requireAdminAuth, async (req, res) => {
     try { await storage.deleteNotification(parseInt(req.params.id)); res.json({ message: "Deleted" }); }
     catch { res.status(500).json({ message: "Failed to delete notification" }); }
+  });
+
+  // ── Clients ───────────────────────────────────────────────────────────────────
+
+  app.get("/api/clients", async (req, res) => {
+    try { res.json(await storage.getVisibleClients()); }
+    catch { res.status(500).json({ message: "Failed to fetch clients" }); }
+  });
+
+  app.get("/api/clients/all", requireAdminAuth, async (req, res) => {
+    try { res.json(await storage.getAllClients()); }
+    catch { res.status(500).json({ message: "Failed to fetch clients" }); }
+  });
+
+  app.post("/api/clients", requireAdminAuth, upload.single("image"), async (req, res) => {
+    try {
+      let imageUrl = null;
+      if (req.file) imageUrl = `/uploads/${req.file.filename}`;
+      else if (req.body.imageUrl?.trim()) imageUrl = req.body.imageUrl.trim();
+      const validated = insertClientSchema.parse({
+        name: req.body.name,
+        initials: req.body.initials,
+        color: req.body.color || "#4f9eff",
+        imageUrl,
+        sortOrder: req.body.sortOrder ? parseInt(req.body.sortOrder) : 0,
+        isVisible: req.body.isVisible !== undefined ? req.body.isVisible === "true" || req.body.isVisible === true : true,
+      });
+      res.json(await storage.createClient(validated as any));
+    } catch (e: any) { res.status(400).json({ message: e.message || "Failed to create client" }); }
+  });
+
+  app.patch("/api/clients/:id", requireAdminAuth, upload.single("image"), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data: any = {};
+      if (req.body.name !== undefined) data.name = req.body.name;
+      if (req.body.initials !== undefined) data.initials = req.body.initials;
+      if (req.body.color !== undefined) data.color = req.body.color;
+      if (req.body.sortOrder !== undefined) data.sortOrder = parseInt(req.body.sortOrder);
+      if (req.body.isVisible !== undefined) data.isVisible = req.body.isVisible === "true" || req.body.isVisible === true;
+      if (req.file) data.imageUrl = `/uploads/${req.file.filename}`;
+      else if (req.body.imageUrl?.trim()) data.imageUrl = req.body.imageUrl.trim();
+      res.json(await storage.updateClient(id, data));
+    } catch (e: any) { res.status(400).json({ message: e.message || "Failed to update client" }); }
+  });
+
+  app.delete("/api/clients/:id", requireAdminAuth, async (req, res) => {
+    try { await storage.deleteClient(parseInt(req.params.id)); res.json({ message: "Deleted" }); }
+    catch { res.status(500).json({ message: "Failed to delete client" }); }
+  });
+
+  // ── Profile Image ──────────────────────────────────────────────────────────────
+
+  app.post("/api/admin/profile-image", requireAdminAuth, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No image file provided" });
+      const imageUrl = `/uploads/${req.file.filename}`;
+      await storage.upsertSiteSetting("profile_image_url", imageUrl);
+      res.json({ imageUrl });
+    } catch (e: any) { res.status(500).json({ message: e.message || "Failed to upload profile image" }); }
   });
 
   // ── Testimonials ──────────────────────────────────────────────────────────────

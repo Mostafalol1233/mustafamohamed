@@ -122,6 +122,17 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const clients = pgTable("clients", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  initials: text("initials").notNull(),
+  color: text("color").notNull().default("#4f9eff"),
+  imageUrl: text("image_url"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isVisible: boolean("is_visible").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const blogPosts = pgTable("blog_posts", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -238,8 +249,20 @@ export const insertSiteSettingSchema = z.object({
   value: z.string(),
 });
 
+export type InsertClient = typeof clients.$inferInsert;
+export type Client = typeof clients.$inferSelect;
+
 export type InsertBlogPost = typeof blogPosts.$inferInsert;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+export const insertClientSchema = z.object({
+  name: z.string(),
+  initials: z.string(),
+  color: z.string().optional(),
+  imageUrl: z.string().optional().nullable(),
+  sortOrder: z.number().optional(),
+  isVisible: z.boolean().optional(),
+});
 
 export const insertBlogPostSchema = z.object({
   title: z.string(),

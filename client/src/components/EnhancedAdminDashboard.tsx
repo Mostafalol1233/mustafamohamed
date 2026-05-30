@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import type { Review, ContactMessage, Project, Certificate, Notification } from "@shared/schema";
+import type { Review, ContactMessage, Project, Certificate, Notification, Client, SiteSetting } from "@shared/schema";
 import { useState } from "react";
-import { Star, X, Eye, EyeOff, Plus, Edit, Trash2, Upload } from "lucide-react";
+import { Star, X, Eye, EyeOff, Plus, Edit, Trash2, Upload, Image } from "lucide-react";
 
 export default function EnhancedAdminDashboard() {
   const { isAuthenticated } = useAuth();
@@ -47,6 +47,17 @@ export default function EnhancedAdminDashboard() {
     isVisible: true,
   });
 
+  const [clientForm, setClientForm] = useState({
+    name: "",
+    initials: "",
+    color: "#4f9eff",
+    imageFile: null as File | null,
+    sortOrder: 0,
+    isVisible: true,
+  });
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+
   // Queries
   const { data: allReviews = [] } = useQuery<Review[]>({
     queryKey: ["/api/reviews/all"],
@@ -72,6 +83,18 @@ export default function EnhancedAdminDashboard() {
     queryKey: ["/api/certificates"],
     enabled: isAuthenticated,
   });
+
+  const { data: allClients = [] } = useQuery<Client[]>({
+    queryKey: ["/api/clients/all"],
+    enabled: isAuthenticated,
+  });
+
+  const { data: siteSettings = [] } = useQuery<SiteSetting[]>({
+    queryKey: ["/api/site-settings"],
+    enabled: isAuthenticated,
+  });
+
+  const currentProfileImageUrl = siteSettings.find(s => s.key === "profile_image_url")?.value;
 
   // Mutations for Reviews
   const approveReviewMutation = useMutation({
@@ -215,6 +238,62 @@ export default function EnhancedAdminDashboard() {
     },
   });
 
+  // Mutations for Clients
+  const createClientMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await fetch("/api/clients", { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Failed to create client");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients/all"] });
+      toast({ title: "Success", description: "Client added!" });
+      resetClientForm();
+    },
+  });
+
+  const updateClientMutation = useMutation({
+    mutationFn: async ({ id, formData }: { id: number; formData: FormData }) => {
+      const response = await fetch(`/api/clients/${id}`, { method: "PATCH", body: formData });
+      if (!response.ok) throw new Error("Failed to update client");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients/all"] });
+      toast({ title: "Success", description: "Client updated!" });
+      setEditingClient(null);
+      resetClientForm();
+    },
+  });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/clients/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients/all"] });
+      toast({ title: "Success", description: "Client deleted!" });
+    },
+  });
+
+  const uploadProfileImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch("/api/admin/profile-image", { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Failed to upload profile image");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
+      toast({ title: "Success", description: "Profile image updated!" });
+      setProfileImageFile(null);
+    },
+  });
+
   // Helper functions
   const resetProjectForm = () => {
     setProjectForm({
@@ -282,6 +361,38 @@ export default function EnhancedAdminDashboard() {
     createCertificateMutation.mutate(formData);
   };
 
+  const resetClientForm = () => {
+    setClientForm({ name: "", initials: "", color: "#4f9eff", imageFile: null, sortOrder: 0, isVisible: true });
+  };
+
+  const handleClientSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    if (editingClient) {
+      formData.append("name", clientForm.name || editingClient.name);
+      formData.append("initials", clientForm.initials || editingClient.initials);
+      formData.append("color", clientForm.color || editingClient.color);
+      formData.append("sortOrder", String(clientForm.sortOrder));
+      formData.append("isVisible", String(clientForm.isVisible));
+      if (clientForm.imageFile) formData.append("image", clientForm.imageFile);
+      updateClientMutation.mutate({ id: editingClient.id, formData });
+    } else {
+      formData.append("name", clientForm.name);
+      formData.append("initials", clientForm.initials);
+      formData.append("color", clientForm.color);
+      formData.append("sortOrder", String(clientForm.sortOrder));
+      formData.append("isVisible", String(clientForm.isVisible));
+      if (clientForm.imageFile) formData.append("image", clientForm.imageFile);
+      createClientMutation.mutate(formData);
+    }
+  };
+
+  const startEditingClient = (client: Client) => {
+    setEditingClient(client);
+    setClientForm({ name: client.name, initials: client.initials, color: client.color, imageFile: null, sortOrder: client.sortOrder, isVisible: client.isVisible ?? true });
+    setActiveTab("clients");
+  };
+
   const startEditingProject = (project: Project) => {
     setEditingProject(project);
     setProjectForm({
@@ -343,11 +454,15 @@ export default function EnhancedAdminDashboard() {
 
         <div className="flex-1 overflow-y-auto p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="projects">
                 Projects
                 <Badge variant="secondary" className="ml-2">{allProjects.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="clients">
+                Clients
+                <Badge variant="secondary" className="ml-2">{allClients.length}</Badge>
               </TabsTrigger>
               <TabsTrigger value="reviews">
                 Reviews
@@ -403,7 +518,7 @@ export default function EnhancedAdminDashboard() {
                 </Card>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-3 gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
@@ -413,9 +528,46 @@ export default function EnhancedAdminDashboard() {
                       <Plus size={18} className="mr-2" />
                       Add New Project
                     </Button>
+                    <Button className="w-full" variant="outline" onClick={() => setActiveTab("clients")}>
+                      <Plus size={18} className="mr-2" />
+                      Add Client Logo
+                    </Button>
                     <Button className="w-full" variant="outline" onClick={() => setActiveTab("notifications")}>
                       <Plus size={18} className="mr-2" />
                       Create Notification
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Image size={18} />
+                      Profile Photo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {currentProfileImageUrl && (
+                      <div className="flex justify-center">
+                        <img src={currentProfileImageUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-border" />
+                      </div>
+                    )}
+                    <div>
+                      <Label htmlFor="profile-image">Upload New Photo</Label>
+                      <Input
+                        id="profile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setProfileImageFile(e.target.files?.[0] || null)}
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      disabled={!profileImageFile || uploadProfileImageMutation.isPending}
+                      onClick={() => profileImageFile && uploadProfileImageMutation.mutate(profileImageFile)}
+                    >
+                      <Upload size={16} className="mr-2" />
+                      {uploadProfileImageMutation.isPending ? "Uploading…" : "Upload Photo"}
                     </Button>
                   </CardContent>
                 </Card>
@@ -641,6 +793,166 @@ export default function EnhancedAdminDashboard() {
                     {allProjects.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No projects yet. Create your first project above!
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Clients Tab */}
+            <TabsContent value="clients" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{editingClient ? "Edit Client" : "Add New Client"}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleClientSubmit} className="space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="client-name">Client Name *</Label>
+                        <Input
+                          id="client-name"
+                          value={clientForm.name}
+                          onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+                          required={!editingClient}
+                          placeholder="BRAVEZM Gaming"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="client-initials">Initials (fallback) *</Label>
+                        <Input
+                          id="client-initials"
+                          value={clientForm.initials}
+                          onChange={(e) => setClientForm({ ...clientForm, initials: e.target.value })}
+                          required={!editingClient}
+                          placeholder="BZ"
+                          maxLength={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="client-color">Fallback Color</Label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="color"
+                            id="client-color"
+                            value={clientForm.color}
+                            onChange={(e) => setClientForm({ ...clientForm, color: e.target.value })}
+                            className="h-10 w-16 rounded border cursor-pointer"
+                          />
+                          <Input
+                            value={clientForm.color}
+                            onChange={(e) => setClientForm({ ...clientForm, color: e.target.value })}
+                            placeholder="#4f9eff"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="client-logo">Logo Image (replaces initials)</Label>
+                        <Input
+                          id="client-logo"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setClientForm({ ...clientForm, imageFile: e.target.files?.[0] || null })}
+                        />
+                        {editingClient?.imageUrl && !clientForm.imageFile && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <img src={editingClient.imageUrl} alt={editingClient.name} className="w-8 h-8 object-contain rounded border" />
+                            <p className="text-sm text-muted-foreground">Current logo kept</p>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="client-order">Sort Order</Label>
+                        <Input
+                          id="client-order"
+                          type="number"
+                          value={clientForm.sortOrder}
+                          onChange={(e) => setClientForm({ ...clientForm, sortOrder: parseInt(e.target.value) || 0 })}
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="client-visible"
+                        checked={clientForm.isVisible}
+                        onChange={(e) => setClientForm({ ...clientForm, isVisible: e.target.checked })}
+                        className="rounded"
+                      />
+                      <Label htmlFor="client-visible" className="cursor-pointer">Visible on website</Label>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={createClientMutation.isPending || updateClientMutation.isPending}>
+                        {editingClient ? (
+                          <><Edit size={16} className="mr-2" />Update Client</>
+                        ) : (
+                          <><Plus size={16} className="mr-2" />Add Client</>
+                        )}
+                      </Button>
+                      {editingClient && (
+                        <Button type="button" variant="outline" onClick={() => { setEditingClient(null); resetClientForm(); }}>
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>All Clients ({allClients.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {allClients.map((client) => (
+                      <div key={client.id} className="border rounded-lg p-4 flex items-center gap-4">
+                        <div
+                          className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+                          style={{ background: client.imageUrl ? "transparent" : client.color, border: "1px solid #e5e7eb" }}
+                        >
+                          {client.imageUrl ? (
+                            <img src={client.imageUrl} alt={client.name} className="w-full h-full object-contain" />
+                          ) : (
+                            <span className="text-sm font-bold text-white">{client.initials}</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold">{client.name}</h4>
+                            <Badge variant={client.isVisible ? "default" : "secondary"}>
+                              {client.isVisible ? <Eye size={12} className="mr-1" /> : <EyeOff size={12} className="mr-1" />}
+                              {client.isVisible ? "Visible" : "Hidden"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Initials: {client.initials} · Order: {client.sortOrder}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => startEditingClient(client)}>
+                            <Edit size={14} className="mr-1" />Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteClientMutation.mutate(client.id)}
+                            disabled={deleteClientMutation.isPending}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {allClients.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No clients yet. Add your first client above. Until then, the default list will show.
                       </div>
                     )}
                   </div>

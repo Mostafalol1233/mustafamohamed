@@ -1,16 +1,18 @@
+import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
+import type { Client } from "@shared/schema";
 
-const BRANDS = [
-  { name: "BRAVEZM Gaming",      initials: "BZ", color: "#ff4444" },
-  { name: "BestyBoy Gaming",     initials: "BB", color: "#ff6b35" },
-  { name: "Ahmed Helly Academy", initials: "AH", color: "#4f9eff" },
-  { name: "Eco Eats",            initials: "EE", color: "#22c55e" },
-  { name: "BMO Tools",           initials: "BM", color: "#a855f7" },
-  { name: "OneTeam",             initials: "OT", color: "#f59e0b" },
-  { name: "Bemora",              initials: "BR", color: "#06b6d4" },
-  { name: "MR Mohammed",         initials: "MM", color: "#ec4899" },
-  { name: "Diaa Elden Shop",     initials: "DE", color: "#84cc16" },
+const FALLBACK_BRANDS = [
+  { id: -1, name: "BRAVEZM Gaming",      initials: "BZ", color: "#ff4444", imageUrl: null, isVisible: true, sortOrder: 0, createdAt: null },
+  { id: -2, name: "BestyBoy Gaming",     initials: "BB", color: "#ff6b35", imageUrl: null, isVisible: true, sortOrder: 1, createdAt: null },
+  { id: -3, name: "Ahmed Helly Academy", initials: "AH", color: "#4f9eff", imageUrl: null, isVisible: true, sortOrder: 2, createdAt: null },
+  { id: -4, name: "Eco Eats",            initials: "EE", color: "#22c55e", imageUrl: null, isVisible: true, sortOrder: 3, createdAt: null },
+  { id: -5, name: "BMO Tools",           initials: "BM", color: "#a855f7", imageUrl: null, isVisible: true, sortOrder: 4, createdAt: null },
+  { id: -6, name: "OneTeam",             initials: "OT", color: "#f59e0b", imageUrl: null, isVisible: true, sortOrder: 5, createdAt: null },
+  { id: -7, name: "Bemora",              initials: "BR", color: "#06b6d4", imageUrl: null, isVisible: true, sortOrder: 6, createdAt: null },
+  { id: -8, name: "MR Mohammed",         initials: "MM", color: "#ec4899", imageUrl: null, isVisible: true, sortOrder: 7, createdAt: null },
+  { id: -9, name: "Diaa Elden Shop",     initials: "DE", color: "#84cc16", imageUrl: null, isVisible: true, sortOrder: 8, createdAt: null },
 ];
 
 const STATS = [
@@ -20,7 +22,7 @@ const STATS = [
   { value: "4+",   label: "years active" },
 ];
 
-function BrandChip({ name, initials, color, dark }: { name: string; initials: string; color: string; dark: boolean }) {
+function BrandChip({ name, initials, color, imageUrl, dark }: { name: string; initials: string; color: string; imageUrl?: string | null; dark: boolean }) {
   const bg     = dark ? "#0d1117" : "#ffffff";
   const border = dark ? "#21262d" : "#e5e7eb";
   const text   = dark ? "#e6edf3" : "#111827";
@@ -32,10 +34,14 @@ function BrandChip({ name, initials, color, dark }: { name: string; initials: st
       style={{ background: bg, border: `1px solid ${border}`, boxShadow: dark ? "0 2px 12px rgba(0,0,0,0.25)" : "0 2px 12px rgba(0,0,0,0.06)" }}
     >
       <div
-        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-        style={{ background: color }}
+        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+        style={{ background: imageUrl ? "transparent" : color, border: imageUrl ? `1px solid ${border}` : "none" }}
       >
-        {initials}
+        {imageUrl ? (
+          <img src={imageUrl} alt={name} className="w-full h-full object-contain" />
+        ) : (
+          <span className="text-xs font-bold text-white">{initials}</span>
+        )}
       </div>
       <div>
         <p className="text-sm font-semibold whitespace-nowrap" style={{ color: text }}>{name}</p>
@@ -48,6 +54,13 @@ function BrandChip({ name, initials, color, dark }: { name: string; initials: st
 export default function ReviewsSection() {
   const { isDark } = useTheme();
   const { t } = useLang();
+
+  const { data: apiClients = [] } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+    staleTime: 60_000,
+  });
+
+  const brands = apiClients.length > 0 ? apiClients : FALLBACK_BRANDS;
 
   const bg    = isDark ? "#080c12" : "#f9fafb";
   const text  = isDark ? "#e6edf3" : "#111827";
@@ -79,7 +92,6 @@ export default function ReviewsSection() {
 
       {/* Scrolling marquee */}
       <div className="relative">
-        {/* Fade edges */}
         <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
           style={{ background: `linear-gradient(to right, ${bg}, transparent)` }} />
         <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
@@ -93,8 +105,8 @@ export default function ReviewsSection() {
               width: "max-content",
             }}
           >
-            {[...BRANDS, ...BRANDS, ...BRANDS].map((b, i) => (
-              <BrandChip key={i} {...b} dark={isDark} />
+            {[...brands, ...brands, ...brands].map((b, i) => (
+              <BrandChip key={i} name={b.name} initials={b.initials} color={b.color} imageUrl={b.imageUrl} dark={isDark} />
             ))}
           </div>
         </div>

@@ -63,7 +63,12 @@ function BrowserMockup({ project, visible }: { project: Project; visible: boolea
             <img src={project.imageUrl} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
           ) : (
             <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)" }}>
-              <div style={{ fontSize: 48 }}>🖥️</div>
+              <div style={{ width: 56, height: 56, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+              </div>
               <span style={{ fontSize: 13, color: "#94a3b8", fontFamily: "system-ui" }}>{domain}</span>
             </div>
           )}
