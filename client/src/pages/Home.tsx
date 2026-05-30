@@ -60,7 +60,7 @@ export default function Home() {
   if (!loaded) return <PageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background" dir="ltr">
       <Navigation />
       <main>
         <HeroSection />

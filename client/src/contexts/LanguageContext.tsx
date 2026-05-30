@@ -30,16 +30,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLangState(l);
     try { localStorage.setItem("portfolio-lang", l); } catch {}
     document.documentElement.setAttribute("lang", l);
-    document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
+    document.documentElement.setAttribute("dir", "ltr");
   };
 
   useEffect(() => {
     document.documentElement.setAttribute("lang", lang);
-    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    document.documentElement.setAttribute("dir", "ltr");
   }, [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: lang === "ar" }}>
+    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: false }}>
       {children}
     </LanguageContext.Provider>
   );

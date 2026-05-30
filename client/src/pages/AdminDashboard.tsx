@@ -101,7 +101,7 @@ type Tab = typeof TABS[number]["id"];
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab() {
-  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ["/api/admin/projects"] });
+  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ["/api/projects/all"] });
   const { data: messages = [] } = useQuery<ContactMessage[]>({ queryKey: ["/api/contact"] });
 
   const unread = (messages as ContactMessage[]).filter(m => !m.isRead).length;
@@ -115,7 +115,7 @@ function OverviewTab() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard label="Total Projects"   value={projects.length} icon={FolderOpen}    color="bg-blue-500" />
         <StatCard label="Unread Messages"  value={unread}          icon={MessageSquare} color="bg-green-500" />
-        <StatCard label="Powered by"       value="Supabase"        icon={BarChart2}     color="bg-indigo-500" />
+        <StatCard label="Active Since"       value="2021"            icon={BarChart2}     color="bg-indigo-500" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -717,23 +717,21 @@ function SettingsTab() {
       <h2 className="font-semibold text-gray-900">Settings</h2>
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 max-w-md">
-        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2"><Key size={14} /> Supabase Auth</h3>
+        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2"><Key size={14} /> Admin Password</h3>
         <p className="text-xs text-blue-700 leading-relaxed">
-          Your admin password is managed in <strong>Supabase Auth</strong>.<br /><br />
-          To change it: go to your <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" className="underline">Supabase dashboard</a> →
-          Authentication → Users → find your email → change password.
+          Your login is managed via <strong>Supabase Auth</strong>.<br /><br />
+          To change your password: <a href="https://supabase.com/dashboard/project/fvuaiwxfdgerjbuszgpf/auth/users" target="_blank" rel="noopener noreferrer" className="underline">open Supabase Auth Users</a> → find your email → Reset password.
         </p>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-md space-y-2">
-        <h3 className="font-semibold text-gray-900 text-sm">Supabase Tables</h3>
+        <h3 className="font-semibold text-gray-900 text-sm">Database</h3>
         <p className="text-xs text-gray-500">
-          All data is stored in your Supabase project (<code className="bg-gray-100 px-1 rounded">fvuaiwxfdgerjbuszgpf</code>).
-          You can browse and edit data directly in the Supabase Table Editor.
+          All portfolio data is stored in Supabase. Browse and edit rows directly in the Table Editor.
         </p>
         <a href="https://supabase.com/dashboard/project/fvuaiwxfdgerjbuszgpf/editor" target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline">
-          <ExternalLink size={13} /> Open Supabase Table Editor
+          <ExternalLink size={13} /> Open Table Editor
         </a>
       </div>
     </div>

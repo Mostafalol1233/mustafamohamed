@@ -5,6 +5,7 @@ import {
   SiHtml5, SiCss3, SiFigma, SiShadcnui, SiFramer,
   SiGit, SiGithub, SiDocker, SiLinux, SiVercel,
   SiOpenai, SiPostman,
+  SiPython, SiRuby, SiCplusplus, SiRust, SiGodotengine, SiSelenium, SiDiscord, SiLua,
 } from "react-icons/si";
 
 const SKILL_ICONS: Record<string, ElementType> = {
@@ -31,6 +32,14 @@ const SKILL_ICONS: Record<string, ElementType> = {
   "Prompt Engineering": SiOpenai,
   "LLM APIs":           SiOpenai,
   "REST API Design":    SiPostman,
+  "Python":             SiPython,
+  "Ruby":               SiRuby,
+  "C++":                SiCplusplus,
+  "Rust":               SiRust,
+  "Godot Engine":       SiGodotengine,
+  "Selenium":           SiSelenium,
+  "Discord.py / discord.js": SiDiscord,
+  "Lua":                SiLua,
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -114,6 +123,43 @@ const MODULES: Record<
       { name: "Prompt Engineering", percent: 85, stat: "20+ system prompts · CoT · evals", desc: "system prompts, few-shot, chain-of-thought, evals",   icon: "◎", tags: ["CoT", "few-shot", "eval"] },
       { name: "LLM APIs",           percent: 78, stat: "OpenAI · Claude · streaming",      desc: "OpenAI/Claude integration, streaming, function calls", icon: "⚡", tags: ["streaming", "tools", "Claude"] },
     ],
+    next: "systems",
+  },
+  systems: {
+    title: "SYSTEMS & LANGUAGES",
+    icon: "⬡",
+    color: "#f8c555",
+    skills: [
+      { name: "Python",  percent: 82, stat: "3+ yrs · scripting · data · bots",     desc: "automation, data processing, web scraping, bot scripting", icon: "Py", tags: ["scripting", "bots", "data"] },
+      { name: "C++",     percent: 68, stat: "2+ yrs · game dev · perf-critical",    desc: "game logic, performance-critical systems, memory management", icon: "C+", tags: ["perf", "memory", "OOP"] },
+      { name: "Ruby",    percent: 60, stat: "1+ yr · scripting · automation",        desc: "scripting, CLI tools, automation pipelines",               icon: "Rb", tags: ["scripting", "CLI", "gems"] },
+      { name: "Rust",    percent: 45, stat: "learning · memory safety · WASM",       desc: "systems programming, memory safety, WASM compilation",     icon: "Rs", tags: ["safety", "WASM", "perf"] },
+      { name: "Lua",     percent: 58, stat: "game scripting · embedded · modding",   desc: "embedded scripting in games, mod systems, config DSL",     icon: "Lu", tags: ["embedded", "games", "mods"] },
+    ],
+    next: "gamedev",
+  },
+  gamedev: {
+    title: "GAME DEVELOPMENT",
+    icon: "⬡",
+    color: "#ff7b72",
+    skills: [
+      { name: "Godot Engine",  percent: 72, stat: "3+ projects · GDScript · 2D/3D",    desc: "2D/3D scenes, physics, GDScript, shaders, exports",        icon: "🎮", tags: ["GDScript", "2D", "physics"] },
+      { name: "C++",           percent: 68, stat: "custom engines · SDL2 · OpenGL",     desc: "custom game loops, SDL2 rendering, OpenGL basics",         icon: "C+", tags: ["SDL2", "OpenGL", "loop"] },
+      { name: "Lua",           percent: 58, stat: "game scripting · LÖVE2D · mods",     desc: "LÖVE2D framework, game scripting, mod systems",            icon: "Lu", tags: ["LÖVE2D", "scripting", "mods"] },
+      { name: "Python",        percent: 78, stat: "pygame · game AI · prototyping",     desc: "pygame prototypes, A* pathfinding, game AI behaviours",    icon: "Py", tags: ["pygame", "AI", "proto"] },
+    ],
+    next: "automation",
+  },
+  automation: {
+    title: "BOTS & AUTOMATION",
+    icon: "⬡",
+    color: "#3fb950",
+    skills: [
+      { name: "Discord.py / discord.js", percent: 80, stat: "5+ bots · slash cmds · events",  desc: "Discord bots with slash commands, event handlers, cron jobs", icon: "🤖", tags: ["slash", "events", "cron"] },
+      { name: "Selenium",     percent: 74, stat: "browser automation · scraping",       desc: "browser automation, UI testing, web scraping pipelines",   icon: "Se", tags: ["browser", "scrape", "test"] },
+      { name: "Python",       percent: 82, stat: "scrapers · schedulers · data pipelines", desc: "requests, BeautifulSoup, asyncio, task schedulers",      icon: "Py", tags: ["requests", "async", "cron"] },
+      { name: "REST API Design", percent: 88, stat: "webhook integrations · n8n flows",  desc: "webhook handlers, n8n/Zapier-style integration flows",    icon: "⇌", tags: ["webhooks", "flows", "events"] },
+    ],
     next: "frontend",
   },
 };
@@ -152,13 +198,16 @@ function helpLines(): TermLine[] {
   return [
     { kind: "segs", segs: [{ text: "> Available commands:", color: "#c9d1d9" }] },
     { kind: "blank" },
-    row("scan",     "scan all skill categories"),
-    row("frontend", "frontend skills & packages"),
-    row("backend",  "backend & databases"),
-    row("markup",   "HTML, CSS & UI libraries"),
-    row("tools",    "dev tools & environment"),
-    row("ai",       "AI & API design"),
-    row("clear",    "clear terminal"),
+    row("scan",       "scan all skill categories"),
+    row("frontend",  "frontend skills & packages"),
+    row("backend",   "backend & databases"),
+    row("markup",    "HTML, CSS & UI libraries"),
+    row("tools",     "dev tools & environment"),
+    row("ai",        "AI & API design"),
+    row("systems",   "C++, Python, Ruby, Rust, Lua"),
+    row("gamedev",   "game development tools"),
+    row("automation","bots & automation scripting"),
+    row("clear",     "clear terminal"),
   ];
 }
 
@@ -178,15 +227,18 @@ function scanLines(): TermLine[] {
     { kind: "segs", segs: [{ text: "> Running skill scan...", color: "#c9d1d9" }] },
     { kind: "segs", segs: [{ text: "> [██████████] Scanning packages...", color: "#3fb950" }] },
     { kind: "blank" },
-    cat("frontend", 5, "⬡", "#58a6ff"),
-    cat("backend",  5, "⬡", "#3fb950"),
-    cat("markup",   5, "⬡", "#f78166"),
-    cat("tools",    5, "⬡", "#e3b341"),
-    cat("ai",       3, "⬡", "#bc8cff"),
+    cat("frontend",   5, "⬡", "#58a6ff"),
+    cat("backend",    5, "⬡", "#3fb950"),
+    cat("markup",     5, "⬡", "#f78166"),
+    cat("tools",      5, "⬡", "#e3b341"),
+    cat("ai",         3, "⬡", "#bc8cff"),
+    cat("systems",    5, "⬡", "#f8c555"),
+    cat("gamedev",    4, "⬡", "#ff7b72"),
+    cat("automation", 4, "⬡", "#3fb950"),
     { kind: "blank" },
     {
       kind: "segs",
-      segs: [{ text: "> 23 packages found. Click any category to open its bag.", color: "#c9d1d9" }],
+      segs: [{ text: "> 36 packages found. Click any category to open its bag.", color: "#c9d1d9" }],
     },
   ];
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { adminLogin } from "@/lib/supabase";
+import { queryClient } from "@/lib/queryClient";
 
 export default function AdminLogin() {
   const { toast } = useToast();
@@ -14,9 +15,9 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     try {
-      await apiRequest("POST", "/api/admin/login", { email, password });
+      await adminLogin(email, password);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Welcome back!", description: "Logged in successfully." });
+      toast({ title: "Welcome back!" });
       setLocation("/admin");
     } catch (err: any) {
       toast({ title: "Login failed", description: err.message, variant: "destructive" });
@@ -33,34 +34,26 @@ export default function AdminLogin() {
           <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
           <p className="text-sm text-muted-foreground mt-1">Sign in to your dashboard</p>
         </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-            <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)} required
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
               placeholder="admin@portfolio.com"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-            />
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-            <input
-              type="password" value={password} onChange={e => setPassword(e.target.value)} required
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
               placeholder="••••••••"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-            />
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
           </div>
-          <button
-            type="submit" disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-foreground text-background font-semibold text-sm transition-all hover:bg-foreground/90 disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading}
+            className="w-full py-2.5 rounded-lg bg-foreground text-background font-semibold text-sm transition-all hover:bg-foreground/90 disabled:opacity-50">
             {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
-
         <p className="text-xs text-muted-foreground text-center mt-6">
-          Shortcut: <kbd className="px-1.5 py-0.5 rounded border border-border font-mono text-xs">Alt+Shift+A</kbd>
+          <a href="/" className="hover:underline">← Back to portfolio</a>
         </p>
       </div>
     </div>
