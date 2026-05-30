@@ -36,10 +36,9 @@ export default function HeroSection() {
   const role = useTypewriter(roles);
 
   const stats = [
-    { value: "4+", label: t.hero.stats.years },
+    { value: "4+",  label: t.hero.stats.years },
     { value: "12+", label: t.hero.stats.projects },
-    { value: "6+", label: t.hero.stats.certs },
-    { value: "∞", label: t.hero.stats.coffee },
+    { value: "6+",  label: t.hero.stats.certs },
   ];
 
   const techStack = ["React", "TypeScript", "Node.js", "PostgreSQL", "Tailwind CSS", "Python"];
@@ -81,8 +80,8 @@ export default function HeroSection() {
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}
             className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mb-8">
             {isRtl
-              ? "أبني تطبيقات ويب سريعة وأنيقة وأصمّم محتوى يحقق نتائج. هندسة دقيقة تلتقي باستراتيجية إبداعية — في كل مشروع."
-              : "I build fast, elegant web apps and craft content that converts. Precision engineering meets creative strategy — every project, every time."}
+              ? "أبني منتجات ويب من الألف للياء — من تصميم قاعدة البيانات لآخر بكسل في الواجهة. أهتم بالشحن والإنجاز أكثر من المظاهر."
+              : "I build complete web products — database design to final pixel. React and Node.js are my daily tools. I care more about shipping than looking clever."}
           </motion.p>
 
           {/* CTAs */}
@@ -96,7 +95,7 @@ export default function HeroSection() {
               className="btn-outline" data-testid="hero-contact">
               <Mail className="w-4 h-4" /> {t.hero.cta_contact}
             </button>
-            <a href="/api/resume" target="_blank" rel="noopener noreferrer"
+            <a href="/resume.html" target="_blank" rel="noopener noreferrer"
               className="btn-outline" data-testid="hero-resume">
               <Download className="w-4 h-4" /> {t.hero.cta_resume}
             </a>
@@ -104,7 +103,7 @@ export default function HeroSection() {
 
           {/* Stats */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="flex items-center gap-8 mb-10 flex-wrap">
+            className="flex items-center gap-10 mb-10 flex-wrap">
             {stats.map(({ value, label }) => (
               <div key={label} className="text-center">
                 <div className="text-2xl font-bold text-foreground">{value}</div>
@@ -123,28 +122,50 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Right side code block */}
+      {/* Right side — Quote card */}
       <motion.div
         initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.4 }}
-        className="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 w-80 bg-[#0d1117] rounded-xl shadow-2xl overflow-hidden border border-[#30363d] text-[13px] font-mono"
+        className="hidden lg:flex absolute right-12 top-1/2 -translate-y-1/2 w-80 flex-col"
+        style={{
+          background: "#0d1117",
+          border: "1px solid #30363d",
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.28)",
+        }}
       >
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]">
-          <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-          <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-          <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-          <span className="ml-2 text-[#8b949e] text-xs">mustafa.ts</span>
+        {/* Chrome bar */}
+        <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: "1px solid #21262d" }}>
+          <span className="w-3 h-3 rounded-full" style={{ background: "#ff5f57" }} />
+          <span className="w-3 h-3 rounded-full" style={{ background: "#febc2e" }} />
+          <span className="w-3 h-3 rounded-full" style={{ background: "#28c840" }} />
+          <span className="ml-2 text-xs select-none" style={{ color: "#8b949e", fontFamily: "monospace" }}>
+            philosophy.md
+          </span>
         </div>
-        <div className="p-4 leading-relaxed">
-          <div><span className="text-[#ff7b72]">const</span> <span className="text-[#79c0ff]">developer</span> <span className="text-white">=</span> <span className="text-[#ff7b72]">{`{`}</span></div>
-          <div className="pl-4"><span className="text-[#79c0ff]">name</span><span className="text-white">:</span> <span className="text-[#a5d6ff]">"Mustafa Mohamed"</span><span className="text-white">,</span></div>
-          <div className="pl-4"><span className="text-[#79c0ff]">role</span><span className="text-white">:</span> <span className="text-[#a5d6ff]">"Full-Stack Dev"</span><span className="text-white">,</span></div>
-          <div className="pl-4"><span className="text-[#79c0ff]">stack</span><span className="text-white">: [</span></div>
-          <div className="pl-8"><span className="text-[#a5d6ff]">"React"</span><span className="text-white">,</span> <span className="text-[#a5d6ff]">"Node.js"</span><span className="text-white">,</span></div>
-          <div className="pl-8"><span className="text-[#a5d6ff]">"TypeScript"</span><span className="text-white">,</span> <span className="text-[#a5d6ff]">"PostgreSQL"</span></div>
-          <div className="pl-4"><span className="text-white">],</span></div>
-          <div className="pl-4"><span className="text-[#79c0ff]">available</span><span className="text-white">:</span> <span className="text-[#79c0ff]">true</span></div>
-          <div><span className="text-[#ff7b72]">{`}`}</span><span className="text-white">;</span></div>
-          <div className="mt-3 text-[#8b949e]">{"// Ready to build something great"}</div>
+
+        {/* Quote body */}
+        <div className="p-6 flex flex-col gap-4">
+          {/* Opening mark */}
+          <span style={{ color: "#3fb950", fontSize: "38px", lineHeight: 1, fontFamily: "Georgia, serif", opacity: 0.6 }}>"</span>
+
+          <p style={{
+            color: "#e6edf3",
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            fontSize: "14px",
+            lineHeight: 1.75,
+            fontStyle: "italic",
+            marginTop: "-16px",
+          }}>
+            The difference between the novice and the master is that the master has failed more times than the novice has tried.
+          </p>
+
+          {/* Divider */}
+          <div style={{ borderTop: "1px solid #21262d", paddingTop: "14px" }}>
+            <p style={{ color: "#8b949e", fontSize: "11px", fontFamily: "monospace", letterSpacing: "0.04em" }}>
+              — a reminder I keep close
+            </p>
+          </div>
         </div>
       </motion.div>
     </section>

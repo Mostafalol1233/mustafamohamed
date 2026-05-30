@@ -1,4 +1,29 @@
-import { useEffect, useRef, useState, KeyboardEvent } from "react";
+import { useEffect, useRef, useState, KeyboardEvent, ElementType } from "react";
+import {
+  SiReact, SiTypescript, SiNextdotjs, SiTailwindcss, SiFramer,
+  SiNodedotjs, SiExpress, SiMongodb, SiPostgresql,
+  SiFigma, SiGit, SiGithub, SiLinux, SiVercel,
+  SiOpenai,
+} from "react-icons/si";
+
+const SKILL_ICONS: Record<string, ElementType> = {
+  "React":              SiReact,
+  "TypeScript":         SiTypescript,
+  "Next.js":            SiNextdotjs,
+  "Tailwind CSS":       SiTailwindcss,
+  "Framer Motion":      SiFramer,
+  "Node.js":            SiNodedotjs,
+  "Express":            SiExpress,
+  "MongoDB":            SiMongodb,
+  "PostgreSQL":         SiPostgresql,
+  "Figma":              SiFigma,
+  "Git":                SiGit,
+  "GitHub":             SiGithub,
+  "Linux":              SiLinux,
+  "Vercel":             SiVercel,
+  "Prompt Engineering": SiOpenai,
+  "AI Integration":     SiOpenai,
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -304,7 +329,7 @@ function MatrixRain() {
 
 type Theme = typeof DARK_T;
 
-function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
+function SkillLine({ name, percent, desc, tags, theme: T }: {
   name: string; percent: number; desc: string; icon: string; tags: string[]; theme: Theme;
 }) {
   const total = Math.round(percent / 10);
@@ -322,7 +347,11 @@ function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
   }, [total]);
 
   const empty = 10 - filled;
-  const barColor = percent >= 80 ? T.green : percent >= 60 ? T.accent : "#e3b341";
+  const level   = percent >= 80 ? "advanced" : percent >= 65 ? "proficient" : "familiar";
+  const barColor = percent >= 80 ? T.green    : percent >= 65 ? T.accent     : "#e3b341";
+  const levelColor = barColor;
+
+  const IconComp = SKILL_ICONS[name];
 
   return (
     <div
@@ -338,9 +367,14 @@ function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
       }}
       data-testid={`skill-row-${name.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      {/* Top row: icon + name + bar + percent */}
-      <div className="flex items-baseline gap-0 text-sm leading-6" style={{ whiteSpace: "pre" }}>
-        <span style={{ color: T.textFaint, marginRight: 6 }}>{icon}</span>
+      {/* Top row: icon + name + bar + level */}
+      <div className="flex items-center gap-0 text-sm leading-6" style={{ whiteSpace: "pre" }}>
+        <span style={{ color: barColor, marginRight: 8, display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {IconComp
+            ? <IconComp size={14} />
+            : <span style={{ fontSize: 12 }}>·</span>
+          }
+        </span>
         <span style={{ color: T.inputText, minWidth: "156px", display: "inline-block" }}>
           {name}
         </span>
@@ -348,12 +382,9 @@ function SkillLine({ name, percent, desc, icon, tags, theme: T }: {
         <span style={{ color: barColor }}>{"█".repeat(filled)}</span>
         <span style={{ color: T.skillBorder }}>{"░".repeat(empty)}</span>
         <span style={{ color: T.textFaint }}>]</span>
-        <span style={{ color: T.textDim, marginLeft: 8 }}>{percent}%</span>
-        {hovered && (
-          <span style={{ color: barColor, marginLeft: 10, fontSize: "10px" }}>
-            ▲ {percent >= 80 ? "expert" : percent >= 60 ? "proficient" : "learning"}
-          </span>
-        )}
+        <span style={{ color: levelColor, marginLeft: 10, fontSize: "10px", letterSpacing: "0.05em" }}>
+          {level}
+        </span>
       </div>
 
       {/* Bottom row: desc + tags (on hover) */}
