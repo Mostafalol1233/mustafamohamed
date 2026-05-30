@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import type { Review, ContactMessage, Project, Certificate, Notification, Client, SiteSetting } from "@shared/schema";
 import { useState } from "react";
-import { Star, X, Eye, EyeOff, Plus, Edit, Trash2, Upload, Image } from "lucide-react";
+import { Star, X, Eye, EyeOff, Plus, Edit, Trash2, Upload, Image, Settings2 } from "lucide-react";
 
 export default function EnhancedAdminDashboard() {
   const { isAuthenticated } = useAuth();
@@ -57,6 +57,7 @@ export default function EnhancedAdminDashboard() {
   });
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [logoImageFile, setLogoImageFile] = useState<File | null>(null);
 
   // Queries
   const { data: allReviews = [] } = useQuery<Review[]>({
@@ -294,6 +295,37 @@ export default function EnhancedAdminDashboard() {
     },
   });
 
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch("/api/admin/site-image/logo_image_url", { method: "POST", body: formData });
+      if (!response.ok) throw new Error("Failed to upload logo");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
+      toast({ title: "Success", description: "Logo updated! Visible in nav bar." });
+      setLogoImageFile(null);
+    },
+  });
+
+  const updateSettingMutation = useMutation({
+    mutationFn: async ({ key, value }: { key: string; value: string }) => {
+      const response = await fetch(`/api/site-settings/${key}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value }),
+      });
+      if (!response.ok) throw new Error("Failed to update setting");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/site-settings"] });
+      toast({ title: "Saved", description: "Setting updated successfully." });
+    },
+  });
+
   // Helper functions
   const resetProjectForm = () => {
     setProjectForm({
@@ -454,7 +486,7 @@ export default function EnhancedAdminDashboard() {
 
         <div className="flex-1 overflow-y-auto p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6">
+            <TabsList className="grid w-full grid-cols-7 mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="projects">
                 Projects
@@ -479,6 +511,10 @@ export default function EnhancedAdminDashboard() {
               <TabsTrigger value="notifications">
                 Notifications
                 <Badge variant="secondary" className="ml-2">{activeNotifications.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="settings">
+                <Settings2 size={14} className="mr-1" />
+                Settings
               </TabsTrigger>
             </TabsList>
 
@@ -1223,6 +1259,153 @@ export default function EnhancedAdminDashboard() {
                       <div className="text-center py-8 text-muted-foreground">
                         No notifications yet. Create your first notification above!
                       </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-6">
+              {/* Available for new projects */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-green-500 inline-block" />
+                    Available for New Projects
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Controls the green "Available for new projects" badge on the hero section.
+                  </p>
+                  {(() => {
+                    const current = siteSettings.find(s => s.key === "available_for_projects")?.value;
+                    const isAvailable = current !== "false";
+                    return (
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? "bg-green-500" : "bg-gray-400"}`} />
+                          <span className="text-sm font-medium">{isAvailable ? "Currently Available" : "Currently Unavailable"}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={isAvailable ? "destructive" : "default"}
+                          onClick={() => updateSettingMutation.mutate({ key: "available_for_projects", value: isAvailable ? "false" : "true" })}
+                          disabled={updateSettingMutation.isPending}
+                        >
+                          {isAvailable ? "Mark as Unavailable" : "Mark as Available"}
+                        </Button>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+
+              {/* Logo Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image size={18} />
+                    Navigation Logo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Upload a real logo image to replace the "M" text in the navigation bar.
+                  </p>
+                  {(() => {
+                    const logoUrl = siteSettings.find(s => s.key === "logo_image_url")?.value;
+                    return logoUrl ? (
+                      <div className="flex items-center gap-3 p-3 border rounded-lg w-fit">
+                        <img src={logoUrl} alt="Logo" className="w-10 h-10 object-contain rounded" />
+                        <span className="text-sm text-muted-foreground">Current logo</span>
+                        <Button size="sm" variant="ghost" onClick={() => updateSettingMutation.mutate({ key: "logo_image_url", value: "" })}>
+                          <X size={14} />
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">No logo uploaded — showing "M" text</p>
+                    );
+                  })()}
+                  <div className="space-y-2">
+                    <Label htmlFor="logo-upload">Upload Logo Image</Label>
+                    <Input id="logo-upload" type="file" accept="image/*" onChange={(e) => setLogoImageFile(e.target.files?.[0] || null)} />
+                  </div>
+                  <Button
+                    disabled={!logoImageFile || uploadLogoMutation.isPending}
+                    onClick={() => logoImageFile && uploadLogoMutation.mutate(logoImageFile)}
+                  >
+                    <Upload size={15} className="mr-2" />
+                    {uploadLogoMutation.isPending ? "Uploading…" : "Upload Logo"}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Profile Image Upload */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image size={18} />
+                    Contact Section Profile Photo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    This photo appears on the contact section of your portfolio.
+                  </p>
+                  {(() => {
+                    const profileUrl = siteSettings.find(s => s.key === "profile_image_url")?.value;
+                    return profileUrl ? (
+                      <div className="flex items-center gap-3">
+                        <img src={profileUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-border" />
+                        <div>
+                          <p className="text-sm font-medium">Current photo</p>
+                          <Button size="sm" variant="ghost" className="text-red-500 px-0 h-auto" onClick={() => updateSettingMutation.mutate({ key: "profile_image_url", value: "" })}>
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">No photo uploaded — using default placeholder</p>
+                    );
+                  })()}
+                  <div className="space-y-2">
+                    <Label htmlFor="profile-upload-settings">Upload Profile Photo</Label>
+                    <Input id="profile-upload-settings" type="file" accept="image/*" onChange={(e) => setProfileImageFile(e.target.files?.[0] || null)} />
+                  </div>
+                  <Button
+                    disabled={!profileImageFile || uploadProfileImageMutation.isPending}
+                    onClick={() => profileImageFile && uploadProfileImageMutation.mutate(profileImageFile)}
+                  >
+                    <Upload size={15} className="mr-2" />
+                    {uploadProfileImageMutation.isPending ? "Uploading…" : "Upload Photo"}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* All current settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>All Site Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {siteSettings.filter(s => !["logo_image_url", "profile_image_url"].includes(s.key)).map((setting) => (
+                      <div key={setting.key} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                        <div>
+                          <p className="text-sm font-mono font-medium">{setting.key}</p>
+                          <p className="text-xs text-muted-foreground">{setting.value || "(empty)"}</p>
+                        </div>
+                        {setting.key === "available_for_projects" && (
+                          <Badge variant={setting.value === "true" ? "default" : "secondary"}>
+                            {setting.value === "true" ? "Available" : "Unavailable"}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                    {siteSettings.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-4">No settings yet.</p>
                     )}
                   </div>
                 </CardContent>

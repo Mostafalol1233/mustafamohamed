@@ -3,6 +3,7 @@ import { Menu, X, Settings, Moon, Sun, Monitor, Globe } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Navigation({ showAdminButton = false }: { showAdminButton?: boolean }) {
   const { isDark, mode: themeMode, toggle: toggleTheme } = useTheme();
@@ -11,6 +12,12 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
+
+  const { data: settings = [] } = useQuery<{ key: string; value: string }[]>({
+    queryKey: ["/api/site-settings"],
+    staleTime: 60_000,
+  });
+  const logoImageUrl = settings.find(s => s.key === "logo_image_url")?.value;
 
   const navLinks = [
     { label: t.nav.home, id: "home" },
@@ -76,8 +83,12 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
               className="flex items-center gap-2 group"
               data-testid="nav-logo"
             >
-              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center flex-shrink-0">
-                <span className="text-background font-bold text-sm leading-none">M</span>
+              <div className="w-7 h-7 bg-foreground rounded-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {logoImageUrl ? (
+                  <img src={logoImageUrl} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-background font-bold text-sm leading-none">M</span>
+                )}
               </div>
               <span
                 className="font-semibold text-sm tracking-tight"

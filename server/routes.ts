@@ -336,6 +336,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (e: any) { res.status(500).json({ message: e.message || "Failed to upload profile image" }); }
   });
 
+  // ── Generic site-image upload (saves URL to site_settings key) ─────────────
+  app.post("/api/admin/site-image/:key", requireAdminAuth, upload.single("image"), async (req, res) => {
+    try {
+      if (!req.file) return res.status(400).json({ message: "No image file provided" });
+      const imageUrl = `/uploads/${req.file.filename}`;
+      await storage.upsertSiteSetting(req.params.key, imageUrl);
+      res.json({ imageUrl, key: req.params.key });
+    } catch (e: any) { res.status(500).json({ message: e.message || "Failed to upload image" }); }
+  });
+
   // ── Testimonials ──────────────────────────────────────────────────────────────
 
   app.get("/api/testimonials", async (req, res) => {
