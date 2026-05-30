@@ -15,21 +15,31 @@ const LanguageContext = createContext<LanguageContextValue>({
   isRtl: false,
 });
 
-export function LanguageProvider({ children, initialLang = "en" }: { children: ReactNode; initialLang?: Lang }) {
-  const [lang, setLangState] = useState<Lang>(initialLang);
+function getInitialLang(): Lang {
+  try {
+    const saved = localStorage.getItem("portfolio-lang");
+    if (saved === "ar" || saved === "en") return saved;
+  } catch {}
+  return "en";
+}
+
+export function LanguageProvider({ children }: { children: ReactNode }) {
+  const [lang, setLangState] = useState<Lang>(getInitialLang);
 
   const setLang = (l: Lang) => {
     setLangState(l);
-    localStorage.setItem("portfolio-lang", l);
+    try { localStorage.setItem("portfolio-lang", l); } catch {}
     document.documentElement.setAttribute("lang", l);
+    document.documentElement.setAttribute("dir", l === "ar" ? "rtl" : "ltr");
   };
 
   useEffect(() => {
     document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
   }, [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: false }}>
+    <LanguageContext.Provider value={{ lang, setLang, t: translations[lang], isRtl: lang === "ar" }}>
       {children}
     </LanguageContext.Provider>
   );

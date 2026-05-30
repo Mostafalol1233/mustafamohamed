@@ -45,24 +45,24 @@ type Seg = {
 type TermLine =
   | { kind: "segs"; segs: Seg[] }
   | { kind: "blank" }
-  | { kind: "skill"; name: string; percent: number; desc: string; icon: string; tags: string[] };
+  | { kind: "skill"; name: string; percent: number; desc: string; icon: string; tags: string[]; stat: string };
 
 // ─── Skill data ───────────────────────────────────────────────────────────────
 
 const MODULES: Record<
   string,
-  { title: string; icon: string; color: string; skills: { name: string; percent: number; desc: string; icon: string; tags: string[] }[]; next: string }
+  { title: string; icon: string; color: string; skills: { name: string; percent: number; stat: string; desc: string; icon: string; tags: string[] }[]; next: string }
 > = {
   frontend: {
     title: "FRONTEND",
     icon: "⬡",
     color: "#58a6ff",
     skills: [
-      { name: "JavaScript",   percent: 90, desc: "ES6+, async/await, closures, DOM manipulation, modules", icon: "JS", tags: ["ES6+", "async", "DOM"] },
-      { name: "TypeScript",   percent: 80, desc: "typed JS, interfaces, generics, utility types",          icon: "TS", tags: ["types", "generics", "safety"] },
-      { name: "React",        percent: 87, desc: "hooks, context API, state management, custom hooks",     icon: "⚛",  tags: ["hooks", "JSX", "context"] },
-      { name: "Next.js",      percent: 82, desc: "SSR, ISR, App Router, API routes, middleware",           icon: "▲",  tags: ["SSR", "ISR", "edge"] },
-      { name: "Tailwind CSS", percent: 90, desc: "utility-first styling, JIT, responsive, dark mode",      icon: "◈",  tags: ["JIT", "responsive", "DX"] },
+      { name: "JavaScript",   percent: 90, stat: "5+ yrs · ES6+ · async-first",     desc: "ES6+, async/await, closures, DOM manipulation, modules", icon: "JS", tags: ["ES6+", "async", "DOM"] },
+      { name: "TypeScript",   percent: 80, stat: "3+ yrs · strict mode · generics",  desc: "typed JS, interfaces, generics, utility types",          icon: "TS", tags: ["types", "generics", "safety"] },
+      { name: "React",        percent: 87, stat: "4+ yrs · 15+ shipped apps",        desc: "hooks, context API, state management, custom hooks",     icon: "⚛",  tags: ["hooks", "JSX", "context"] },
+      { name: "Next.js",      percent: 82, stat: "2+ yrs · SSR / ISR / edge",        desc: "SSR, ISR, App Router, API routes, middleware",           icon: "▲",  tags: ["SSR", "ISR", "edge"] },
+      { name: "Tailwind CSS", percent: 90, stat: "3+ yrs · every project · JIT",     desc: "utility-first styling, JIT, responsive, dark mode",      icon: "◈",  tags: ["JIT", "responsive", "DX"] },
     ],
     next: "backend",
   },
@@ -71,11 +71,11 @@ const MODULES: Record<
     icon: "⬡",
     color: "#3fb950",
     skills: [
-      { name: "Node.js",         percent: 85, desc: "server runtime, async I/O, streams, event loop",         icon: "⬡", tags: ["async", "streams", "event"] },
-      { name: "Express",         percent: 85, desc: "REST APIs, middleware chains, routing, error handling",   icon: "⚡", tags: ["REST", "middleware", "auth"] },
-      { name: "PostgreSQL",      percent: 82, desc: "relational DB, SQL queries, Drizzle ORM, joins, indexes", icon: "◫", tags: ["SQL", "Drizzle", "ACID"] },
-      { name: "MongoDB",         percent: 67, desc: "document store, aggregation pipelines, Atlas",            icon: "◉", tags: ["NoSQL", "aggregate", "Atlas"] },
-      { name: "Supabase",        percent: 78, desc: "Auth, realtime, storage, RLS policies, edge functions",   icon: "◈", tags: ["auth", "realtime", "RLS"] },
+      { name: "Node.js",         percent: 85, stat: "4+ yrs · REST & WebSocket",        desc: "server runtime, async I/O, streams, event loop",         icon: "⬡", tags: ["async", "streams", "event"] },
+      { name: "Express",         percent: 85, stat: "10+ production APIs built",         desc: "REST APIs, middleware chains, routing, error handling",   icon: "⚡", tags: ["REST", "middleware", "auth"] },
+      { name: "PostgreSQL",      percent: 82, stat: "3+ yrs · Drizzle ORM · joins",     desc: "relational DB, SQL queries, Drizzle ORM, joins, indexes", icon: "◫", tags: ["SQL", "Drizzle", "ACID"] },
+      { name: "MongoDB",         percent: 67, stat: "2+ yrs · Atlas · aggregations",    desc: "document store, aggregation pipelines, Atlas",            icon: "◉", tags: ["NoSQL", "aggregate", "Atlas"] },
+      { name: "Supabase",        percent: 78, stat: "2+ yrs · RLS · auth · realtime",   desc: "Auth, realtime, storage, RLS policies, edge functions",   icon: "◈", tags: ["auth", "realtime", "RLS"] },
     ],
     next: "markup",
   },
@@ -84,11 +84,11 @@ const MODULES: Record<
     icon: "⬡",
     color: "#f78166",
     skills: [
-      { name: "HTML5",          percent: 95, desc: "semantic HTML, accessibility, SEO structure, meta",      icon: "H5", tags: ["a11y", "SEO", "semantic"] },
-      { name: "CSS3",           percent: 90, desc: "Grid, Flexbox, custom properties, animations, clamp",    icon: "C3", tags: ["Grid", "Flex", "clamp"] },
-      { name: "Figma",          percent: 72, desc: "wireframes, components, dev handoff, auto-layout",       icon: "◈", tags: ["components", "handoff", "tokens"] },
-      { name: "Shadcn/UI",      percent: 88, desc: "accessible components, theming, CVA, Radix primitives",  icon: "◉", tags: ["a11y", "Radix", "CVA"] },
-      { name: "Framer Motion",  percent: 68, desc: "spring animations, transitions, gesture-based UI",       icon: "◎", tags: ["spring", "gesture", "layout"] },
+      { name: "HTML5",          percent: 95, stat: "5+ yrs · semantic · a11y",          desc: "semantic HTML, accessibility, SEO structure, meta",      icon: "H5", tags: ["a11y", "SEO", "semantic"] },
+      { name: "CSS3",           percent: 90, stat: "5+ yrs · Grid · Flex · clamp",      desc: "Grid, Flexbox, custom properties, animations, clamp",    icon: "C3", tags: ["Grid", "Flex", "clamp"] },
+      { name: "Figma",          percent: 72, stat: "2+ yrs · dev handoff · tokens",     desc: "wireframes, components, dev handoff, auto-layout",       icon: "◈", tags: ["components", "handoff", "tokens"] },
+      { name: "Shadcn/UI",      percent: 88, stat: "5+ design systems · Radix",         desc: "accessible components, theming, CVA, Radix primitives",  icon: "◉", tags: ["a11y", "Radix", "CVA"] },
+      { name: "Framer Motion",  percent: 68, stat: "3+ live sites · spring physics",    desc: "spring animations, transitions, gesture-based UI",       icon: "◎", tags: ["spring", "gesture", "layout"] },
     ],
     next: "tools",
   },
@@ -97,11 +97,11 @@ const MODULES: Record<
     icon: "⬡",
     color: "#e3b341",
     skills: [
-      { name: "Git",        percent: 87, desc: "branching strategies, rebasing, clean commit history",     icon: "◈", tags: ["rebase", "hooks", "flow"] },
-      { name: "GitHub",     percent: 88, desc: "PRs, Actions CI/CD, code review, project management",      icon: "◉", tags: ["Actions", "CI/CD", "review"] },
-      { name: "Docker",     percent: 62, desc: "containers, docker-compose, environment reproducibility",  icon: "◫", tags: ["compose", "image", "devops"] },
-      { name: "Linux / CLI",percent: 70, desc: "bash scripting, server ops, cron, process management",    icon: "⬡", tags: ["bash", "cron", "ssh"] },
-      { name: "Vercel",     percent: 85, desc: "deployments, edge functions, preview URLs, env vars",      icon: "▲", tags: ["edge", "preview", "ISR"] },
+      { name: "Git",         percent: 87, stat: "500+ commits · rebase · hooks",      desc: "branching strategies, rebasing, clean commit history",     icon: "◈", tags: ["rebase", "hooks", "flow"] },
+      { name: "GitHub",      percent: 88, stat: "3+ CI/CD pipelines · Actions",       desc: "PRs, Actions CI/CD, code review, project management",      icon: "◉", tags: ["Actions", "CI/CD", "review"] },
+      { name: "Docker",      percent: 62, stat: "3 prod containers · compose",        desc: "containers, docker-compose, environment reproducibility",  icon: "◫", tags: ["compose", "image", "devops"] },
+      { name: "Linux / CLI", percent: 70, stat: "bash · cron · ssh · scripting",      desc: "bash scripting, server ops, cron, process management",    icon: "⬡", tags: ["bash", "cron", "ssh"] },
+      { name: "Vercel",      percent: 85, stat: "10+ deployments · edge functions",   desc: "deployments, edge functions, preview URLs, env vars",      icon: "▲", tags: ["edge", "preview", "ISR"] },
     ],
     next: "ai",
   },
@@ -110,9 +110,9 @@ const MODULES: Record<
     icon: "⬡",
     color: "#bc8cff",
     skills: [
-      { name: "REST API Design",    percent: 88, desc: "endpoint design, versioning, JWT auth, OpenAPI docs", icon: "⇌", tags: ["OpenAPI", "JWT", "CORS"] },
-      { name: "Prompt Engineering", percent: 85, desc: "system prompts, few-shot, chain-of-thought, evals",   icon: "◎", tags: ["CoT", "few-shot", "eval"] },
-      { name: "LLM APIs",           percent: 78, desc: "OpenAI/Claude integration, streaming, function calls", icon: "⚡", tags: ["streaming", "tools", "Claude"] },
+      { name: "REST API Design",    percent: 88, stat: "10+ APIs · JWT · OpenAPI docs",    desc: "endpoint design, versioning, JWT auth, OpenAPI docs", icon: "⇌", tags: ["OpenAPI", "JWT", "CORS"] },
+      { name: "Prompt Engineering", percent: 85, stat: "20+ system prompts · CoT · evals", desc: "system prompts, few-shot, chain-of-thought, evals",   icon: "◎", tags: ["CoT", "few-shot", "eval"] },
+      { name: "LLM APIs",           percent: 78, stat: "OpenAI · Claude · streaming",      desc: "OpenAI/Claude integration, streaming, function calls", icon: "⚡", tags: ["streaming", "tools", "Claude"] },
     ],
     next: "frontend",
   },
@@ -215,7 +215,7 @@ function moduleLines(cmd: string): TermLine[] {
     },
     { kind: "blank" },
     ...mod.skills.map(
-      (s): TermLine => ({ kind: "skill", name: s.name, percent: s.percent, desc: s.desc, icon: s.icon, tags: s.tags })
+      (s): TermLine => ({ kind: "skill", name: s.name, percent: s.percent, stat: s.stat, desc: s.desc, icon: s.icon, tags: s.tags })
     ),
     { kind: "blank" },
     {
@@ -337,29 +337,13 @@ function MatrixRain() {
 
 type Theme = typeof DARK_T;
 
-function SkillLine({ name, percent, desc, tags, theme: T }: {
-  name: string; percent: number; desc: string; icon: string; tags: string[]; theme: Theme;
+function SkillLine({ name, percent, stat, desc, tags, theme: T }: {
+  name: string; percent: number; stat: string; desc: string; icon: string; tags: string[]; theme: Theme;
 }) {
-  const total = Math.round(percent / 10);
-  const [filled, setFilled] = useState(0);
   const [hovered, setHovered] = useState(false);
 
-  useEffect(() => {
-    let count = 0;
-    const iv = setInterval(() => {
-      count += 1;
-      setFilled(count);
-      if (count >= total) clearInterval(iv);
-    }, 60);
-    return () => clearInterval(iv);
-  }, [total]);
-
-  const empty = 10 - filled;
-  const level   = percent >= 80 ? "advanced" : percent >= 65 ? "proficient" : "familiar";
-  const barColor = percent >= 80 ? T.green    : percent >= 65 ? T.accent     : "#e3b341";
-  const levelColor = barColor;
-
-  const IconComp = SKILL_ICONS[name];
+  const statColor = percent >= 80 ? T.green : percent >= 65 ? T.accent : "#e3b341";
+  const IconComp  = SKILL_ICONS[name];
 
   return (
     <div
@@ -375,9 +359,9 @@ function SkillLine({ name, percent, desc, tags, theme: T }: {
       }}
       data-testid={`skill-row-${name.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      {/* Top row: icon + name + bar + level */}
+      {/* Top row: icon + name + stat metadata */}
       <div className="flex items-center gap-0 text-sm leading-6" style={{ whiteSpace: "pre" }}>
-        <span style={{ color: barColor, marginRight: 8, display: "flex", alignItems: "center", flexShrink: 0 }}>
+        <span style={{ color: statColor, marginRight: 8, display: "flex", alignItems: "center", flexShrink: 0 }}>
           {IconComp
             ? <IconComp size={14} />
             : <span style={{ fontSize: 12 }}>·</span>
@@ -387,12 +371,8 @@ function SkillLine({ name, percent, desc, tags, theme: T }: {
           {name}
         </span>
         <span style={{ color: T.textFaint }}>[</span>
-        <span style={{ color: barColor }}>{"█".repeat(filled)}</span>
-        <span style={{ color: T.skillBorder }}>{"░".repeat(empty)}</span>
+        <span style={{ color: statColor, fontSize: "11px", letterSpacing: "0.02em" }}>{stat}</span>
         <span style={{ color: T.textFaint }}>]</span>
-        <span style={{ color: levelColor, marginLeft: 10, fontSize: "10px", letterSpacing: "0.05em" }}>
-          {level}
-        </span>
       </div>
 
       {/* Bottom row: desc + tags (on hover) */}

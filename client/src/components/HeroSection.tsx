@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Mail, Download } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
 
-const ROLES_EN = ["Full-Stack Developer", "Content Strategist", "UI/UX Enthusiast", "Problem Solver"];
+const ROLES_EN = ["Full-Stack Developer", "Software Engineer", "UI Enthusiast", "Problem Solver"];
 const ROLES_AR = ["مطور ويب متكامل", "استراتيجي محتوى", "مصمم واجهات", "حلّال مشكلات"];
 
 function useTypewriter(words: string[], speed = 75, pause = 2000) {

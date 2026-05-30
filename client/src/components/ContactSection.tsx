@@ -366,35 +366,46 @@ export default function ContactSection() {
 
           {/* ── Info card ── */}
           <div className="lg:col-span-2">
-            <div className="card-base p-8 flex flex-col items-center text-center gap-5">
+            <div
+              className="p-8 flex flex-col items-center text-center gap-5 rounded-xl"
+              style={{
+                background: "#0d1117",
+                border: "1px solid #30363d",
+                fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              }}
+            >
               <div className="relative">
                 <img
                   src={profileImage}
                   alt="Mustafa Mohamed"
-                  className="w-20 h-20 rounded-full object-cover border-2 border-border pointer-events-none"
-                  style={{ objectPosition: "center 20%" }}
+                  className="w-20 h-20 rounded-full object-cover pointer-events-none"
+                  style={{
+                    objectPosition: "center 20%",
+                    border: "2px solid #30363d",
+                    boxShadow: "0 0 0 3px rgba(88,166,255,0.1)",
+                  }}
                   draggable={false}
                   onContextMenu={e => e.preventDefault()}
                 />
                 <span
-                  className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-card animate-pulse-dot"
-                  style={{ background: "#3fb950" }}
+                  className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full animate-pulse-dot"
+                  style={{ background: "#3fb950", border: "2px solid #0d1117" }}
                 />
               </div>
               <div>
-                <p className="font-semibold text-foreground">Mustafa Mohamed</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Full-Stack Developer & Content Strategist
+                <p className="font-semibold" style={{ color: "#e6edf3" }}>Mustafa Mohamed</p>
+                <p className="text-xs mt-0.5" style={{ color: "#58a6ff", fontFamily: "inherit" }}>
+                  Full-Stack Developer
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs" style={{ color: "#8b949e" }}>
                 <span
                   className="w-2 h-2 rounded-full animate-pulse-dot"
                   style={{ background: "#3fb950" }}
                 />
                 <span>{t.contact.online}</span>
               </div>
-              <div className="w-full border-t border-border" />
+              <div className="w-full" style={{ borderTop: "1px solid #21262d" }} />
               <div className="flex gap-3 justify-center">
                 {SOCIALS.map(({ Icon, label, href, tip }) => (
                   <div key={label} className="relative group">
@@ -402,20 +413,38 @@ export default function ContactSection() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/30 transition-all"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center transition-all"
+                      style={{
+                        border: "1px solid #30363d",
+                        color: "#8b949e",
+                        background: "transparent",
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = "#58a6ff";
+                        e.currentTarget.style.color = "#58a6ff";
+                        e.currentTarget.style.background = "rgba(88,166,255,0.08)";
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = "#30363d";
+                        e.currentTarget.style.color = "#8b949e";
+                        e.currentTarget.style.background = "transparent";
+                      }}
                       aria-label={label}
                       data-testid={`link-social-${label.toLowerCase()}`}
                     >
                       <Icon size={18} />
                     </a>
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs font-medium bg-foreground text-background whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div
+                      className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+                      style={{ background: "#161b22", color: "#e6edf3", border: "1px solid #30363d" }}
+                    >
                       {tip}
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="w-full border-t border-border" />
-              <p className="text-xs text-muted-foreground leading-relaxed italic">
+              <div className="w-full" style={{ borderTop: "1px solid #21262d" }} />
+              <p className="text-xs leading-relaxed italic" style={{ color: "#484f58", fontFamily: "inherit" }}>
                 "{t.contact.quote}"
               </p>
             </div>
