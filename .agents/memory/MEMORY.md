@@ -1,5 +1,4 @@
 - [Theme 3-state](theme-3-state.md) — useTheme now cycles light→dark→system; always use `mode` not `isDark` to drive the toggle icon.
 - [SkillsSection modules](skills-modules.md) — consolidated from 8 to 5 modules (frontend/backend/languages/tools/specialty); scanLines count is 25, not 36.
-- [Admin auth wiring](admin-auth-wiring.md) — admin is Express session only; all queryClient Supabase intercepts removed; never re-add Supabase to queryClient.
-- [Profile settings via site_settings](profile-settings-express.md) — profile fields stored as key-value rows in site_settings table; GET/POST /api/profile-settings reads/writes them via storage.upsertSiteSetting.
+- [Supabase-only frontend](supabase-migration.md) — ALL data fetching uses Supabase directly; queryKeys use "sb-*" prefix + explicit queryFn. Express only serves Vite dev build.
 - [Wisdom quotes](wisdom-quotes.md) — quote card uses wisdomQuotes.ts (getDailyWisdom); tab label is "wisdom.md"; field is quote.author not quote.character.

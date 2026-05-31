@@ -23,7 +23,8 @@ export default function BlogPostPage() {
   const { isDark, toggle: toggleTheme } = useTheme();
 
   const { data: post, isLoading, isError } = useQuery<BlogPost>({
-    queryKey: [`/api/blog/${slug}`],
+    queryKey: ["sb-blog-post", slug],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchBlogPost(slug!)),
     enabled: !!slug,
   });
 

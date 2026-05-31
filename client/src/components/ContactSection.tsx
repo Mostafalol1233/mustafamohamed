@@ -31,7 +31,8 @@ export default function ContactSection() {
   useEffect(() => { tRef.current = t; }, [t]);
 
   const { data: siteSettings = [] } = useQuery<SiteSetting[]>({
-    queryKey: ["/api/site-settings"],
+    queryKey: ["sb-site-settings"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchSiteSettings()),
     staleTime: 60_000,
   });
   const profileImageUrl = siteSettings.find(s => s.key === "profile_image_url")?.value || fallbackProfileImage;

@@ -1,52 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 import {
   LayoutDashboard, FolderOpen, Star, MessageSquare, Award, Bell, BarChart2,
-  Download, Settings, LogOut, Plus, Trash2, CheckCircle, Eye, EyeOff,
-  RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink, User, Save, ToggleLeft, ToggleRight,
+  Settings, LogOut, Plus, Trash2, Eye, EyeOff,
+  RefreshCw, Key, Check, AlertCircle, Loader2, FileText, ExternalLink,
+  User, Save, ToggleLeft, ToggleRight, Upload, Image as ImageIcon,
 } from "lucide-react";
 import type { Project, ContactMessage, Notification, BlogPost } from "@shared/schema";
-import { apiRequest, queryClient as qcInstance } from "@/lib/queryClient";
+import {
+  supabase,
+  adminLogin, adminLogout,
+  fetchProjects, fetchBlogPosts, fetchMessages, fetchNotifications,
+  fetchProfileSettings, updateProfileSettings,
+  createProject, updateProject, deleteProject,
+  createBlogPost, updateBlogPost, deleteBlogPost,
+  createNotification, deleteNotification, toggleNotification,
+  markMessageRead, deleteContactMessage,
+  uploadProjectImage,
+  type ProfileSettings,
+} from "@/lib/supabase";
 
-interface ProfileSettings {
-  id: number;
-  displayName: string;
-  role: string;
-  email: string;
-  githubUrl: string;
-  linkedinUrl: string;
-  whatsappUrl: string;
-  contactQuote: string;
-  isAvailable: boolean;
-  avatarUrl: string | null;
-  logoText: string;
-  siteName: string;
-}
-
-async function expressLogin(email: string, password: string) {
-  const res = await fetch("/api/admin/login", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: "Login failed" }));
-    throw new Error(err.message || "Invalid credentials");
-  }
-  return res.json();
-}
-
-async function expressLogout() {
-  await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -104,11 +83,22 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
 // ─── Auth Hook ────────────────────────────────────────────────────────────────
 
 function useAdminAuth() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["/api/auth/user"],
-    retry: false,
+  const [state, setState] = useState<{ isAuth: boolean; isLoading: boolean }>({
+    isAuth: false,
+    isLoading: true,
   });
-  return { isAuth: !error && !!data, isLoading };
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setState({ isAuth: !!session?.user, isLoading: false });
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setState({ isAuth: !!session?.user, isLoading: false });
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  return state;
 }
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
@@ -128,10 +118,16 @@ type Tab = typeof TABS[number]["id"];
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab() {
-  const { data: projects = [] } = useQuery<Project[]>({ queryKey: ["/api/projects/all"] });
-  const { data: messages = [] } = useQuery<ContactMessage[]>({ queryKey: ["/api/contact"] });
+  const { data: projects = [] } = useQuery({
+    queryKey: ["sb-projects-all"],
+    queryFn: () => fetchProjects(true),
+  });
+  const { data: messages = [] } = useQuery({
+    queryKey: ["sb-messages"],
+    queryFn: fetchMessages,
+  });
 
-  const unread = (messages as ContactMessage[]).filter(m => !m.isRead).length;
+  const unread = messages.filter((m: any) => !m.isRead).length;
   const weekData = [
     { day: "Mon", visits: 12 }, { day: "Tue", visits: 19 }, { day: "Wed", visits: 8 },
     { day: "Thu", visits: 24 }, { day: "Fri", visits: 31 }, { day: "Sat", visits: 14 }, { day: "Sun", visits: 9 },
@@ -140,9 +136,9 @@ function OverviewTab() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard label="Total Projects"   value={projects.length} icon={FolderOpen}    color="bg-blue-500" />
-        <StatCard label="Unread Messages"  value={unread}          icon={MessageSquare} color="bg-green-500" />
-        <StatCard label="Active Since"       value="2021"            icon={BarChart2}     color="bg-indigo-500" />
+        <StatCard label="Total Projects"  value={projects.length} icon={FolderOpen}    color="bg-blue-500" />
+        <StatCard label="Unread Messages" value={unread}          icon={MessageSquare} color="bg-green-500" />
+        <StatCard label="Active Since"    value="2021"            icon={BarChart2}      color="bg-indigo-500" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -162,7 +158,7 @@ function OverviewTab() {
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="font-semibold text-gray-900 mb-4 text-sm">Recent Messages</h3>
           <div className="space-y-3">
-            {(messages as ContactMessage[]).slice(0, 4).map(m => (
+            {messages.slice(0, 4).map((m: any) => (
               <div key={m.id} className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold flex-shrink-0">
                   {m.name.charAt(0).toUpperCase()}
@@ -190,56 +186,72 @@ function OverviewTab() {
 function ProjectsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: projects = [], isLoading } = useQuery<Project[]>({ queryKey: ["/api/projects/all"] });
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ["sb-projects-all"],
+    queryFn: () => fetchProjects(true),
+  });
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", technologies: "", liveUrl: "", githubUrl: "", imageUrl: "", isVisible: true });
+  const [form, setForm] = useState({
+    title: "", description: "", technologies: "",
+    liveUrl: "", githubUrl: "", imageUrl: "", isVisible: true,
+  });
   const [showForm, setShowForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/projects/all"] });
-    qc.invalidateQueries({ queryKey: ["/api/projects"] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["sb-projects-all"] });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadProjectImage(file);
+      setForm(f => ({ ...f, imageUrl: url }));
+      toast({ title: "Image uploaded" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/projects", {
-        title: form.title, description: form.description,
-        technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
-        liveUrl: form.liveUrl || null, githubUrl: form.githubUrl || null, isVisible: true,
-      });
-      return res.json();
-    },
+    mutationFn: () => createProject({
+      title: form.title, description: form.description,
+      technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
+      liveUrl: form.liveUrl || undefined, githubUrl: form.githubUrl || undefined,
+      imageUrl: form.imageUrl || undefined,
+    }),
     onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Project created" }); },
     onError: (e: any) => toast({ title: "Failed to create project", description: e.message, variant: "destructive" }),
   });
 
   const updateMut = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("PATCH", `/api/projects/${id}`, {
-        title: form.title, description: form.description,
-        technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
-        liveUrl: form.liveUrl || null, githubUrl: form.githubUrl || null, isVisible: form.isVisible,
-      });
-      return res.json();
-    },
+    mutationFn: (id: number) => updateProject(id, {
+      title: form.title, description: form.description,
+      technologies: form.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
+      liveUrl: form.liveUrl || undefined, githubUrl: form.githubUrl || undefined,
+      imageUrl: form.imageUrl || undefined, isVisible: form.isVisible,
+    }),
     onSuccess: () => { invalidate(); setEditId(null); setShowForm(false); toast({ title: "Project updated" }); },
     onError: (e: any) => toast({ title: "Failed to update", description: e.message, variant: "destructive" }),
   });
 
   const toggleMut = useMutation({
-    mutationFn: async ({ id, isVisible }: { id: number; isVisible: boolean }) => {
-      await apiRequest("PATCH", `/api/projects/${id}`, { isVisible });
-    },
+    mutationFn: ({ id, isVisible }: { id: number; isVisible: boolean }) =>
+      updateProject(id, { isVisible }),
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/projects/${id}`); },
+    mutationFn: (id: number) => deleteProject(id),
     onSuccess: () => { invalidate(); toast({ title: "Project deleted" }); },
     onError: (e: any) => toast({ title: "Failed to delete", description: e.message, variant: "destructive" }),
   });
 
-  const startEdit = (p: Project) => {
+  const startEdit = (p: any) => {
     setForm({
       title: p.title, description: p.description,
       technologies: (p.technologies || []).join(", "),
@@ -266,7 +278,13 @@ function ProjectsTab() {
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
           <h3 className="font-medium text-gray-900 text-sm">{editId ? "Edit Project" : "New Project"}</h3>
           <div className="grid md:grid-cols-2 gap-3">
-            {([["title", "Title *"], ["description", "Description *"], ["technologies", "Technologies (comma separated)"], ["liveUrl", "Live URL"], ["githubUrl", "GitHub URL"], ["imageUrl", "Image URL"]] as [string, string][]).map(([key, label]) => (
+            {([
+              ["title", "Title *"],
+              ["description", "Description *"],
+              ["technologies", "Technologies (comma separated)"],
+              ["liveUrl", "Live URL"],
+              ["githubUrl", "GitHub URL"],
+            ] as [string, string][]).map(([key, label]) => (
               <div key={key} className={key === "description" ? "md:col-span-2" : ""}>
                 <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
                 {key === "description" ? (
@@ -278,13 +296,65 @@ function ProjectsTab() {
                 )}
               </div>
             ))}
+
+            {/* Image Upload Field */}
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Project Image</label>
+              <div className="flex gap-2 items-start">
+                <input
+                  type="text"
+                  value={form.imageUrl}
+                  onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                  placeholder="https://... or upload below"
+                  className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Btn
+                  variant="outline"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading
+                    ? <Loader2 size={13} className="animate-spin" />
+                    : <Upload size={13} />
+                  }
+                  {uploading ? "Uploading…" : "Upload"}
+                </Btn>
+              </div>
+              {form.imageUrl && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img
+                    src={form.imageUrl}
+                    alt="preview"
+                    className="w-16 h-10 object-cover rounded border border-gray-200"
+                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                  <button
+                    onClick={() => setForm(f => ({ ...f, imageUrl: "" }))}
+                    className="text-xs text-red-500 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
+
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={form.isVisible} onChange={e => setForm(f => ({ ...f, isVisible: e.target.checked }))} />
             <span className="text-sm text-gray-700">Visible on portfolio</span>
           </label>
           <div className="flex gap-2">
-            <Btn onClick={() => editId ? updateMut.mutate(editId) : createMut.mutate()} disabled={!form.title || !form.description || createMut.isPending || updateMut.isPending}>
+            <Btn
+              onClick={() => editId ? updateMut.mutate(editId) : createMut.mutate()}
+              disabled={!form.title || !form.description || createMut.isPending || updateMut.isPending}
+            >
               {(createMut.isPending || updateMut.isPending) && <Loader2 size={13} className="animate-spin" />}
               {editId ? "Save Changes" : "Create Project"}
             </Btn>
@@ -303,17 +373,26 @@ function ProjectsTab() {
           </tr></thead>
           <tbody className="divide-y divide-gray-50">
             {isLoading ? (
-              <tr><td colSpan={4} className="text-center py-12 text-gray-400 text-sm"><Loader2 className="animate-spin inline-block mr-2" size={14} />Loading...</td></tr>
-            ) : (projects as Project[]).map(p => (
+              <tr><td colSpan={4} className="text-center py-12 text-gray-400 text-sm">
+                <Loader2 className="animate-spin inline-block mr-2" size={14} />Loading...
+              </td></tr>
+            ) : projects.map((p: any) => (
               <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-gray-900 truncate max-w-[160px]">{p.title}</div>
-                  <div className="text-xs text-gray-400 truncate max-w-[160px]">{p.description}</div>
+                  <div className="flex items-center gap-2">
+                    {p.imageUrl && (
+                      <img src={p.imageUrl} alt="" className="w-8 h-6 object-cover rounded flex-shrink-0 border border-gray-100" />
+                    )}
+                    <div>
+                      <div className="font-medium text-gray-900 truncate max-w-[140px]">{p.title}</div>
+                      <div className="text-xs text-gray-400 truncate max-w-[140px]">{p.description}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-3 hidden md:table-cell">
                   <div className="flex flex-wrap gap-1">
-                    {(p.technologies || []).slice(0, 3).map(t => <Badge key={t}>{t}</Badge>)}
-                    {(p.technologies || []).length > 3 && <Badge>+{(p.technologies||[]).length - 3}</Badge>}
+                    {(p.technologies || []).slice(0, 3).map((t: string) => <Badge key={t}>{t}</Badge>)}
+                    {(p.technologies || []).length > 3 && <Badge>+{(p.technologies || []).length - 3}</Badge>}
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -325,7 +404,9 @@ function ProjectsTab() {
                       {p.isVisible ? <EyeOff size={13} /> : <Eye size={13} />}
                     </Btn>
                     <Btn size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Btn>
-                    <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete this project?")) deleteMut.mutate(p.id); }}><Trash2 size={13} /></Btn>
+                    <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete this project?")) deleteMut.mutate(p.id); }}>
+                      <Trash2 size={13} />
+                    </Btn>
                   </div>
                 </td>
               </tr>
@@ -345,7 +426,10 @@ function ProjectsTab() {
 function ArticlesTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({ queryKey: ["/api/blog/all"] });
+  const { data: posts = [], isLoading } = useQuery({
+    queryKey: ["sb-blog-all"],
+    queryFn: () => fetchBlogPosts(true),
+  });
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({
@@ -353,49 +437,37 @@ function ArticlesTab() {
     readTime: 5, isPublished: true,
   });
 
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/blog/all"] });
-    qc.invalidateQueries({ queryKey: ["/api/blog"] });
-  };
-
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["sb-blog-all"] });
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/blog", {
-        ...form,
-        tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
-        slug: form.slug || slugify(form.title),
-        author: "Mustafa Mohamed",
-      });
-      return res.json();
-    },
+    mutationFn: () => createBlogPost({
+      ...form,
+      tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+      slug: form.slug || slugify(form.title),
+    }),
     onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Article created" }); },
     onError: (e: any) => toast({ title: "Failed to create article", description: e.message, variant: "destructive" }),
   });
 
   const updateMut = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest("PATCH", `/api/blog/${id}`, {
-        ...form,
-        tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
-      });
-      return res.json();
-    },
+    mutationFn: (id: number) => updateBlogPost(id, {
+      ...form,
+      tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+    }),
     onSuccess: () => { invalidate(); setShowForm(false); setEditId(null); resetForm(); toast({ title: "Article updated" }); },
     onError: (e: any) => toast({ title: "Failed to update article", description: e.message, variant: "destructive" }),
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/blog/${id}`); },
+    mutationFn: (id: number) => deleteBlogPost(id),
     onSuccess: () => { invalidate(); toast({ title: "Article deleted" }); },
     onError: (e: any) => toast({ title: "Failed to delete", description: e.message, variant: "destructive" }),
   });
 
   const togglePublish = useMutation({
-    mutationFn: async ({ id, isPublished }: { id: number; isPublished: boolean }) => {
-      await apiRequest("PATCH", `/api/blog/${id}`, { isPublished });
-    },
+    mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) =>
+      updateBlogPost(id, { isPublished }),
     onSuccess: invalidate,
   });
 
@@ -404,7 +476,7 @@ function ArticlesTab() {
     setEditId(null);
   };
 
-  const startEdit = (p: BlogPost) => {
+  const startEdit = (p: any) => {
     setForm({
       title: p.title, slug: p.slug, excerpt: p.excerpt,
       content: p.content || "", coverImage: p.coverImage || "",
@@ -489,7 +561,7 @@ function ArticlesTab() {
               <tr><td colSpan={4} className="text-center py-12 text-gray-400 text-sm">
                 <Loader2 className="animate-spin inline-block mr-2" size={14} />Loading...
               </td></tr>
-            ) : (posts as BlogPost[]).map(p => (
+            ) : posts.map((p: any) => (
               <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3">
                   <div className="font-medium text-gray-900 truncate max-w-[180px]">{p.title}</div>
@@ -497,7 +569,7 @@ function ArticlesTab() {
                 </td>
                 <td className="px-4 py-3 hidden md:table-cell">
                   <div className="flex flex-wrap gap-1">
-                    {(p.tags || []).slice(0, 3).map(t => <Badge key={t}>{t}</Badge>)}
+                    {(p.tags || []).slice(0, 3).map((t: string) => <Badge key={t}>{t}</Badge>)}
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -534,26 +606,25 @@ function ArticlesTab() {
 function MessagesTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: messages = [], isLoading } = useQuery<ContactMessage[]>({ queryKey: ["/api/contact"] });
+  const { data: messages = [], isLoading } = useQuery({
+    queryKey: ["sb-messages"],
+    queryFn: fetchMessages,
+  });
   const [selected, setSelected] = useState<number | null>(null);
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["/api/contact"] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["sb-messages"] });
 
   const readMut = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("PATCH", `/api/contact/${id}/read`, {});
-    },
+    mutationFn: (id: number) => markMessageRead(id),
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/contact/${id}`);
-    },
+    mutationFn: (id: number) => deleteContactMessage(id),
     onSuccess: () => { invalidate(); setSelected(null); toast({ title: "Message deleted" }); },
   });
 
-  const msg = (messages as ContactMessage[]).find(m => m.id === selected);
+  const msg = messages.find((m: any) => m.id === selected);
 
   return (
     <div className="space-y-4">
@@ -561,7 +632,7 @@ function MessagesTab() {
       <div className="grid lg:grid-cols-5 gap-4">
         <div className="lg:col-span-2 space-y-2">
           {isLoading ? <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
-          : (messages as ContactMessage[]).map(m => (
+          : messages.map((m: any) => (
             <button key={m.id} onClick={() => { setSelected(m.id); if (!m.isRead) readMut.mutate(m.id); }}
               className={cn("w-full text-left p-3 rounded-xl border transition-all",
                 selected === m.id ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 bg-white hover:bg-gray-50")}>
@@ -581,18 +652,22 @@ function MessagesTab() {
             <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-gray-900">{msg.name}</h3>
-                  <p className="text-sm text-blue-600">{msg.email}</p>
-                  {msg.subject && <p className="text-xs text-gray-500 mt-1">Re: {msg.subject}</p>}
+                  <h3 className="font-semibold text-gray-900">{(msg as any).name}</h3>
+                  <p className="text-sm text-blue-600">{(msg as any).email}</p>
+                  {(msg as any).subject && <p className="text-xs text-gray-500 mt-1">Re: {(msg as any).subject}</p>}
                 </div>
-                <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete message?")) deleteMut.mutate(msg.id); }}><Trash2 size={13} /></Btn>
+                <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete message?")) deleteMut.mutate((msg as any).id); }}>
+                  <Trash2 size={13} />
+                </Btn>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap border border-gray-100">{msg.message}</div>
+              <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap border border-gray-100">
+                {(msg as any).message}
+              </div>
               <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>{fmtDate(msg.createdAt)}</span>
-                <Badge variant={msg.isRead ? "green" : "blue"}>{msg.isRead ? "Read" : "Unread"}</Badge>
+                <span>{fmtDate((msg as any).createdAt)}</span>
+                <Badge variant={(msg as any).isRead ? "green" : "blue"}>{(msg as any).isRead ? "Read" : "Unread"}</Badge>
               </div>
-              <a href={`mailto:${msg.email}?subject=Re: ${msg.subject || "Your message"}`}
+              <a href={`mailto:${(msg as any).email}?subject=Re: ${(msg as any).subject || "Your message"}`}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline">
                 ↗ Reply via email
               </a>
@@ -613,32 +688,29 @@ function MessagesTab() {
 function NotificationsTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: notifs = [], isLoading } = useQuery<Notification[]>({ queryKey: ["/api/notifications/all"] });
+  const { data: notifs = [], isLoading } = useQuery({
+    queryKey: ["sb-notifications-all"],
+    queryFn: () => fetchNotifications(true),
+  });
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: "", message: "", type: "info" as "info" | "success" | "warning" | "error" });
 
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["/api/notifications/all"] });
-    qc.invalidateQueries({ queryKey: ["/api/notifications"] });
-  };
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["sb-notifications-all"] });
 
   const createMut = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/notifications", form);
-    },
+    mutationFn: () => createNotification(form),
     onSuccess: () => { invalidate(); setShowForm(false); setForm({ title: "", message: "", type: "info" }); toast({ title: "Notification created" }); },
     onError: (e: any) => toast({ title: "Failed to create", description: e.message, variant: "destructive" }),
   });
 
   const toggleMut = useMutation({
-    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      await apiRequest("PATCH", `/api/notifications/${id}`, { isActive });
-    },
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      toggleNotification(id, isActive),
     onSuccess: invalidate,
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/notifications/${id}`); },
+    mutationFn: (id: number) => deleteNotification(id),
     onSuccess: () => { invalidate(); toast({ title: "Notification deleted" }); },
   });
 
@@ -680,7 +752,7 @@ function NotificationsTab() {
 
       <div className="space-y-2">
         {isLoading ? <div className="text-center py-8 text-gray-400 text-sm">Loading...</div>
-        : (notifs as Notification[]).map(n => (
+        : notifs.map((n: any) => (
           <div key={n.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-3">
             <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${typeColors[n.type] || "bg-gray-400"}`} />
             <div className="flex-1 min-w-0">
@@ -695,11 +767,15 @@ function NotificationsTab() {
               <Btn size="sm" variant="outline" onClick={() => toggleMut.mutate({ id: n.id, isActive: !n.isActive })}>
                 {n.isActive ? <EyeOff size={13} /> : <Eye size={13} />}
               </Btn>
-              <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete?")) deleteMut.mutate(n.id); }}><Trash2 size={13} /></Btn>
+              <Btn size="sm" variant="danger" onClick={() => { if (confirm("Delete?")) deleteMut.mutate(n.id); }}>
+                <Trash2 size={13} />
+              </Btn>
             </div>
           </div>
         ))}
-        {!isLoading && notifs.length === 0 && <div className="text-center py-12 text-gray-400 text-sm">No notifications. Create one to show a banner on the site.</div>}
+        {!isLoading && notifs.length === 0 && (
+          <div className="text-center py-12 text-gray-400 text-sm">No notifications. Create one to show a banner on the site.</div>
+        )}
       </div>
     </div>
   );
@@ -721,7 +797,9 @@ function AnalyticsTab() {
   return (
     <div className="space-y-6">
       <h2 className="font-semibold text-gray-900">Analytics</h2>
-      <p className="text-sm text-gray-500">Analytics data is currently shown as sample data. Integrate a real analytics provider (e.g. Plausible, PostHog) to track real visits.</p>
+      <p className="text-sm text-gray-500">
+        Analytics data is currently shown as sample data. Integrate a real analytics provider (e.g. Plausible, PostHog) to track real visits.
+      </p>
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h3 className="font-semibold text-gray-900 mb-4 text-sm">Weekly Visits</h3>
@@ -757,10 +835,15 @@ function AnalyticsTab() {
 function ProfileTab() {
   const qc = useQueryClient();
   const { toast } = useToast();
-  const { data: profile } = useQuery<ProfileSettings>({ queryKey: ["/api/profile-settings"] });
+  const { data: profile } = useQuery<ProfileSettings>({
+    queryKey: ["sb-profile"],
+    queryFn: fetchProfileSettings,
+  });
 
   const [form, setForm] = useState<Partial<Omit<ProfileSettings, "id">>>({});
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (k: keyof Omit<ProfileSettings, "id">, v: any) =>
     setForm(f => ({ ...f, [k]: v }));
@@ -768,15 +851,29 @@ function ProfileTab() {
   const val = (k: keyof Omit<ProfileSettings, "id">) =>
     form[k] !== undefined ? form[k] : (profile?.[k] ?? "");
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadProjectImage(file);
+      set("avatarUrl", url);
+      toast({ title: "Avatar uploaded" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const saveMut = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/profile-settings", form);
-    },
+    mutationFn: () => updateProfileSettings(form),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["/api/profile-settings"] });
+      qc.invalidateQueries({ queryKey: ["sb-profile"] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-      toast({ title: "Profile saved" });
+      toast({ title: "Profile saved — changes will appear on the site" });
       setForm({});
     },
     onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
@@ -800,12 +897,50 @@ function ProfileTab() {
   return (
     <div className="space-y-6 max-w-xl">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Profile & Contact</h2>
+        <h2 className="font-semibold text-gray-900">Profile &amp; Contact</h2>
         <Btn onClick={() => saveMut.mutate()} disabled={saveMut.isPending || Object.keys(form).length === 0}>
           {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> Save Changes</>}
         </Btn>
       </div>
 
+      {/* Avatar */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+        <h3 className="font-medium text-gray-900 text-sm">Avatar / Profile Picture</h3>
+        <div className="flex items-center gap-4">
+          {val("avatarUrl") ? (
+            <img
+              src={val("avatarUrl") as string}
+              alt="avatar"
+              className="w-16 h-16 rounded-full object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+              <User size={24} className="text-gray-400" />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <input
+              type="url"
+              value={val("avatarUrl") as string}
+              onChange={e => set("avatarUrl", e.target.value || null)}
+              placeholder="https://... (paste URL)"
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            />
+            <div className="flex gap-2">
+              <input ref={fileRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+              <Btn size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                {uploading ? "Uploading…" : "Upload Image"}
+              </Btn>
+              {val("avatarUrl") && (
+                <Btn size="sm" variant="ghost" onClick={() => set("avatarUrl", null)}>Remove</Btn>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Identity */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
         <h3 className="font-medium text-gray-900 text-sm">Identity</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -818,6 +953,7 @@ function ProfileTab() {
         </div>
       </div>
 
+      {/* Contact Links */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
         <h3 className="font-medium text-gray-900 text-sm">Contact Links</h3>
         <Field label="Email" field="email" placeholder="you@example.com" type="email" />
@@ -826,8 +962,9 @@ function ProfileTab() {
         <Field label="WhatsApp URL" field="whatsappUrl" placeholder="https://wa.me/+1234567890" />
       </div>
 
+      {/* Quote & Status */}
       <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-        <h3 className="font-medium text-gray-900 text-sm">Card Quote & Status</h3>
+        <h3 className="font-medium text-gray-900 text-sm">Card Quote &amp; Status</h3>
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Contact Section Quote</label>
           <textarea
@@ -838,20 +975,10 @@ function ProfileTab() {
             className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none"
           />
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Avatar URL (optional)</label>
-          <input
-            type="url"
-            value={val("avatarUrl") as string}
-            onChange={e => set("avatarUrl", e.target.value || null)}
-            placeholder="https://..."
-            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
-          />
-        </div>
         <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
           <div>
             <p className="text-sm font-medium text-gray-900">Available for new projects</p>
-            <p className="text-xs text-gray-500">Controls the green dot on your contact card</p>
+            <p className="text-xs text-gray-500">Controls the green dot on your hero card</p>
           </div>
           <button
             onClick={() => set("isAvailable", !(val("isAvailable") as boolean))}
@@ -864,7 +991,6 @@ function ProfileTab() {
           </button>
         </div>
       </div>
-
     </div>
   );
 }
@@ -875,19 +1001,19 @@ function SettingsTab() {
   return (
     <div className="space-y-6">
       <h2 className="font-semibold text-gray-900">Settings</h2>
-
       <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 max-w-md">
-        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2"><Key size={14} /> Admin Credentials</h3>
+        <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2">
+          <Key size={14} /> Admin Credentials
+        </h3>
         <p className="text-xs text-blue-700 leading-relaxed">
-          Your admin login is managed via the Express server session.<br /><br />
-          Credentials are configured in <code className="bg-blue-100 px-1 rounded">server/adminAuth.ts</code>. Default: <code className="bg-blue-100 px-1 rounded">admin@portfolio.com</code>.
+          Your admin login is managed by <strong>Supabase Authentication</strong>.<br /><br />
+          To change your password, go to your Supabase project → Authentication → Users and update it from there.
         </p>
       </div>
-
       <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-md space-y-2">
         <h3 className="font-semibold text-gray-900 text-sm">Database</h3>
         <p className="text-xs text-gray-500">
-          All portfolio data is stored in your local PostgreSQL database via Drizzle ORM. Use the <code className="bg-gray-100 px-1 rounded">DATABASE_URL</code> environment variable to connect.
+          All portfolio data is stored in your Supabase PostgreSQL database. Changes in the admin dashboard sync directly — no server required.
         </p>
       </div>
     </div>
@@ -897,7 +1023,6 @@ function SettingsTab() {
 // ─── Login Page ───────────────────────────────────────────────────────────────
 
 function LoginPage() {
-  const qc = useQueryClient();
   const { toast } = useToast();
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -908,8 +1033,7 @@ function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await expressLogin(form.email, form.password);
-      qc.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await adminLogin(form.email, form.password);
       toast({ title: "Welcome back!" });
     } catch (e: any) {
       setError(e.message || "Invalid credentials");
@@ -970,9 +1094,9 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const logoutMut = useMutation({
-    mutationFn: expressLogout,
+    mutationFn: adminLogout,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      qc.clear();
       toast({ title: "Logged out" });
     },
   });

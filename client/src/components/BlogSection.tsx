@@ -175,7 +175,8 @@ export default function BlogSection() {
   const [showAll, setShowAll] = useState(false);
 
   const { data: apiPosts } = useQuery<BlogPost[]>({
-    queryKey: ["/api/blog"],
+    queryKey: ["sb-blog"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchBlogPosts(false)),
   });
 
   const posts = (apiPosts && apiPosts.length > 0 ? apiPosts : FALLBACK_POSTS).filter(p => p.isPublished);

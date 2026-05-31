@@ -57,7 +57,20 @@ function CertCard({ cert, delay }: { cert: typeof staticCerts[0]; delay: number 
 export default function CertificationsSection() {
   const { t } = useLang();
   const { data: dbCerts = [] } = useQuery<Certificate[]>({
-    queryKey: ["/api/certificates"],
+    queryKey: ["sb-certificates"],
+    queryFn: async () => {
+      const { supabase } = await import("@/lib/supabase");
+      const { data, error } = await supabase
+        .from("certificates")
+        .select("*")
+        .eq("is_visible", true)
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return (data ?? []).map((c: any) => ({
+        id: c.id, title: c.title, imageUrl: c.image_url ?? null,
+        issueDate: c.issue_date ?? null, isVisible: c.is_visible ?? true, createdAt: c.created_at,
+      }));
+    },
   });
 
   const extraCerts = dbCerts.map(c => ({

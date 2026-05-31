@@ -198,7 +198,8 @@ function ViewerSkeleton() {
 export default function PortfolioSection() {
   const { t } = useLang();
   const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
+    queryKey: ["sb-projects"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchProjects(false)),
   });
 
   return (

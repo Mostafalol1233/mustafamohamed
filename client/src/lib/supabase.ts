@@ -5,7 +5,7 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 export const supabase = createClient(url, key);
 
-// ─── Row → camelCase transforms ──────────────────────────────────────────────
+// ─── Row → camelCase transforms ───────────────────────────────────────────────
 
 export function toProject(r: any) {
   return {
@@ -61,7 +61,7 @@ export function toMessage(r: any) {
   };
 }
 
-// ─── Query helpers ────────────────────────────────────────────────────────────
+// ─── Query helpers ─────────────────────────────────────────────────────────────
 
 export async function fetchProjects(adminAll = false) {
   let q = supabase.from("projects").select("*").order("created_at", { ascending: false });
@@ -86,9 +86,10 @@ export async function fetchBlogPost(slug: string) {
   return toBlogPost(data);
 }
 
-export async function fetchNotifications() {
-  const { data, error } = await supabase
-    .from("notifications").select("*").eq("is_active", true);
+export async function fetchNotifications(adminAll = false) {
+  let q = supabase.from("notifications").select("*").order("created_at", { ascending: false });
+  if (!adminAll) q = (q as any).eq("is_active", true);
+  const { data, error } = await q;
   if (error) throw new Error(error.message);
   return (data ?? []).map(toNotification);
 }
@@ -100,7 +101,23 @@ export async function fetchMessages() {
   return (data ?? []).map(toMessage);
 }
 
-// ─── Mutation helpers ─────────────────────────────────────────────────────────
+export async function fetchSiteSettings(): Promise<{ key: string; value: string }[]> {
+  try {
+    const { data, error } = await supabase.from("site_settings").select("key, value");
+    if (error || !data) return [];
+    return data as { key: string; value: string }[];
+  } catch {
+    return [];
+  }
+}
+
+export async function updateSiteSettings(settings: Record<string, string>) {
+  const rows = Object.entries(settings).map(([key, value]) => ({ key, value }));
+  const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
+  if (error) throw new Error(error.message);
+}
+
+// ─── Mutation helpers ──────────────────────────────────────────────────────────
 
 export async function sendContactMessage(payload: {
   name: string; email: string; subject: string; message: string;
@@ -108,6 +125,25 @@ export async function sendContactMessage(payload: {
   const { error } = await supabase.from("contact_messages").insert([payload]);
   if (error) throw new Error(error.message);
 }
+
+export async function markMessageRead(id: number) {
+  const { error } = await supabase
+    .from("contact_messages").update({ is_read: true }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteContactMessage(id: number) {
+  const { error } = await supabase.from("contact_messages").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function toggleNotification(id: number, isActive: boolean) {
+  const { error } = await supabase
+    .from("notifications").update({ is_active: isActive }).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export async function adminLogin(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -124,7 +160,8 @@ export async function getAdminUser() {
   return data.user;
 }
 
-// Projects CRUD
+// ─── Projects CRUD ────────────────────────────────────────────────────────────
+
 export async function createProject(p: {
   title: string; description: string; imageUrl?: string;
   technologies?: string[]; liveUrl?: string; githubUrl?: string;
@@ -160,7 +197,22 @@ export async function deleteProject(id: number) {
   if (error) throw new Error(error.message);
 }
 
-// Blog CRUD
+// ─── Image Upload (Supabase Storage) ──────────────────────────────────────────
+
+export async function uploadProjectImage(file: File): Promise<string> {
+  const ext = file.name.split(".").pop() ?? "png";
+  const path = `project-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from("project-images").upload(path, file, {
+    cacheControl: "3600",
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ─── Blog CRUD ────────────────────────────────────────────────────────────────
+
 export async function createBlogPost(p: {
   title: string; slug: string; excerpt: string; content?: string;
   coverImage?: string; tags?: string[]; readTime?: number; isPublished?: boolean;
@@ -198,7 +250,22 @@ export async function deleteBlogPost(id: number) {
   if (error) throw new Error(error.message);
 }
 
-// ─── Profile Settings ─────────────────────────────────────────────────────────
+// ─── Notifications CRUD ───────────────────────────────────────────────────────
+
+export async function createNotification(n: { title: string; message: string; type?: string }) {
+  const { data, error } = await supabase.from("notifications").insert([{
+    title: n.title, message: n.message, type: n.type ?? "info", is_active: true,
+  }]).select().single();
+  if (error) throw new Error(error.message);
+  return toNotification(data);
+}
+
+export async function deleteNotification(id: number) {
+  const { error } = await supabase.from("notifications").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+// ─── Profile Settings ──────────────────────────────────────────────────────────
 
 export interface ProfileSettings {
   id: number;
@@ -275,19 +342,5 @@ export async function updateProfileSettings(settings: Partial<Omit<ProfileSettin
   if (settings.logoText     !== undefined) patch.logo_text     = settings.logoText;
   if (settings.siteName     !== undefined) patch.site_name     = settings.siteName;
   const { error } = await supabase.from("profile_settings").upsert(patch);
-  if (error) throw new Error(error.message);
-}
-
-// Notifications CRUD (admin)
-export async function createNotification(n: { title: string; message: string; type?: string }) {
-  const { data, error } = await supabase.from("notifications").insert([{
-    title: n.title, message: n.message, type: n.type ?? "info", is_active: true,
-  }]).select().single();
-  if (error) throw new Error(error.message);
-  return toNotification(data);
-}
-
-export async function deleteNotification(id: number) {
-  const { error } = await supabase.from("notifications").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }

@@ -12,7 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { Notification } from "@shared/schema";
 
 function AnnouncementBanner() {
-  const { data: notifs = [] } = useQuery<Notification[]>({ queryKey: ["/api/notifications"] });
+  const { data: notifs = [] } = useQuery<Notification[]>({
+    queryKey: ["sb-notifications"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchNotifications(false)),
+  });
   const [dismissed, setDismissed] = useState<number[]>([]);
 
   const active = notifs.filter(n => n.isActive && !dismissed.includes(n.id));

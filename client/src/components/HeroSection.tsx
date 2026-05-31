@@ -146,7 +146,8 @@ export default function HeroSection() {
   const role = useTypewriter(roles);
 
   const { data: settings = [] } = useQuery<{ key: string; value: string }[]>({
-    queryKey: ["/api/site-settings"],
+    queryKey: ["sb-site-settings"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchSiteSettings()),
     staleTime: 60_000,
   });
 

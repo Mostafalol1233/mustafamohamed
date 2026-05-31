@@ -9,7 +9,8 @@ export default function NotificationBanner() {
   });
 
   const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["/api/notifications"],
+    queryKey: ["sb-notifications"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchNotifications(false)),
   });
 
   const activeNotifications = notifications.filter(n => !dismissedIds.includes(n.id));

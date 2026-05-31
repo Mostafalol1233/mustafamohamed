@@ -14,7 +14,8 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
   const [active, setActive] = useState("home");
 
   const { data: settings = [] } = useQuery<{ key: string; value: string }[]>({
-    queryKey: ["/api/site-settings"],
+    queryKey: ["sb-site-settings"],
+    queryFn: () => import("@/lib/supabase").then(m => m.fetchSiteSettings()),
     staleTime: 60_000,
   });
   const logoImageUrl = settings.find(s => s.key === "logo_image_url")?.value;
