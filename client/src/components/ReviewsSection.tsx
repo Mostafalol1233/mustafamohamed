@@ -1,126 +1,107 @@
-import { useTheme } from "@/hooks/useTheme";
 import { useLang } from "@/contexts/LanguageContext";
 import {
   SiGoogle, SiStripe, SiGithub, SiVercel, SiSupabase,
   SiReact, SiTypescript, SiNodedotjs, SiFigma, SiTailwindcss,
-  SiNextdotjs, SiPostgresql,
+  SiNextdotjs, SiPostgresql, SiJavascript, SiRedis,
 } from "react-icons/si";
 
 interface BrandItem {
   name: string;
-  Icon?: React.ComponentType<{ size?: number; style?: React.CSSProperties; className?: string }>;
-  color: string;
-  customLogo?: React.ReactNode;
-}
-
-function PayMobLogo({ color, size = 28 }: { color: string; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="14" width="56" height="36" rx="8" stroke={color} strokeWidth="2.5" fill={color} fillOpacity="0.08" />
-      <path d="M12 26 L12 38" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <path d="M12 26 L22 26 C25 26 27 28 27 31 C27 34 25 36 22 36 L12 36" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <path d="M31 26 L36 38 L41 26" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <circle cx="52" cy="32" r="6" stroke={color} strokeWidth="2.5" fill="none" />
-      <circle cx="52" cy="32" r="2" fill={color} />
-    </svg>
-  );
+  Icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
 }
 
 const BRANDS: BrandItem[] = [
-  { name: "Google",     Icon: SiGoogle,     color: "#4285F4" },
-  { name: "Stripe",     Icon: SiStripe,     color: "#635BFF" },
-  { name: "PayMob",     color: "#00B862",   customLogo: null },
-  { name: "GitHub",     Icon: SiGithub,     color: "#24292F" },
-  { name: "Vercel",     Icon: SiVercel,     color: "#000000" },
-  { name: "Supabase",   Icon: SiSupabase,   color: "#3ECF8E" },
-  { name: "React",      Icon: SiReact,      color: "#61DAFB" },
-  { name: "TypeScript", Icon: SiTypescript, color: "#3178C6" },
-  { name: "Node.js",    Icon: SiNodedotjs,  color: "#339933" },
-  { name: "Next.js",    Icon: SiNextdotjs,  color: "#000000" },
-  { name: "Tailwind",   Icon: SiTailwindcss,color: "#06B6D4" },
-  { name: "PostgreSQL", Icon: SiPostgresql, color: "#4169E1" },
-  { name: "Figma",      Icon: SiFigma,      color: "#F24E1E" },
+  { name: "Google",       Icon: SiGoogle },
+  { name: "Stripe",       Icon: SiStripe },
+  { name: "GitHub",       Icon: SiGithub },
+  { name: "Vercel",       Icon: SiVercel },
+  { name: "Supabase",     Icon: SiSupabase },
+  { name: "React",        Icon: SiReact },
+  { name: "TypeScript",   Icon: SiTypescript },
+  { name: "JavaScript",   Icon: SiJavascript },
+  { name: "Node.js",      Icon: SiNodedotjs },
+  { name: "Next.js",      Icon: SiNextdotjs },
+  { name: "Tailwind CSS", Icon: SiTailwindcss },
+  { name: "PostgreSQL",   Icon: SiPostgresql },
+  { name: "Figma",        Icon: SiFigma },
+  { name: "Redis",        Icon: SiRedis },
 ];
 
-function BrandChip({ brand, dark }: { brand: BrandItem; dark: boolean }) {
-  const border = dark ? "hsl(222 28% 19%)" : "#e5e7eb";
-  const bg     = dark ? "hsl(222 42% 12%)" : "#ffffff";
-  const iconColor = dark
-    ? brand.color === "#000000" ? "#ffffff" : brand.color
-    : brand.color;
-
+function BrandName({ brand }: { brand: BrandItem }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center flex-shrink-0 rounded-2xl gap-2 select-none"
-      style={{
-        width: "88px",
-        height: "88px",
-        background: bg,
-        border: `1px solid ${border}`,
-        boxShadow: dark
-          ? "0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px hsl(222 28% 16%)"
-          : "0 4px 16px rgba(0,0,0,0.06)",
-        transition: "transform 0.2s",
-      }}
-      title={brand.name}
-    >
-      {brand.name === "PayMob" ? (
-        <PayMobLogo color={iconColor} size={32} />
-      ) : brand.Icon ? (
-        <brand.Icon size={28} style={{ color: iconColor, flexShrink: 0 }} />
-      ) : null}
+    <span className="inline-flex items-center gap-2 flex-shrink-0 select-none px-2">
+      <brand.Icon
+        size={16}
+        style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }}
+      />
       <span
         style={{
-          fontSize: "9.5px",
-          fontWeight: 600,
-          letterSpacing: "0.04em",
-          color: dark ? "hsl(215 18% 52%)" : "#6b7280",
-          fontFamily: "system-ui, sans-serif",
-          lineHeight: 1,
+          fontSize: "15px",
+          fontWeight: 500,
+          color: "hsl(var(--muted-foreground))",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          letterSpacing: "-0.01em",
+          whiteSpace: "nowrap",
         }}
       >
         {brand.name}
       </span>
-    </div>
+    </span>
+  );
+}
+
+function Separator() {
+  return (
+    <span
+      className="flex-shrink-0 select-none"
+      style={{ color: "hsl(var(--border))", fontSize: "18px", padding: "0 18px", lineHeight: 1 }}
+    >
+      /
+    </span>
   );
 }
 
 export default function ReviewsSection() {
-  const { isDark } = useTheme();
   const { t } = useLang();
 
-  const bg    = isDark ? "hsl(var(--background))" : "#f9fafb";
-  const text  = isDark ? "hsl(var(--foreground))" : "#111827";
-  const muted = isDark ? "hsl(var(--muted-foreground))" : "#6b7280";
+  const repeated = [0, 1, 2, 3].flatMap(copy =>
+    BRANDS.flatMap((b, i) => [
+      <BrandName key={`b-${copy}-${i}`} brand={b} />,
+      <Separator key={`s-${copy}-${i}`} />,
+    ])
+  );
 
   return (
-    <section id="reviews" className="section-padding border-t border-border overflow-hidden" style={{ background: bg }}>
-      <div className="container-max mb-12">
-        <span className="section-eyebrow">{t.reviews?.eyebrow ?? "Stack & Tools"}</span>
-        <h2 className="section-title" style={{ color: text }}>Tools &amp; Technologies I Work With</h2>
-        <p className="section-subtitle" style={{ color: muted }}>
-          From authentication to deployment — the stack behind every project I ship.
+    <section
+      id="reviews"
+      className="border-t border-border overflow-hidden"
+      style={{ padding: "28px 0" }}
+    >
+      <div className="container-max mb-5">
+        <p
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: "hsl(var(--muted-foreground))", letterSpacing: "0.12em" }}
+        >
+          {t.reviews?.eyebrow ?? "Stack & Integrations"}
         </p>
       </div>
 
-      <div className="relative py-4">
+      <div className="relative">
         <div
-          className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: `linear-gradient(to right, ${bg}, transparent)` }}
+          className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to right, hsl(var(--background)), transparent)" }}
         />
         <div
-          className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-          style={{ background: `linear-gradient(to left, ${bg}, transparent)` }}
+          className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to left, hsl(var(--background)), transparent)" }}
         />
 
         <div className="overflow-hidden">
           <div
-            className="flex items-center gap-5"
-            style={{ animation: "marquee-ltr 32s linear infinite", width: "max-content" }}
+            className="flex items-center"
+            style={{ animation: "marquee-ltr 28s linear infinite", width: "max-content" }}
           >
-            {[...BRANDS, ...BRANDS, ...BRANDS, ...BRANDS].map((b, i) => (
-              <BrandChip key={i} brand={b} dark={isDark} />
-            ))}
+            {repeated}
           </div>
         </div>
       </div>
