@@ -15,7 +15,7 @@ const SOCIALS = [
   { Icon: Mail,        label: "Email",    href: "mailto:overthegardenwall317@gmail.com", tip: "overthegardenwall317@gmail.com" },
   { Icon: SiGithub,   label: "GitHub",   href: "https://github.com/Bemora",             tip: "github.com/Bemora" },
   { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo",  tip: "linkedin.com/in/mustafa-bemo" },
-  { Icon: SiWhatsapp, label: "WhatsApp", href: "https://wa.me/",                        tip: "WhatsApp" },
+  { Icon: SiWhatsapp, label: "WhatsApp", href: "https://wa.me/201234567890",              tip: "WhatsApp" },
 ];
 
 const lineColor = (type: LineType) => {

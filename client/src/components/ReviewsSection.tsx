@@ -1,8 +1,9 @@
 import { useLang } from "@/contexts/LanguageContext";
 import {
   SiGoogle, SiStripe, SiGithub, SiVercel, SiSupabase,
-  SiReact, SiTypescript, SiNodedotjs, SiFigma, SiTailwindcss,
-  SiNextdotjs, SiPostgresql, SiJavascript, SiRedis,
+  SiAmazon, SiCloudflare, SiMongodb, SiShopify, SiNetlify,
+  SiDigitalocean, SiFigma, SiDocker, SiRedis, SiOpenai,
+  SiMeta, SiApple, SiSlack, SiAtlassian, SiLinear,
 } from "react-icons/si";
 
 interface BrandItem {
@@ -12,31 +13,37 @@ interface BrandItem {
 
 const BRANDS: BrandItem[] = [
   { name: "Google",       Icon: SiGoogle },
+  { name: "Amazon AWS",   Icon: SiAmazon },
+  { name: "Apple",        Icon: SiApple },
+  { name: "Meta",         Icon: SiMeta },
+  { name: "OpenAI",       Icon: SiOpenai },
   { name: "Stripe",       Icon: SiStripe },
+  { name: "Cloudflare",   Icon: SiCloudflare },
   { name: "GitHub",       Icon: SiGithub },
   { name: "Vercel",       Icon: SiVercel },
   { name: "Supabase",     Icon: SiSupabase },
-  { name: "React",        Icon: SiReact },
-  { name: "TypeScript",   Icon: SiTypescript },
-  { name: "JavaScript",   Icon: SiJavascript },
-  { name: "Node.js",      Icon: SiNodedotjs },
-  { name: "Next.js",      Icon: SiNextdotjs },
-  { name: "Tailwind CSS", Icon: SiTailwindcss },
-  { name: "PostgreSQL",   Icon: SiPostgresql },
-  { name: "Figma",        Icon: SiFigma },
+  { name: "Shopify",      Icon: SiShopify },
+  { name: "Slack",        Icon: SiSlack },
+  { name: "Atlassian",    Icon: SiAtlassian },
+  { name: "Netlify",      Icon: SiNetlify },
+  { name: "Docker",       Icon: SiDocker },
+  { name: "MongoDB",      Icon: SiMongodb },
   { name: "Redis",        Icon: SiRedis },
+  { name: "DigitalOcean", Icon: SiDigitalocean },
+  { name: "Linear",       Icon: SiLinear },
+  { name: "Figma",        Icon: SiFigma },
 ];
 
 function BrandName({ brand }: { brand: BrandItem }) {
   return (
     <span className="inline-flex items-center gap-2 flex-shrink-0 select-none px-2">
       <brand.Icon
-        size={16}
+        size={15}
         style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }}
       />
       <span
         style={{
-          fontSize: "15px",
+          fontSize: "14px",
           fontWeight: 500,
           color: "hsl(var(--muted-foreground))",
           fontFamily: "system-ui, -apple-system, sans-serif",
@@ -54,7 +61,7 @@ function Separator() {
   return (
     <span
       className="flex-shrink-0 select-none"
-      style={{ color: "hsl(var(--border))", fontSize: "18px", padding: "0 18px", lineHeight: 1 }}
+      style={{ color: "hsl(var(--border))", fontSize: "18px", padding: "0 20px", lineHeight: 1 }}
     >
       /
     </span>
@@ -82,24 +89,24 @@ export default function ReviewsSection() {
           className="text-xs font-semibold uppercase tracking-widest"
           style={{ color: "hsl(var(--muted-foreground))", letterSpacing: "0.12em" }}
         >
-          {t.reviews?.eyebrow ?? "Stack & Integrations"}
+          {t.reviews?.eyebrow ?? "Platforms & Services I Work With"}
         </p>
       </div>
 
       <div className="relative">
         <div
-          className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
           style={{ background: "linear-gradient(to right, hsl(var(--background)), transparent)" }}
         />
         <div
-          className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
           style={{ background: "linear-gradient(to left, hsl(var(--background)), transparent)" }}
         />
 
         <div className="overflow-hidden">
           <div
             className="flex items-center"
-            style={{ animation: "marquee-ltr 28s linear infinite", width: "max-content" }}
+            style={{ animation: "marquee-ltr 38s linear infinite", width: "max-content" }}
           >
             {repeated}
           </div>

@@ -76,12 +76,12 @@ export default function CertificationsSection() {
   const extraCerts = dbCerts.map(c => ({
     id: `db-${c.id}`,
     title: c.title,
-    issuer: "Professional Institution",
-    issueDate: c.issueDate || "Recent",
-    category: "Professional Development",
+    issuer: (c as any).issuer || "",
+    issueDate: c.issueDate || "",
+    category: (c as any).category || "Certification",
     imageUrl: c.imageUrl || null,
     color: "#4f46e5",
-    emoji: "🏅",
+    emoji: "🎓",
   }));
 
   const all = [...staticCerts, ...extraCerts];

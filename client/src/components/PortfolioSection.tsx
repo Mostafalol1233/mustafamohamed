@@ -214,8 +214,8 @@ export default function PortfolioSection() {
         {/* Dragon Console */}
         <div className="mb-16">
           <div className="mb-4">
-            <p className="text-sm font-semibold text-foreground mb-1">Interactive AI Console</p>
-            <p className="text-xs text-muted-foreground">Move your mouse over the canvas to control the physics-based dragon — a showcase of creative frontend engineering.</p>
+            <p className="text-sm font-semibold text-foreground mb-1">Physics Console</p>
+            <p className="text-xs text-muted-foreground">Mouse-driven physics simulation built with vanilla Canvas API — hover to interact.</p>
           </div>
           <DragonConsole />
         </div>
