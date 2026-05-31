@@ -83,17 +83,17 @@ function ProjectInfo({ project, visible }: { project: Project; visible: boolean 
   const cat = inferCategory(project);
   const catStyle = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS["Web App"];
   return (
-    <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(6px)", transition: "opacity 0.35s ease 0.08s, transform 0.35s ease 0.08s", textAlign: "center" }}>
+    <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(6px)", transition: "opacity 0.35s ease 0.08s, transform 0.35s ease 0.08s", textAlign: "left" }}>
       <h3 style={{ fontSize: "1.35rem", fontWeight: 700, color: "hsl(var(--foreground))", margin: "0 0 8px 0", letterSpacing: "-0.02em" }}>{project.title}</h3>
       <p style={{ fontSize: "0.875rem", color: "hsl(var(--muted-foreground))", margin: "0 0 14px 0", maxWidth: 520, lineHeight: 1.6 }}>{project.description}</p>
       {project.technologies && project.technologies.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-start", marginBottom: 16 }}>
           {project.technologies.map(tech => (
             <span key={tech} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 99, background: "hsl(var(--secondary))", color: "hsl(var(--secondary-foreground))", border: "1px solid hsl(var(--border))", fontWeight: 500 }}>{tech}</span>
           ))}
         </div>
       )}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: 10, justifyContent: "flex-start" }}>
         {project.liveUrl && (
           <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" data-testid={`link-live-${project.id}`}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 18px", borderRadius: 8, fontSize: 13, fontWeight: 600, background: "#0f172a", color: "#fff", textDecoration: "none", transition: "background 0.15s" }}

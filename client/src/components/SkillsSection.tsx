@@ -95,6 +95,7 @@ const MODULES: Record<
     skills: [
       { name: "JavaScript", percent: 90, stat: "5+ yrs · ES6+ · async-first",   desc: "ES6+, async/await, closures, DOM manipulation, modules",     icon: "JS", tags: ["ES6+", "async", "DOM"] },
       { name: "TypeScript", percent: 80, stat: "strict mode · generics · DX",    desc: "typed JS, interfaces, generics, utility types",             icon: "TS", tags: ["types", "generics", "safety"] },
+      { name: "PHP",        percent: 72, stat: "2+ yrs · backend · WordPress",    desc: "server-side scripting, REST APIs, WordPress, CMS customization", icon: "🐘", tags: ["scripts", "WordPress", "APIs"] },
       { name: "C++",        percent: 68, stat: "2+ yrs · game dev · perf",        desc: "game logic, performance-critical systems, memory management", icon: "C+", tags: ["perf", "memory", "OOP"] },
       { name: "Ruby",       percent: 60, stat: "scripting · CLI · automation",    desc: "scripting, CLI tools, automation pipelines",                icon: "Rb", tags: ["scripting", "CLI", "gems"] },
       { name: "Lua",        percent: 58, stat: "game scripting · LÖVE2D · mods",  desc: "embedded scripting in games, mod systems, config DSL",     icon: "Lu", tags: ["embedded", "games", "mods"] },

@@ -112,9 +112,12 @@ function fmtDate(d: Date | string | null | undefined) {
   return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function PostCard({ post, delay }: { post: BlogPost; delay: number }) {
+function PostCard({ post, delay }: { post: BlogPost & { titleAr?: string | null; excerptAr?: string | null }; delay: number }) {
   const ref = useReveal();
   const [, setLocation] = useLocation();
+  const { lang } = useLang();
+  const displayTitle = (lang === "ar" && post.titleAr) ? post.titleAr : post.title;
+  const displayExcerpt = (lang === "ar" && post.excerptAr) ? post.excerptAr : post.excerpt;
 
   return (
     <div
@@ -127,7 +130,7 @@ function PostCard({ post, delay }: { post: BlogPost; delay: number }) {
       <div className="relative overflow-hidden rounded-t-xl" style={{ aspectRatio: "16/9" }}>
         <img
           src={post.coverImage || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=450&fit=crop&auto=format"}
-          alt={post.title}
+          alt={displayTitle}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
@@ -142,12 +145,12 @@ function PostCard({ post, delay }: { post: BlogPost; delay: number }) {
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-1">
+      <div className="p-5 flex flex-col flex-1" dir={lang === "ar" ? "rtl" : "ltr"}>
         <h3 className="font-bold text-foreground mb-2 leading-snug text-base group-hover:text-primary transition-colors">
-          {post.title}
+          {displayTitle}
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-4 line-clamp-3">
-          {post.excerpt}
+          {displayExcerpt}
         </p>
 
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
@@ -162,7 +165,7 @@ function PostCard({ post, delay }: { post: BlogPost; delay: number }) {
             </span>
           </div>
           <span className="flex items-center gap-1 text-xs font-medium text-primary group-hover:underline">
-            Read <ArrowRight className="w-3 h-3" />
+            {lang === "ar" ? "اقرأ" : "Read"} <ArrowRight className="w-3 h-3" />
           </span>
         </div>
       </div>

@@ -19,6 +19,7 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
     staleTime: 60_000,
   });
   const logoImageUrl = settings.find(s => s.key === "logo_image_url")?.value;
+  const siteName = settings.find(s => s.key === "site_name")?.value || "mmohamed";
 
   const navLinks = [
     { label: t.nav.home, id: "home" },
@@ -98,7 +99,7 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
                   color: isDark ? "#e6edf3" : "hsl(var(--foreground))",
                 }}
               >
-                mmohamed
+                {siteName}
                 <span style={{ color: "hsl(var(--primary))" }}> ~/</span>
               </span>
             </button>

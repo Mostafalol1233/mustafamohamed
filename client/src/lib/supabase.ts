@@ -28,6 +28,9 @@ export function toBlogPost(r: any) {
     slug: r.slug,
     excerpt: r.excerpt,
     content: r.content ?? "",
+    titleAr: r.title_ar ?? null,
+    excerptAr: r.excerpt_ar ?? null,
+    contentAr: r.content_ar ?? null,
     coverImage: r.cover_image ?? null,
     tags: r.tags ?? [],
     author: r.author ?? "Mustafa Mohamed",
@@ -215,10 +218,12 @@ export async function uploadProjectImage(file: File): Promise<string> {
 
 export async function createBlogPost(p: {
   title: string; slug: string; excerpt: string; content?: string;
+  titleAr?: string; excerptAr?: string; contentAr?: string;
   coverImage?: string; tags?: string[]; readTime?: number; isPublished?: boolean;
 }) {
   const { data, error } = await supabase.from("blog_posts").insert([{
     title: p.title, slug: p.slug, excerpt: p.excerpt, content: p.content ?? "",
+    title_ar: p.titleAr ?? null, excerpt_ar: p.excerptAr ?? null, content_ar: p.contentAr ?? null,
     cover_image: p.coverImage ?? null, tags: p.tags ?? [],
     author: "Mustafa Mohamed", is_published: p.isPublished ?? false,
     read_time: p.readTime ?? 5, published_at: new Date().toISOString(),
@@ -229,6 +234,7 @@ export async function createBlogPost(p: {
 
 export async function updateBlogPost(id: number, p: Partial<{
   title: string; slug: string; excerpt: string; content: string;
+  titleAr: string; excerptAr: string; contentAr: string;
   coverImage: string; tags: string[]; readTime: number; isPublished: boolean;
 }>) {
   const patch: Record<string, any> = {};
@@ -236,6 +242,9 @@ export async function updateBlogPost(id: number, p: Partial<{
   if (p.slug !== undefined) patch.slug = p.slug;
   if (p.excerpt !== undefined) patch.excerpt = p.excerpt;
   if (p.content !== undefined) patch.content = p.content;
+  if (p.titleAr !== undefined) patch.title_ar = p.titleAr;
+  if (p.excerptAr !== undefined) patch.excerpt_ar = p.excerptAr;
+  if (p.contentAr !== undefined) patch.content_ar = p.contentAr;
   if (p.coverImage !== undefined) patch.cover_image = p.coverImage;
   if (p.tags !== undefined) patch.tags = p.tags;
   if (p.readTime !== undefined) patch.read_time = p.readTime;

@@ -32,15 +32,20 @@ function useTypewriter(words: string[], speed = 75, pause = 2000) {
   return display;
 }
 
-function QuoteCard() {
+function QuoteCard({ mobile = false }: { mobile?: boolean }) {
+  const { lang } = useLang();
   const quote = getDailyWisdom();
+  const displayQuote = lang === "ar" && quote.quote_ar ? quote.quote_ar : quote.quote;
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.7, delay: 0.4 }}
-      className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 w-[340px] flex-col"
+      initial={{ opacity: 0, x: mobile ? 0 : 40, y: mobile ? 10 : 0 }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      transition={{ duration: 0.7, delay: mobile ? 0.65 : 0.4 }}
+      className={mobile
+        ? "flex flex-col w-full lg:hidden mt-8"
+        : "hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 w-[340px] flex-col"
+      }
       style={{
         background: "hsl(222 42% 10%)",
         border: "1px solid hsl(222 28% 19%)",
@@ -87,12 +92,13 @@ function QuoteCard() {
               color: "hsl(213 40% 86%)",
               fontSize: "12.5px",
               lineHeight: "1.9",
-              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              fontFamily: lang === "ar" ? "system-ui, sans-serif" : "'JetBrains Mono', 'Fira Code', monospace",
               letterSpacing: "0.01em",
               flex: 1,
+              direction: lang === "ar" ? "rtl" : "ltr",
             }}
           >
-            {quote.quote}
+            {displayQuote}
           </p>
           <span style={{ fontSize: "28px", lineHeight: 1, color: "hsl(211 90% 60%)", fontFamily: "Georgia, serif", marginTop: "auto", opacity: 0.9, alignSelf: "flex-end" }}>"</span>
         </div>
@@ -209,7 +215,8 @@ export default function HeroSection() {
               className="btn-outline" data-testid="hero-contact">
               <Mail className="w-4 h-4" /> {t.hero.cta_contact}
             </button>
-            <a href="/api/resume" target="_blank" rel="noopener noreferrer"
+            <a href={settings.find(s => s.key === "resume_url")?.value || "/api/resume"}
+              target="_blank" rel="noopener noreferrer"
               className="btn-outline" data-testid="hero-resume">
               <Download className="w-4 h-4" /> {t.hero.cta_resume}
             </a>
@@ -231,9 +238,13 @@ export default function HeroSection() {
               <span key={tech} className="tag">{tech}</span>
             ))}
           </motion.div>
+
+          {/* Mobile quote card — shown below tech tags on small screens */}
+          <QuoteCard mobile />
         </div>
       </div>
 
+      {/* Desktop quote card — absolute positioned on right */}
       <QuoteCard />
     </section>
   );

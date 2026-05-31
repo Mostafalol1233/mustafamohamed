@@ -1,4 +1,6 @@
 - [Theme 3-state](theme-3-state.md) — useTheme now cycles light→dark→system; always use `mode` not `isDark` to drive the toggle icon.
-- [SkillsSection modules](skills-modules.md) — consolidated from 8 to 5 modules (frontend/backend/languages/tools/specialty); scanLines count is 25, not 36.
+- [SkillsSection modules](skills-modules.md) — consolidated from 8 to 5 modules (frontend/backend/languages/tools/specialty); scanLines count is 25, not 36. PHP added to languages module.
 - [Supabase-only frontend](supabase-migration.md) — ALL data fetching uses Supabase directly; queryKeys use "sb-*" prefix + explicit queryFn. Express only serves Vite dev build.
-- [Wisdom quotes](wisdom-quotes.md) — quote card uses wisdomQuotes.ts (getDailyWisdom); tab label is "wisdom.md"; field is quote.author not quote.character.
+- [Wisdom quotes](wisdom-quotes.md) — wisdomQuotes.ts now has anime-only quotes (50 quotes) with quote_ar Arabic translation field; getDailyWisdom() picks by day; QuoteCard accepts mobile prop for responsive display.
+- [Blog AR columns](blog-ar-columns.md) — blog_posts table needs title_ar, excerpt_ar, content_ar columns added in Supabase (SQL in SettingsTab). schema.ts + supabase.ts already updated; BlogSection shows AR when lang=ar.
+- [Site settings keys](site-settings-keys.md) — site_settings table (key-value) drives: logo_image_url, site_name (navbar), resume_url (Download Resume button), available_for_projects.

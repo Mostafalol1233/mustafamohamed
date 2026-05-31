@@ -17,6 +17,7 @@ import {
   adminLogin, adminLogout,
   fetchProjects, fetchBlogPosts, fetchMessages, fetchNotifications,
   fetchProfileSettings, updateProfileSettings,
+  fetchSiteSettings, updateSiteSettings,
   createProject, updateProject, deleteProject,
   createBlogPost, updateBlogPost, deleteBlogPost,
   createNotification, deleteNotification, toggleNotification,
@@ -435,6 +436,7 @@ function ArticlesTab() {
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "",
     readTime: 5, isPublished: true,
+    titleAr: "", excerptAr: "", contentAr: "",
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["sb-blog-all"] });
@@ -445,6 +447,9 @@ function ArticlesTab() {
       ...form,
       tags: form.tags.split(",").map((t: string) => t.trim()).filter(Boolean),
       slug: form.slug || slugify(form.title),
+      titleAr: form.titleAr || undefined,
+      excerptAr: form.excerptAr || undefined,
+      contentAr: form.contentAr || undefined,
     }),
     onSuccess: () => { invalidate(); setShowForm(false); resetForm(); toast({ title: "Article created" }); },
     onError: (e: any) => toast({ title: "Failed to create article", description: e.message, variant: "destructive" }),
@@ -472,7 +477,7 @@ function ArticlesTab() {
   });
 
   const resetForm = () => {
-    setForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", readTime: 5, isPublished: true });
+    setForm({ title: "", slug: "", excerpt: "", content: "", coverImage: "", tags: "", readTime: 5, isPublished: true, titleAr: "", excerptAr: "", contentAr: "" });
     setEditId(null);
   };
 
@@ -482,6 +487,7 @@ function ArticlesTab() {
       content: p.content || "", coverImage: p.coverImage || "",
       tags: (p.tags || []).join(", "), readTime: p.readTime ?? 5,
       isPublished: p.isPublished ?? true,
+      titleAr: p.titleAr || "", excerptAr: p.excerptAr || "", contentAr: p.contentAr || "",
     });
     setEditId(p.id);
     setShowForm(true);
@@ -521,16 +527,42 @@ function ArticlesTab() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Excerpt *</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Excerpt * (English)</label>
             <textarea rows={2} value={form.excerpt}
               onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))}
               className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Content (Markdown)</label>
-            <textarea rows={8} value={form.content}
+            <label className="block text-xs font-medium text-gray-700 mb-1">Content (Markdown, English)</label>
+            <textarea rows={6} value={form.content}
               onChange={e => setForm(f => ({ ...f, content: e.target.value }))}
               className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-y font-mono" />
+          </div>
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-xs font-semibold text-gray-500 mb-3 flex items-center gap-1">🌐 Arabic Translation (optional — shown when language is Arabic)</p>
+            <div className="grid md:grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">العنوان بالعربية</label>
+                <input type="text" value={form.titleAr} dir="rtl"
+                  onChange={e => setForm(f => ({ ...f, titleAr: e.target.value }))}
+                  placeholder="عنوان المقال بالعربية"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900" />
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-gray-700 mb-1">ملخص المقال بالعربية</label>
+              <textarea rows={2} value={form.excerptAr} dir="rtl"
+                onChange={e => setForm(f => ({ ...f, excerptAr: e.target.value }))}
+                placeholder="وصف مختصر للمقال"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">المحتوى الكامل بالعربية (Markdown)</label>
+              <textarea rows={6} value={form.contentAr} dir="rtl"
+                onChange={e => setForm(f => ({ ...f, contentAr: e.target.value }))}
+                placeholder="محتوى المقال كاملاً"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-y" />
+            </div>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={form.isPublished}
@@ -998,10 +1030,68 @@ function ProfileTab() {
 // ─── Settings Tab ─────────────────────────────────────────────────────────────
 
 function SettingsTab() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const { data: settings = [] } = useQuery<{ key: string; value: string }[]>({
+    queryKey: ["sb-site-settings"],
+    queryFn: fetchSiteSettings,
+  });
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [siteName, setSiteName] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setResumeUrl(settings.find(s => s.key === "resume_url")?.value || "");
+    setSiteName(settings.find(s => s.key === "site_name")?.value || "");
+  }, [settings]);
+
+  const saveMut = useMutation({
+    mutationFn: () => updateSiteSettings({ resume_url: resumeUrl, site_name: siteName }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["sb-site-settings"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      toast({ title: "Settings saved" });
+    },
+    onError: (e: any) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
+  });
+
   return (
     <div className="space-y-6">
-      <h2 className="font-semibold text-gray-900">Settings</h2>
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 max-w-md">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-gray-900">Settings</h2>
+        <Btn onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+          {saved ? <><Check size={14} /> Saved</> : <><Save size={14} /> Save Changes</>}
+        </Btn>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-xl space-y-4">
+        <h3 className="font-medium text-gray-900 text-sm">Site Settings</h3>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Site Name (shown in navbar)</label>
+          <input
+            type="text"
+            value={siteName}
+            onChange={e => setSiteName(e.target.value)}
+            placeholder="mmohamed"
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+          />
+          <p className="text-xs text-gray-400 mt-1">Appears next to the logo in the top nav bar</p>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Resume / CV URL</label>
+          <input
+            type="url"
+            value={resumeUrl}
+            onChange={e => setResumeUrl(e.target.value)}
+            placeholder="https://drive.google.com/file/d/..."
+            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-gray-900"
+          />
+          <p className="text-xs text-gray-400 mt-1">Direct link to your CV file (Google Drive, Dropbox, etc.). Used by the "Download Resume" button on the homepage.</p>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 max-w-xl">
         <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2">
           <Key size={14} /> Admin Credentials
         </h3>
@@ -1010,11 +1100,23 @@ function SettingsTab() {
           To change your password, go to your Supabase project → Authentication → Users and update it from there.
         </p>
       </div>
-      <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-md space-y-2">
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 max-w-xl space-y-2">
         <h3 className="font-semibold text-gray-900 text-sm">Database</h3>
         <p className="text-xs text-gray-500">
-          All portfolio data is stored in your Supabase PostgreSQL database. Changes in the admin dashboard sync directly — no server required.
+          All portfolio data is stored in your Supabase PostgreSQL database. Changes sync directly — no server required.
         </p>
+        <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 mt-3">
+          <p className="text-xs text-amber-700 font-medium mb-1">⚠ Arabic Blog Support</p>
+          <p className="text-xs text-amber-600">
+            To enable Arabic translations for blog posts, run this SQL in your Supabase SQL editor:
+          </p>
+          <pre className="text-xs bg-amber-100 rounded p-2 mt-2 overflow-x-auto text-amber-800 font-mono">
+{`ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS title_ar TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS excerpt_ar TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS content_ar TEXT;`}
+          </pre>
+        </div>
       </div>
     </div>
   );

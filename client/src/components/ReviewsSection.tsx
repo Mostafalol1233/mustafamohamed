@@ -38,12 +38,12 @@ function BrandName({ brand }: { brand: BrandItem }) {
   return (
     <span className="inline-flex items-center gap-2 flex-shrink-0 select-none px-2">
       <brand.Icon
-        size={15}
+        size={20}
         style={{ color: "hsl(var(--muted-foreground))", flexShrink: 0 }}
       />
       <span
         style={{
-          fontSize: "14px",
+          fontSize: "15px",
           fontWeight: 500,
           color: "hsl(var(--muted-foreground))",
           fontFamily: "system-ui, -apple-system, sans-serif",
