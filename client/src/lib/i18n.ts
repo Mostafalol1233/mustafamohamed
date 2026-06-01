@@ -27,7 +27,7 @@ export const translations = {
       navigate: "← → to navigate",
     },
     reviews: {
-      eyebrow: "Testimonials",
+      eyebrow: "Platforms & Tools I Use",
       title: "What clients say",
       subtitle: "Trusted by teams across different industries.",
     },
@@ -104,7 +104,7 @@ export const translations = {
       navigate: "← → للتنقل",
     },
     reviews: {
-      eyebrow: "شهادات العملاء",
+      eyebrow: "المنصات والأدوات اللي بستخدمها",
       title: "العملاء بيقولوا إيه",
       subtitle: "بثقوا فيا فرق من صناعات مختلفة.",
     },
