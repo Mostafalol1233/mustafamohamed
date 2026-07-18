@@ -3,7 +3,7 @@ export type Lang = "en" | "ar";
 export const translations = {
   en: {
     nav: {
-      home: "Home", skills: "Skills", portfolio: "Portfolio",
+      home: "Home", skills: "Bemora", portfolio: "Portfolio",
       reviews: "Reviews", contact: "Contact", blog: "Blog", admin: "Admin",
     },
     hero: {
@@ -76,7 +76,7 @@ export const translations = {
   ar: {
     nav: {
       home: "الرئيسية",
-      skills: "مهاراتي",
+      skills: "بيمورا",
       portfolio: "شغلي",
       reviews: "آراء العملاء",
       contact: "تواصل معايا",

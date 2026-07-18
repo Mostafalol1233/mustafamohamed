@@ -9,11 +9,11 @@ type TermLine =
 
 // ─── Palette — minimal: 2 colors only ────────────────────────────────────────
 const BG      = "#0f0f0f";
-const ACCENT  = "#a78bfa";   // bemora purple — the ONLY accent color
-const DIM     = "#52525b";
-const MUTED   = "#3f3f46";
+const ACCENT  = "#f97316";   // bemora orange — bold, warm, uniquely Bemora
+const DIM     = "#525252";
+const MUTED   = "#404040";
 const BRIGHT  = "#e4e4e7";
-const GREEN   = "#4ade80";
+const GREEN   = "#34d399";
 
 // ─── CLI data ─────────────────────────────────────────────────────────────────
 const CATS = [
