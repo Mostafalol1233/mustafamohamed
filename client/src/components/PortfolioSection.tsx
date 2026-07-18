@@ -46,80 +46,68 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 };
 
 function ProjectImage({ project, domain }: { project: Project; domain: string }) {
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-
-  // Screenshot service fallback chain
-  const screenshotSrc = (url: string, attempt: number): string | null => {
-    const enc = encodeURIComponent(url);
-    if (attempt === 0) return `https://s.wordpress.com/mshots/v1/${enc}?w=780&h=400`;
-    if (attempt === 1) return `https://image.thum.io/get/width/780/crop/400/${url}`;
-    return null;
-  };
-  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
-    setAttempt(0);
-    if (project.imageUrl) {
-      setImgSrc(project.imageUrl);
-    } else if (project.liveUrl) {
-      setImgSrc(screenshotSrc(project.liveUrl, 0));
-    } else {
-      setImgSrc(null);
-    }
-  }, [project.id, project.imageUrl, project.liveUrl]);
+  }, [project.id, project.imageUrl]);
 
-  const handleError = () => {
-    if (!project.imageUrl && project.liveUrl) {
-      const next = attempt + 1;
-      const nextSrc = screenshotSrc(project.liveUrl, next);
-      if (nextSrc) {
-        setAttempt(next);
-        setLoaded(false);
-        setImgSrc(nextSrc);
-        return;
-      }
-    }
-    setFailed(true);
-  };
+  // Only use imageUrl if the admin has set one directly — no unreliable third-party screenshot services
+  const imgSrc = project.imageUrl || null;
 
-  const Placeholder = () => (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)" }}>
-      <div style={{ width: 56, height: 56, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
-        </svg>
+  if (!imgSrc || failed) {
+    // Styled placeholder that looks intentional
+    const cat = inferCategory(project);
+    const catStyle = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS["Web App"];
+    return (
+      <div style={{
+        width: "100%", height: "100%",
+        background: `linear-gradient(135deg, ${catStyle.bg} 0%, #f8fafc 100%)`,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16,
+      }}>
+        {/* Fake browser chrome */}
+        <div style={{
+          width: "72%", borderRadius: 10, overflow: "hidden",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.10)", border: "1px solid #e5e7eb",
+        }}>
+          <div style={{ height: 28, background: "#f0f0f0", borderBottom: "1px solid #ddd", display: "flex", alignItems: "center", padding: "0 10px", gap: 6 }}>
+            {["#ff5f57","#febc2e","#28c840"].map(c => <span key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c, display: "block" }} />)}
+            <div style={{ flex: 1, height: 14, background: "#fff", borderRadius: 4, border: "1px solid #ddd", marginLeft: 8, display: "flex", alignItems: "center", paddingLeft: 8 }}>
+              <span style={{ fontSize: 9, color: "#9ca3af", fontFamily: "system-ui", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{domain}</span>
+            </div>
+          </div>
+          <div style={{ height: 90, background: catStyle.bg, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "0 16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+              <div style={{ height: 8, background: catStyle.border, borderRadius: 4, width: "60%" }} />
+              <div style={{ height: 6, background: catStyle.border, borderRadius: 4, width: "80%", opacity: 0.6 }} />
+              <div style={{ height: 6, background: catStyle.border, borderRadius: 4, width: "45%", opacity: 0.4 }} />
+            </div>
+          </div>
+        </div>
+        <span style={{ fontSize: 12, color: catStyle.text, fontFamily: "system-ui", fontWeight: 500, opacity: 0.7 }}>
+          {domain}
+        </span>
       </div>
-      <span style={{ fontSize: 13, color: "#94a3b8", fontFamily: "system-ui" }}>{domain}</span>
-    </div>
-  );
-
-  if (!imgSrc || failed) return <Placeholder />;
+    );
+  }
 
   return (
     <>
-      {/* Shimmer skeleton while loading */}
       {!loaded && (
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(90deg, #f1f5f9 25%, #e8edf4 50%, #f1f5f9 75%)",
           backgroundSize: "200% 100%",
           animation: "shimmer 1.4s infinite",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5">
-            <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
-          </svg>
-        </div>
+        }} />
       )}
       <img
         src={imgSrc}
         alt={project.title}
         onLoad={() => setLoaded(true)}
-        onError={handleError}
+        onError={() => setFailed(true)}
         style={{
           width: "100%", height: "100%", objectFit: "cover", objectPosition: "top",
           opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease",
