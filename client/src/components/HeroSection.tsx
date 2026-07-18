@@ -162,7 +162,7 @@ export default function HeroSection() {
   const stats = [
     { value: "4+",  label: t.hero.stats.years },
     { value: "15+", label: t.hero.stats.projects },
-    { value: "94+", label: lang === "ar" ? "فئة API" : "API Categories" },
+    { value: "94+", label: lang === "ar" ? "تكامل في Bemora" : "Bemora Integrations" },
   ];
 
   const techStack = ["React", "TypeScript", "Python", "C++", "Node.js", "Ruby", "Godot"];
@@ -215,7 +215,7 @@ export default function HeroSection() {
               className="btn-outline" data-testid="hero-contact">
               <Mail className="w-4 h-4" /> {t.hero.cta_contact}
             </button>
-            <a href={settings.find(s => s.key === "resume_url")?.value || "/api/resume"}
+            <a href={settings.find(s => s.key === "resume_url")?.value || "/resume"}
               target="_blank" rel="noopener noreferrer"
               className="btn-outline" data-testid="hero-resume">
               <Download className="w-4 h-4" /> {t.hero.cta_resume}

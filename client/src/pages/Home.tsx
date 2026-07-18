@@ -135,7 +135,7 @@ export default function Home() {
               {[
                 { href: "https://x.com/Bemora_BEMO", icon: "ti-brand-x", label: "Twitter" },
                 { href: "https://youtube.com/@Bemora-site", icon: "ti-brand-youtube", label: "YouTube" },
-                { href: "mailto:overthegardenwall317@gmail.com", icon: "ti-mail", label: "Email" },
+                { href: "mailto:contact@crossfire.wiki", icon: "ti-mail", label: "Email" },
               ].map(({ href, icon, label }) => (
                 <a key={label} href={href} target={href.startsWith("mailto") ? undefined : "_blank"} rel="noopener noreferrer" aria-label={label} data-testid={`footer-social-${label.toLowerCase()}`}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", border: "0.5px solid hsl(var(--border))", color: "hsl(var(--muted-foreground))", textDecoration: "none", transition: "all 200ms", flexShrink: 0 }}

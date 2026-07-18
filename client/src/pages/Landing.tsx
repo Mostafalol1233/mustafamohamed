@@ -92,7 +92,7 @@ export default function Landing() {
                 <i className="ti ti-brand-youtube" style={{ fontSize:17 }} />
               </a>
               <a
-                href="mailto:overthegardenwall317@gmail.com"
+                href="mailto:contact@crossfire.wiki"
                 aria-label="Email"
                 data-testid="footer-social-email"
                 style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:"0.5px solid #e5e5e5", color:"#888", textDecoration:"none", transition:"color 200ms, border-color 200ms", flexShrink:0 }}

@@ -12,10 +12,10 @@ interface TLine { id: number; text: string; type: LineType; display: string; isP
 type Step = "boot" | "name" | "method" | "contact" | "project" | "sending" | "done" | "fail" | "bye";
 
 const SOCIALS = [
-  { Icon: Mail,        label: "Email",    href: "mailto:overthegardenwall317@gmail.com", tip: "overthegardenwall317@gmail.com" },
-  { Icon: SiGithub,   label: "GitHub",   href: "https://github.com/Bemora",             tip: "github.com/Bemora" },
-  { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo",  tip: "linkedin.com/in/mustafa-bemo" },
-  { Icon: SiWhatsapp, label: "WhatsApp", href: "https://wa.me/201234567890",              tip: "WhatsApp" },
+  { Icon: Mail,        label: "Email",    href: "mailto:contact@crossfire.wiki", tip: "contact@crossfire.wiki" },
+  { Icon: SiGithub,   label: "GitHub",   href: "https://github.com/Bemora",     tip: "github.com/Bemora" },
+  { Icon: SiLinkedin, label: "LinkedIn", href: "https://linkedin.com/in/mustafa-bemo", tip: "linkedin.com/in/mustafa-bemo" },
+  { Icon: SiWhatsapp, label: "WhatsApp", href: "https://wa.me/201500302461",     tip: "+201500302461" },
 ];
 
 const lineColor = (type: LineType) => {
@@ -455,6 +455,19 @@ export default function ContactSection() {
               <p className="text-xs leading-relaxed italic" style={{ color: "#484f58", fontFamily: "inherit" }}>
                 "{t.contact.quote}"
               </p>
+              <div className="w-full" style={{ borderTop: "1px solid #21262d" }} />
+              <div className="text-center">
+                <p className="text-xs mb-1.5" style={{ color: "#484f58" }}>Prefer email?</p>
+                <a
+                  href="mailto:contact@crossfire.wiki"
+                  className="text-xs font-medium transition-colors"
+                  style={{ color: "#58a6ff" }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#79b8ff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#58a6ff"; }}
+                >
+                  contact@crossfire.wiki
+                </a>
+              </div>
             </div>
           </div>
         </div>
