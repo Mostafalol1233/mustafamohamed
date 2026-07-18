@@ -1,46 +1,4 @@
-import { useEffect, useRef, useState, KeyboardEvent, ElementType } from "react";
-import {
-  SiJavascript, SiTypescript, SiReact, SiNextdotjs, SiTailwindcss,
-  SiNodedotjs, SiExpress, SiPostgresql, SiMongodb, SiSupabase,
-  SiHtml5, SiCss3, SiFigma, SiShadcnui, SiFramer,
-  SiGit, SiGithub, SiDocker, SiLinux, SiVercel,
-  SiOpenai, SiPostman,
-  SiPython, SiRuby, SiCplusplus, SiRust, SiGodotengine, SiSelenium, SiDiscord, SiLua,
-} from "react-icons/si";
-
-const SKILL_ICONS: Record<string, ElementType> = {
-  "JavaScript":         SiJavascript,
-  "TypeScript":         SiTypescript,
-  "React":              SiReact,
-  "Next.js":            SiNextdotjs,
-  "Tailwind CSS":       SiTailwindcss,
-  "Node.js":            SiNodedotjs,
-  "Express":            SiExpress,
-  "PostgreSQL":         SiPostgresql,
-  "MongoDB":            SiMongodb,
-  "Supabase":           SiSupabase,
-  "HTML5":              SiHtml5,
-  "CSS3":               SiCss3,
-  "Figma":              SiFigma,
-  "Shadcn/UI":          SiShadcnui,
-  "Framer Motion":      SiFramer,
-  "Git":                SiGit,
-  "GitHub":             SiGithub,
-  "Docker":             SiDocker,
-  "Linux / CLI":        SiLinux,
-  "Vercel":             SiVercel,
-  "Prompt Engineering": SiOpenai,
-  "LLM APIs":           SiOpenai,
-  "REST API Design":    SiPostman,
-  "Python":             SiPython,
-  "Ruby":               SiRuby,
-  "C++":                SiCplusplus,
-  "Rust":               SiRust,
-  "Godot Engine":       SiGodotengine,
-  "Selenium":           SiSelenium,
-  "Discord.py / discord.js": SiDiscord,
-  "Lua":                SiLua,
-};
+import { useEffect, useRef, useState, KeyboardEvent } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,205 +6,356 @@ type Seg = {
   text: string;
   color?: string;
   bold?: boolean;
+  dim?: boolean;
   clickCmd?: string;
 };
 
 type TermLine =
   | { kind: "segs"; segs: Seg[] }
   | { kind: "blank" }
-  | { kind: "skill"; name: string; percent: number; desc: string; icon: string; tags: string[]; stat: string };
+  | { kind: "method"; category: string; name: string; desc: string; free: boolean }
+  | { kind: "banner" };
 
-// ─── Skill data ───────────────────────────────────────────────────────────────
+// ─── Theme ───────────────────────────────────────────────────────────────────
 
-const MODULES: Record<
-  string,
-  { title: string; icon: string; color: string; skills: { name: string; percent: number; stat: string; desc: string; icon: string; tags: string[] }[]; next: string }
-> = {
-  frontend: {
-    title: "FRONTEND",
-    icon: "⬡",
-    color: "#58a6ff",
-    skills: [
-      { name: "React",         percent: 87, stat: "4+ yrs · 15+ shipped apps",       desc: "hooks, context API, state management, custom hooks",     icon: "⚛",  tags: ["hooks", "JSX", "context"] },
-      { name: "Next.js",       percent: 82, stat: "2+ yrs · SSR / ISR / edge",        desc: "SSR, ISR, App Router, API routes, middleware",           icon: "▲",  tags: ["SSR", "ISR", "edge"] },
-      { name: "TypeScript",    percent: 80, stat: "3+ yrs · strict mode · generics",  desc: "typed JS, interfaces, generics, utility types",          icon: "TS", tags: ["types", "generics", "safety"] },
-      { name: "Tailwind CSS",  percent: 90, stat: "3+ yrs · every project · JIT",     desc: "utility-first styling, JIT, responsive, dark mode",      icon: "◈",  tags: ["JIT", "responsive", "DX"] },
-      { name: "Framer Motion", percent: 68, stat: "3+ live sites · spring physics",   desc: "spring animations, transitions, gesture-based UI",       icon: "◎",  tags: ["spring", "gesture", "layout"] },
-    ],
-    next: "backend",
-  },
-  backend: {
-    title: "BACKEND & DATA",
-    icon: "⬡",
-    color: "#3fb950",
-    skills: [
-      { name: "Node.js",    percent: 85, stat: "4+ yrs · REST & WebSocket",       desc: "server runtime, async I/O, streams, event loop",         icon: "⬡", tags: ["async", "streams", "events"] },
-      { name: "Python",     percent: 82, stat: "3+ yrs · APIs · data · bots",     desc: "REST APIs, data processing, scripting, automation",      icon: "Py", tags: ["scripting", "REST", "data"] },
-      { name: "PostgreSQL", percent: 82, stat: "3+ yrs · Drizzle ORM · joins",    desc: "relational DB, SQL queries, Drizzle ORM, joins, indexes", icon: "◫", tags: ["SQL", "Drizzle", "ACID"] },
-      { name: "Supabase",   percent: 78, stat: "2+ yrs · RLS · auth · realtime",  desc: "Auth, realtime, storage, RLS policies, edge functions",   icon: "◈", tags: ["auth", "realtime", "RLS"] },
-      { name: "Express",    percent: 85, stat: "10+ production APIs built",        desc: "REST APIs, middleware chains, routing, error handling",   icon: "⚡", tags: ["REST", "middleware", "auth"] },
-    ],
-    next: "languages",
-  },
-  languages: {
-    title: "LANGUAGES",
-    icon: "⬡",
-    color: "#f8c555",
-    skills: [
-      { name: "JavaScript", percent: 90, stat: "5+ yrs · ES6+ · async-first",   desc: "ES6+, async/await, closures, DOM manipulation, modules",     icon: "JS", tags: ["ES6+", "async", "DOM"] },
-      { name: "TypeScript", percent: 80, stat: "strict mode · generics · DX",    desc: "typed JS, interfaces, generics, utility types",             icon: "TS", tags: ["types", "generics", "safety"] },
-      { name: "PHP",        percent: 72, stat: "2+ yrs · backend · WordPress",    desc: "server-side scripting, REST APIs, WordPress, CMS customization", icon: "🐘", tags: ["scripts", "WordPress", "APIs"] },
-      { name: "C++",        percent: 68, stat: "2+ yrs · game dev · perf",        desc: "game logic, performance-critical systems, memory management", icon: "C+", tags: ["perf", "memory", "OOP"] },
-      { name: "Ruby",       percent: 60, stat: "scripting · CLI · automation",    desc: "scripting, CLI tools, automation pipelines",                icon: "Rb", tags: ["scripting", "CLI", "gems"] },
-      { name: "Lua",        percent: 58, stat: "game scripting · LÖVE2D · mods",  desc: "embedded scripting in games, mod systems, config DSL",     icon: "Lu", tags: ["embedded", "games", "mods"] },
-    ],
-    next: "tools",
-  },
-  tools: {
-    title: "DEV TOOLS",
-    icon: "⬡",
-    color: "#e3b341",
-    skills: [
-      { name: "Git",         percent: 87, stat: "500+ commits · rebase · hooks",   desc: "branching strategies, rebasing, clean commit history",   icon: "◈", tags: ["rebase", "hooks", "flow"] },
-      { name: "GitHub",      percent: 88, stat: "CI/CD · Actions · code review",   desc: "PRs, Actions CI/CD, code review, project management",    icon: "◉", tags: ["Actions", "CI/CD", "review"] },
-      { name: "Docker",      percent: 62, stat: "prod containers · compose",        desc: "containers, docker-compose, environment reproducibility",icon: "◫", tags: ["compose", "image", "devops"] },
-      { name: "Linux / CLI", percent: 70, stat: "bash · cron · ssh · scripting",   desc: "bash scripting, server ops, cron, process management",  icon: "⬡", tags: ["bash", "cron", "ssh"] },
-      { name: "Figma",       percent: 72, stat: "2+ yrs · dev handoff · tokens",   desc: "wireframes, components, dev handoff, auto-layout",      icon: "◈", tags: ["components", "handoff", "tokens"] },
-    ],
-    next: "specialty",
-  },
-  specialty: {
-    title: "SPECIALTY",
-    icon: "⬡",
-    color: "#bc8cff",
-    skills: [
-      { name: "Godot Engine",       percent: 72, stat: "3+ projects · GDScript · 2D/3D",       desc: "2D/3D scenes, physics, GDScript, shaders, exports",          icon: "🎮", tags: ["GDScript", "2D", "physics"] },
-      { name: "Discord Bots",       percent: 80, stat: "5+ bots · slash cmds · cron",          desc: "Discord bots with slash commands, event handlers, cron jobs", icon: "🤖", tags: ["slash", "events", "cron"] },
-      { name: "Selenium",           percent: 74, stat: "browser automation · scraping",         desc: "browser automation, UI testing, web scraping pipelines",     icon: "Se", tags: ["browser", "scrape", "test"] },
-      { name: "LLM APIs",           percent: 78, stat: "OpenAI · Claude · streaming",           desc: "OpenAI/Claude integration, streaming, function calls",       icon: "⚡", tags: ["streaming", "tools", "Claude"] },
-      { name: "Prompt Engineering", percent: 85, stat: "20+ system prompts · CoT · evals",     desc: "system prompts, few-shot, chain-of-thought, evals",         icon: "◎", tags: ["CoT", "few-shot", "eval"] },
-    ],
-    next: "frontend",
-  },
+const T = {
+  bg:          "#0a0e1a",
+  titleBg:     "#0f1420",
+  border:      "#1e2a45",
+  innerBorder: "#141c30",
+  text:        "#c8d3f0",
+  textDim:     "#6b7a99",
+  textFaint:   "#3a4560",
+  accent:      "#7c6af7",   // bemora purple
+  accentAlt:   "#4fc3f7",   // cyan
+  green:       "#43e97b",
+  orange:      "#f9a825",
+  pink:        "#f06292",
+  inputText:   "#e8eeff",
+  skillBorder: "#1a2340",
+  skillHoverBg:"rgba(124,106,247,0.08)",
+  skillBg:     "rgba(10,14,26,0.7)",
+};
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  { name: "weather",  icon: "🌤", color: T.accentAlt,  count: 8,  label: "Weather & Climate"   },
+  { name: "crypto",   icon: "₿",  color: T.orange,      count: 24, label: "Crypto & Coin Wizard"},
+  { name: "ai",       icon: "🤖", color: T.accent,      count: 18, label: "AI / LLM Providers"  },
+  { name: "gaming",   icon: "🎮", color: T.green,       count: 22, label: "Gaming Suite"         },
+  { name: "news",     icon: "📰", color: T.textDim,     count: 6,  label: "News & RSS"           },
+  { name: "finance",  icon: "📈", color: T.orange,      count: 12, label: "Stocks & Finance"     },
+  { name: "space",    icon: "🚀", color: T.accentAlt,   count: 5,  label: "Space & Astronomy"    },
+  { name: "tools",    icon: "🔧", color: "#e57373",     count: 30, label: "Dev Tools & Utils"    },
+  { name: "sports",   icon: "⚽", color: T.green,       count: 14, label: "Sports & Football"    },
+  { name: "realtime", icon: "⚡", color: T.pink,        count: 8,  label: "WebSocket Streams"    },
+];
+
+const METHODS: Record<string, { name: string; desc: string; free: boolean }[]> = {
+  weather: [
+    { name: "getWeather(city)",          desc: "Current conditions — temp, humidity, wind, UV",  free: true  },
+    { name: "getForecast(city, days)",   desc: "Daily forecast up to 16 days ahead",              free: true  },
+    { name: "getAlerts(lat, lon)",       desc: "Severe weather alerts for a coordinate",          free: true  },
+    { name: "getAQI(city)",              desc: "Real-time air quality index",                     free: true  },
+  ],
+  crypto: [
+    { name: "getPrice(symbol)",          desc: "Live price from Binance + CoinGecko fallback",   free: true  },
+    { name: "streamPrice(symbol, cb)",   desc: "Real-time price stream via WebSocket",            free: true  },
+    { name: "coinWizard(query)",         desc: "Smart crypto query — trends, volume, history",   free: true  },
+    { name: "getMarketCap(top)",         desc: "Top-N coins by market cap",                      free: true  },
+  ],
+  ai: [
+    { name: "chat(prompt, model?)",      desc: "Multi-provider: OpenAI, Groq, Claude, fallback", free: false },
+    { name: "streamChat(prompt, cb)",    desc: "Streaming completions with token callbacks",      free: false },
+    { name: "embedText(text)",           desc: "Text embeddings for semantic search",             free: false },
+    { name: "classifyImage(url)",        desc: "Vision API with provider fallback chain",         free: false },
+  ],
+  gaming: [
+    { name: "getPokemon(name)",          desc: "Full Pokédex entry — stats, moves, evolution",   free: true  },
+    { name: "getFortniteStats(user)",    desc: "Fortnite player stats and season data",           free: true  },
+    { name: "getChessGames(username)",   desc: "Chess.com / Lichess game history",                free: true  },
+    { name: "getCrossfireData()",        desc: "CrossFire weapons, maps, characters",             free: true  },
+  ],
+  realtime: [
+    { name: "ws.crypto(symbols[], cb)",  desc: "Multi-symbol price stream (Binance + Kraken)",   free: true  },
+    { name: "ws.monitor(url, cb)",       desc: "Website uptime monitor via WebSocket",            free: true  },
+    { name: "ws.forex(pairs[], cb)",     desc: "Live FX rate stream",                             free: true  },
+    { name: "mcp.start(port?)",          desc: "Launch MCP server for AI agent tool calls",       free: true  },
+  ],
 };
 
 // ─── Line factories ───────────────────────────────────────────────────────────
 
-function bootLines(): TermLine[] {
+function welcomeLines(): TermLine[] {
   return [
-    { kind: "segs", segs: [{ text: "> Initializing portfolio.exe...", color: "#c9d1d9" }] },
+    { kind: "banner" },
+    { kind: "blank" },
     {
-      kind: "segs",
-      segs: [
-        { text: "> Loading skill modules... ", color: "#c9d1d9" },
-        { text: "done", color: "#3fb950" },
+      kind: "segs", segs: [
+        { text: "  Welcome to ", color: T.textDim },
+        { text: "bemora", color: T.accent, bold: true },
+        { text: " — the ultimate API library for developers & AI agents.", color: T.textDim },
       ],
     },
     {
-      kind: "segs",
-      segs: [
-        { text: "> Click ", color: "#8b949e" },
-        { text: "scan", color: "#58a6ff", clickCmd: "scan" },
-        { text: "  to explore all skill packages", color: "#8b949e" },
+      kind: "segs", segs: [
+        { text: "  Type ", color: T.textFaint },
+        { text: "help", color: T.accent, clickCmd: "help" },
+        { text: "  or click any ", color: T.textFaint },
+        { text: "highlighted command", color: T.accentAlt },
+        { text: " to explore.", color: T.textFaint },
       ],
     },
   ];
 }
 
 function helpLines(): TermLine[] {
-  const row = (cmd: string, desc: string): TermLine => ({
+  const row = (cmd: string, desc: string, color: string): TermLine => ({
     kind: "segs",
     segs: [
-      { text: `  ${cmd.padEnd(12)}`, color: "#58a6ff", clickCmd: cmd },
-      { text: `— ${desc}`, color: "#8b949e" },
+      { text: "  $ bemora ", color: T.textDim },
+      { text: cmd.padEnd(14), color, clickCmd: cmd, bold: true },
+      { text: desc, color: T.textDim },
     ],
   });
   return [
-    { kind: "segs", segs: [{ text: "> Available commands:", color: "#c9d1d9" }] },
+    { kind: "segs", segs: [{ text: "> Available commands", color: T.text, bold: true }] },
     { kind: "blank" },
-    row("scan",      "scan all skill categories"),
-    row("frontend",  "React, Next.js, Tailwind & more"),
-    row("backend",   "Node, Python, PostgreSQL & more"),
-    row("languages", "JS, TS, C++, Ruby, Lua"),
-    row("tools",     "Git, Docker, Linux, Figma"),
-    row("specialty", "Godot, bots, automation, AI"),
-    row("clear",     "clear terminal"),
-  ];
-}
-
-function scanLines(): TermLine[] {
-  const cat = (cmd: string, count: number, icon: string, color: string): TermLine => ({
-    kind: "segs",
-    segs: [
-      { text: "  ✓ ", color: "#3fb950" },
-      { text: icon + " ", color },
-      { text: cmd.padEnd(12), color: "#58a6ff", clickCmd: cmd },
-      { text: `${count} packages`, color: "#8b949e" },
-      { text: "  ·  ", color: "#30363d" },
-      { text: "click to inspect", color: "#484f58" },
-    ],
-  });
-  return [
-    { kind: "segs", segs: [{ text: "> Running skill scan...", color: "#c9d1d9" }] },
-    { kind: "segs", segs: [{ text: "> [██████████] Scanning packages...", color: "#3fb950" }] },
-    { kind: "blank" },
-    cat("frontend",  5, "⬡", "#58a6ff"),
-    cat("backend",   5, "⬡", "#3fb950"),
-    cat("languages", 5, "⬡", "#f8c555"),
-    cat("tools",     5, "⬡", "#e3b341"),
-    cat("specialty", 5, "⬡", "#bc8cff"),
+    row("install",    "— setup guide & quick start",     T.accent),
+    row("categories", "— browse all 94+ API categories", T.accentAlt),
+    row("weather",    "— weather & climate methods",     T.accentAlt),
+    row("crypto",     "— crypto & Coin Wizard toolkit",  T.orange),
+    row("ai",         "— multi-provider AI / LLM APIs",  T.accent),
+    row("gaming",     "— gaming suite (10+ platforms)",  T.green),
+    row("realtime",   "— WebSocket streams & MCP",       T.pink),
+    row("demo",       "— show a live code snippet",      T.textDim),
+    row("clear",      "— clear terminal",                T.textFaint),
     { kind: "blank" },
     {
-      kind: "segs",
-      segs: [{ text: "> 25 packages found. Click any category to open its bag.", color: "#c9d1d9" }],
+      kind: "segs", segs: [
+        { text: "  📦 ", color: T.accent },
+        { text: "94+ categories  ·  320+ methods  ·  zero-key free tier  ·  MCP server", color: T.textDim },
+      ],
     },
   ];
 }
 
-function moduleLines(cmd: string): TermLine[] {
-  const mod = MODULES[cmd];
-  if (!mod) return [];
+function installLines(): TermLine[] {
+  return [
+    { kind: "segs", segs: [{ text: "> Installation", color: T.text, bold: true }] },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  $ ", color: T.textDim },
+        { text: "npm install bemora", color: T.green, bold: true },
+      ],
+    },
+    { kind: "blank" },
+    { kind: "segs", segs: [{ text: "  Quick start:", color: T.textDim }] },
+    {
+      kind: "segs", segs: [
+        { text: "  import ", color: T.accent },
+        { text: "{ bemora } ", color: T.text },
+        { text: "from ", color: T.accent },
+        { text: "'bemora'", color: T.green },
+        { text: ";", color: T.textDim },
+      ],
+    },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  const ", color: T.accent },
+        { text: "weather ", color: T.text },
+        { text: "= await ", color: T.accent },
+        { text: "bemora", color: T.accentAlt },
+        { text: ".getWeather(", color: T.text },
+        { text: "'Cairo'", color: T.green },
+        { text: ");", color: T.textDim },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  const ", color: T.accent },
+        { text: "price  ", color: T.text },
+        { text: "= await ", color: T.accent },
+        { text: "bemora", color: T.accentAlt },
+        { text: ".getPrice(", color: T.text },
+        { text: "'BTC'", color: T.orange },
+        { text: ");", color: T.textDim },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  const ", color: T.accent },
+        { text: "poke   ", color: T.text },
+        { text: "= await ", color: T.accent },
+        { text: "bemora", color: T.accentAlt },
+        { text: ".getPokemon(", color: T.text },
+        { text: "'pikachu'", color: T.green },
+        { text: ");", color: T.textDim },
+      ],
+    },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  CLI:  $ ", color: T.textDim },
+        { text: "bemora weather Cairo", color: T.accentAlt, bold: true },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  MCP:  $ ", color: T.textDim },
+        { text: "bemora-mcp --port 3100", color: T.pink, bold: true },
+      ],
+    },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  🔗 ", color: T.accent },
+        { text: "github.com/Demon-radio/Bemora.lol", color: T.accentAlt },
+        { text: "   ·   npm i bemora", color: T.textDim },
+      ],
+    },
+  ];
+}
+
+function categoriesLines(): TermLine[] {
+  return [
+    { kind: "segs", segs: [{ text: "> Scanning 94 categories…", color: T.text, bold: true }] },
+    { kind: "segs", segs: [{ text: "> [████████████████████] 100%", color: T.green }] },
+    { kind: "blank" },
+    ...CATEGORIES.map((cat): TermLine => ({
+      kind: "segs",
+      segs: [
+        { text: "  ✓ ", color: T.green },
+        { text: cat.icon + "  ", color: cat.color },
+        { text: cat.name.padEnd(12), color: cat.color, clickCmd: cat.name, bold: true },
+        { text: `${String(cat.count).padStart(2)} methods`, color: T.textDim },
+        { text: "  ·  ", color: T.textFaint },
+        { text: cat.label, color: T.textFaint },
+      ],
+    })),
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  …+84 more categories.", color: T.textFaint },
+        { text: "  Click any name above to explore.", color: T.textDim },
+      ],
+    },
+  ];
+}
+
+function methodLines(cmd: string): TermLine[] {
+  const meta = CATEGORIES.find(c => c.name === cmd)!;
+  const methods = METHODS[cmd] ?? [];
   return [
     {
-      kind: "segs",
-      segs: [
-        { text: `> Opening `, color: "#c9d1d9" },
-        { text: `${cmd}.bag`, color: mod.color, bold: true },
-        { text: "...", color: "#c9d1d9" },
+      kind: "segs", segs: [
+        { text: `> ${meta.icon}  `, color: meta.color },
+        { text: meta.label, color: meta.color, bold: true },
+      ],
+    },
+    { kind: "blank" },
+    ...methods.map((m): TermLine => ({ kind: "method", category: cmd, name: m.name, desc: m.desc, free: m.free })),
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  > Next: ", color: T.textDim },
+        { text: "categories", color: T.accent, clickCmd: "categories" },
+        { text: "  ·  ", color: T.textFaint },
+        { text: "install", color: T.accentAlt, clickCmd: "install" },
+        { text: "  ·  ", color: T.textFaint },
+        { text: "help", color: T.textDim, clickCmd: "help" },
+      ],
+    },
+  ];
+}
+
+function demoLines(): TermLine[] {
+  return [
+    { kind: "segs", segs: [{ text: "> Live example — multi-API in one call:", color: T.text, bold: true }] },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  import ", color: T.accent },
+        { text: "{ bemora } ", color: T.text },
+        { text: "from ", color: T.accent },
+        { text: "'bemora'", color: T.green },
+        { text: ";", color: T.textDim },
       ],
     },
     { kind: "blank" },
     {
-      kind: "segs",
-      segs: [
-        { text: `┌─── `, color: "#30363d" },
-        { text: mod.icon + " ", color: mod.color },
-        { text: mod.title, color: mod.color, bold: true },
-        { text: ` ───┐`, color: "#30363d" },
+      kind: "segs", segs: [
+        { text: "  // Parallel calls — smart fallback chains under the hood", color: T.textFaint },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  const ", color: T.accent },
+        { text: "[weather, btc, poke] = await ", color: T.text },
+        { text: "Promise.all", color: T.accentAlt },
+        { text: "([", color: T.text },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "    bemora", color: T.accentAlt },
+        { text: ".getWeather(", color: T.text },
+        { text: "'Cairo'", color: T.green },
+        { text: "),", color: T.text },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "    bemora", color: T.accentAlt },
+        { text: ".getPrice(", color: T.text },
+        { text: "'BTC'", color: T.orange },
+        { text: "),", color: T.text },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "    bemora", color: T.accentAlt },
+        { text: ".getPokemon(", color: T.text },
+        { text: "'pikachu'", color: T.green },
+        { text: "),", color: T.text },
+      ],
+    },
+    { kind: "segs", segs: [{ text: "  ]);", color: T.text }] },
+    { kind: "blank" },
+    {
+      kind: "segs", segs: [
+        { text: "  // Output:", color: T.textFaint },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  weather", color: T.text },
+        { text: " → ", color: T.textFaint },
+        { text: "{ city: 'Cairo', temp: 38, condition: 'Sunny', humidity: 22 }", color: T.green },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  btc    ", color: T.text },
+        { text: " → ", color: T.textFaint },
+        { text: "{ symbol: 'BTC', price: 67420.15, change24h: +2.3 }", color: T.orange },
+      ],
+    },
+    {
+      kind: "segs", segs: [
+        { text: "  poke   ", color: T.text },
+        { text: " → ", color: T.textFaint },
+        { text: "{ name: 'pikachu', type: 'Electric', hp: 35, speed: 90 }", color: T.accentAlt },
       ],
     },
     { kind: "blank" },
-    ...mod.skills.map(
-      (s): TermLine => ({ kind: "skill", name: s.name, percent: s.percent, stat: s.stat, desc: s.desc, icon: s.icon, tags: s.tags })
-    ),
-    { kind: "blank" },
     {
-      kind: "segs",
-      segs: [
-        { text: `└─── `, color: "#30363d" },
-        { text: `${mod.skills.length} packages installed`, color: "#484f58" },
-        { text: ` ───┘`, color: "#30363d" },
-      ],
-    },
-    { kind: "blank" },
-    {
-      kind: "segs",
-      segs: [
-        { text: "> Next: ", color: "#8b949e" },
-        { text: `${mod.next}.bag`, color: "#58a6ff", clickCmd: mod.next },
-        { text: "  ·  ", color: "#30363d" },
-        { text: "help", color: "#58a6ff", clickCmd: "help" },
-        { text: " for all commands", color: "#8b949e" },
+      kind: "segs", segs: [
+        { text: "  ✓ ", color: T.green },
+        { text: "Zero API keys required for free-tier endpoints.", color: T.textDim },
       ],
     },
   ];
@@ -255,156 +364,135 @@ function moduleLines(cmd: string): TermLine[] {
 function errorLines(raw: string): TermLine[] {
   return [
     {
-      kind: "segs",
-      segs: [
-        { text: "> command not found: ", color: "#f85149" },
-        { text: raw, color: "#f85149", bold: true },
-        { text: "   try ", color: "#8b949e" },
-        { text: "help", color: "#58a6ff", clickCmd: "help" },
+      kind: "segs", segs: [
+        { text: "  ✗ command not found: ", color: "#f06292" },
+        { text: raw, color: "#f06292", bold: true },
+        { text: "   try ", color: T.textDim },
+        { text: "help", color: T.accent, clickCmd: "help" },
       ],
     },
   ];
 }
 
+const VALID_CMDS = new Set(["help","install","categories","demo","clear","weather","crypto","ai","gaming","realtime"]);
+
 function getLines(cmd: string): TermLine[] {
   const c = cmd.trim().toLowerCase();
-  if (c === "help")    return helpLines();
-  if (c === "scan")    return scanLines();
-  if (c === "clear")   return [];
-  if (MODULES[c])      return moduleLines(c);
+  if (c === "help")       return helpLines();
+  if (c === "install")    return installLines();
+  if (c === "categories") return categoriesLines();
+  if (c === "demo")       return demoLines();
+  if (c === "clear")      return [];
+  if (CATEGORIES.find(x => x.name === c)) return methodLines(c);
   return errorLines(cmd.trim());
 }
 
-// ─── Matrix rain canvas ───────────────────────────────────────────────────────
+// ─── Particle/Stars background ───────────────────────────────────────────────
 
-const MATRIX_CHARS = "アイウエオカキクケコサシスセソタチツテトナニヌネノ01ABCDEFabcdef<>/{}[]#@!";
-
-function MatrixRain() {
+function StarField() {
   const ref = useRef<HTMLCanvasElement>(null);
-
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
-
     let W = 0, H = 0;
-    const FONT_SZ = 13;
-    let columns: number[] = [];
 
+    type Star = { x: number; y: number; r: number; speed: number; opacity: number; color: string };
+    let stars: Star[] = [];
+
+    const COLORS = ["#7c6af7","#4fc3f7","#43e97b","#ffffff"];
     const resize = () => {
-      W = canvas.offsetWidth;
-      H = canvas.offsetHeight;
-      canvas.width  = W;
-      canvas.height = H;
-      const cols = Math.floor(W / FONT_SZ);
-      columns = Array.from({ length: cols }, () => Math.random() * -H);
+      W = canvas.offsetWidth; H = canvas.offsetHeight;
+      canvas.width = W; canvas.height = H;
+      stars = Array.from({ length: 80 }, () => ({
+        x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.2 + 0.2,
+        speed: Math.random() * 0.15 + 0.03,
+        opacity: Math.random() * 0.5 + 0.1,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      }));
     };
     resize();
 
     let raf: number;
-    let lastT = 0;
-
-    const draw = (ts: number) => {
+    const draw = () => {
       raf = requestAnimationFrame(draw);
-      if (ts - lastT < 60) return;
-      lastT = ts;
-
-      ctx.fillStyle = "rgba(13,17,23,0.18)";
-      ctx.fillRect(0, 0, W, H);
-
-      ctx.font = `${FONT_SZ}px 'JetBrains Mono', monospace`;
-
-      columns.forEach((y, i) => {
-        const ch = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
-        const x  = i * FONT_SZ;
-        ctx.fillStyle = "rgba(63,185,80,0.85)";
-        ctx.fillText(ch, x, y);
-        ctx.fillStyle = "rgba(56,139,253,0.18)";
-        ctx.fillText(MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)], x, y - FONT_SZ);
-        columns[i] = y > H + FONT_SZ * 2 ? -FONT_SZ * Math.random() * 20 : y + FONT_SZ;
-      });
+      ctx.clearRect(0, 0, W, H);
+      for (const s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = s.color + Math.round(s.opacity * 255).toString(16).padStart(2,"0");
+        ctx.fill();
+        s.y -= s.speed;
+        if (s.y < -2) { s.y = H + 2; s.x = Math.random() * W; }
+      }
     };
-
     raf = requestAnimationFrame(draw);
     window.addEventListener("resize", resize);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
-
   return (
-    <canvas
-      ref={ref}
-      style={{
-        position: "absolute",
-        inset: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        opacity: 0.055,
-      }}
-    />
+    <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.45 }} />
   );
 }
 
-// ─── Skill bag card ───────────────────────────────────────────────────────────
+// ─── Banner ───────────────────────────────────────────────────────────────────
 
-type Theme = typeof DARK_T;
+function BannerLine() {
+  return (
+    <div style={{ padding: "6px 0 2px", userSelect: "none" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: 8,
+          background: "linear-gradient(135deg, #7c6af7, #4fc3f7)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 18, flexShrink: 0,
+        }}>
+          📦
+        </div>
+        <div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color: T.accent, letterSpacing: "-0.02em" }}>bemora</span>
+            <span style={{ fontSize: 11, color: T.green, border: `1px solid ${T.green}33`, borderRadius: 4, padding: "1px 6px" }}>v3.6.0</span>
+            <span style={{ fontSize: 11, color: T.textDim }}>MIT</span>
+          </div>
+          <div style={{ fontSize: 11, color: T.textDim, marginTop: 1 }}>
+            94+ categories · 320+ methods · zero-key free tier · MCP server · real-time WebSockets
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-function SkillLine({ name, percent, stat, desc, tags, theme: T }: {
-  name: string; percent: number; stat: string; desc: string; icon: string; tags: string[]; theme: Theme;
-}) {
+// ─── Method line card ─────────────────────────────────────────────────────────
+
+function MethodLine({ name, desc, free }: { category: string; name: string; desc: string; free: boolean }) {
   const [hovered, setHovered] = useState(false);
-
-  const statColor = percent >= 80 ? T.green : percent >= 65 ? T.accent : "#e3b341";
-  const IconComp  = SKILL_ICONS[name];
-
   return (
     <div
-      className="my-1 cursor-default select-none rounded"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        fontFamily: "inherit",
+        margin: "2px 0",
+        padding: "5px 10px",
+        borderRadius: 5,
         border: `1px solid ${hovered ? T.border : T.skillBorder}`,
         background: hovered ? T.skillHoverBg : T.skillBg,
-        transition: "all 0.15s ease",
-        padding: "6px 10px",
+        transition: "all 0.15s",
+        cursor: "default",
       }}
-      data-testid={`skill-row-${name.toLowerCase().replace(/\s+/g, "-")}`}
     >
-      {/* Top row: icon + name + stat metadata */}
-      <div className="flex items-center gap-0 text-sm leading-6" style={{ whiteSpace: "pre" }}>
-        <span style={{ color: statColor, marginRight: 8, display: "flex", alignItems: "center", flexShrink: 0 }}>
-          {IconComp
-            ? <IconComp size={14} />
-            : <span style={{ fontSize: 12 }}>·</span>
-          }
+      <div style={{ display: "flex", alignItems: "center", gap: 0, fontSize: 13, whiteSpace: "pre", fontFamily: "inherit" }}>
+        <span style={{ color: T.green, marginRight: 8, fontSize: 11 }}>fn</span>
+        <span style={{ color: T.accentAlt, minWidth: 270 }}>{name}</span>
+        <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 3, background: free ? T.green + "22" : T.accent + "22", color: free ? T.green : T.accent, border: `1px solid ${free ? T.green : T.accent}44`, marginRight: 10 }}>
+          {free ? "free" : "key"}
         </span>
-        <span style={{ color: T.inputText, minWidth: "156px", display: "inline-block" }}>
-          {name}
-        </span>
-        <span style={{ color: T.textFaint }}>[</span>
-        <span style={{ color: statColor, fontSize: "11px", letterSpacing: "0.02em" }}>{stat}</span>
-        <span style={{ color: T.textFaint }}>]</span>
       </div>
-
-      {/* Bottom row: desc + tags (on hover) */}
       {hovered && (
-        <div className="flex items-center gap-3 mt-0.5" style={{ whiteSpace: "pre" }}>
-          <span style={{ color: T.textFaint, fontSize: "11px" }}>  └ {desc}</span>
-          <span style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
-            {tags.map(t => (
-              <span key={t} style={{
-                fontSize: "9px",
-                color: T.textFaint,
-                border: `1px solid ${T.skillBorder}`,
-                borderRadius: 3,
-                padding: "0 4px",
-                letterSpacing: "0.02em",
-              }}>
-                {t}
-              </span>
-            ))}
-          </span>
+        <div style={{ fontSize: 11, color: T.textDim, marginTop: 2, paddingLeft: 26 }}>
+          └ {desc}
         </div>
       )}
     </div>
@@ -413,75 +501,21 @@ function SkillLine({ name, percent, stat, desc, tags, theme: T }: {
 
 // ─── Segment line ─────────────────────────────────────────────────────────────
 
-function SegLine({ segs, onCommand, fallbackColor }: {
-  segs: Seg[];
-  onCommand: (cmd: string) => void;
-  fallbackColor?: string;
-}) {
+function SegLine({ segs, onCommand }: { segs: Seg[]; onCommand: (cmd: string) => void }) {
   return (
-    <div className="text-sm leading-7" style={{ whiteSpace: "pre" }}>
+    <div style={{ fontSize: 13, lineHeight: "1.75", whiteSpace: "pre", fontFamily: "inherit" }}>
       {segs.map((seg, i) =>
         seg.clickCmd ? (
-          <span
-            key={i}
-            onClick={() => onCommand(seg.clickCmd!)}
-            className="cursor-pointer hover:underline"
-            style={{ color: seg.color ?? fallbackColor ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
-          >
-            {seg.text}
-          </span>
+          <span key={i} onClick={() => onCommand(seg.clickCmd!)}
+            style={{ color: seg.color ?? T.text, fontWeight: seg.bold ? "700" : undefined, cursor: "pointer", textDecoration: "underline", textDecorationColor: (seg.color ?? T.accent) + "55" }}
+          >{seg.text}</span>
         ) : (
-          <span
-            key={i}
-            style={{ color: seg.color ?? fallbackColor ?? "#c9d1d9", fontWeight: seg.bold ? "bold" : undefined }}
-          >
-            {seg.text}
-          </span>
+          <span key={i} style={{ color: seg.color ?? T.text, fontWeight: seg.bold ? "700" : undefined }}>{seg.text}</span>
         )
       )}
     </div>
   );
 }
-
-// ─── Mobile quick-command bar ─────────────────────────────────────────────────
-
-const MOBILE_CMDS = ["scan", "frontend", "backend", "tools", "design", "ai", "help", "clear"];
-
-// ─── Theme colours ────────────────────────────────────────────────────────────
-
-const DARK_T = {
-  bg:            "#0d1117",
-  titleBg:       "#161b22",
-  border:        "#30363d",
-  innerBorder:   "#21262d",
-  text:          "#c9d1d9",
-  textDim:       "#8b949e",
-  textFaint:     "#484f58",
-  textMuted:     "#30363d",
-  accent:        "#58a6ff",
-  green:         "#3fb950",
-  inputText:     "#e6edf3",
-  skillBorder:   "#21262d",
-  skillHoverBg:  "rgba(22,27,34,0.8)",
-  skillBg:       "rgba(13,17,23,0.6)",
-};
-
-const LIGHT_T = {
-  bg:            "#ffffff",
-  titleBg:       "#f6f8fa",
-  border:        "#d0d7de",
-  innerBorder:   "#d8dee4",
-  text:          "#24292f",
-  textDim:       "#57606a",
-  textFaint:     "#6e7781",
-  textMuted:     "#8c959f",
-  accent:        "#0969da",
-  green:         "#1a7f37",
-  inputText:     "#24292f",
-  skillBorder:   "#d0d7de",
-  skillHoverBg:  "rgba(246,248,250,0.9)",
-  skillBg:       "rgba(255,255,255,0.7)",
-};
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -492,34 +526,24 @@ export default function SkillsSection() {
   const [input, setInput]               = useState("");
   const [busy, setBusy]                 = useState(false);
   const [booted, setBooted]             = useState(false);
-  const [lightMode, setLightMode]       = useState(false);
-
-  const T = lightMode ? LIGHT_T : DARK_T;
 
   const outputRef  = useRef<HTMLDivElement>(null);
   const inputRef   = useRef<HTMLInputElement>(null);
   const timersRef  = useRef<ReturnType<typeof setTimeout>[]>([]);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const killTimers = () => {
-    timersRef.current.forEach(clearTimeout);
-    timersRef.current = [];
-  };
-
+  const killTimers = () => { timersRef.current.forEach(clearTimeout); timersRef.current = []; };
   const push = (t: ReturnType<typeof setTimeout>) => timersRef.current.push(t);
 
-  // Slower reveal: 90ms per line for a satisfying terminal feel
   const reveal = (newLines: TermLine[]) => {
     setLines(newLines);
     setVisibleCount(0);
     setBusy(true);
     newLines.forEach((_, i) => {
-      push(
-        setTimeout(() => {
-          setVisibleCount(i + 1);
-          if (i === newLines.length - 1) setBusy(false);
-        }, i * 90)
-      );
+      push(setTimeout(() => {
+        setVisibleCount(i + 1);
+        if (i === newLines.length - 1) setBusy(false);
+      }, i * 75));
     });
     if (newLines.length === 0) setBusy(false);
   };
@@ -529,12 +553,7 @@ export default function SkillsSection() {
     if (!c) return;
     killTimers();
     setFading(true);
-    push(
-      setTimeout(() => {
-        setFading(false);
-        reveal(getLines(c));
-      }, 160)
-    );
+    push(setTimeout(() => { setFading(false); reveal(getLines(c)); }, 150));
   };
 
   const handleLinkClick = (cmd: string) => {
@@ -544,28 +563,14 @@ export default function SkillsSection() {
     const typeNext = () => {
       idx += 1;
       setInput(cmd.slice(0, idx));
-      if (idx < cmd.length) {
-        push(setTimeout(typeNext, 55));
-      } else {
-        push(setTimeout(() => { setInput(""); execute(cmd); }, 220));
-      }
+      if (idx < cmd.length) push(setTimeout(typeNext, 45));
+      else push(setTimeout(() => { setInput(""); execute(cmd); }, 200));
     };
-    push(setTimeout(typeNext, 60));
+    push(setTimeout(typeNext, 40));
   };
 
   const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !busy) {
-      const val = input;
-      setInput("");
-      execute(val);
-    }
-  };
-
-  const handleSubmitBtn = () => {
-    if (!input.trim() || busy) return;
-    const val = input;
-    setInput("");
-    execute(val);
+    if (e.key === "Enter" && !busy) { const val = input; setInput(""); execute(val); }
   };
 
   useEffect(() => {
@@ -573,62 +578,52 @@ export default function SkillsSection() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [visibleCount]);
 
-  // On boot: show boot lines then auto-run scan after a short delay
+  // Boot: show welcome then auto-type "help"
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || booted) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        obs.disconnect();
-        setBooted(true);
-        // Show boot lines, then auto-type and run "scan"
-        const boot = bootLines();
-        reveal(boot);
-        // After boot lines finish, auto-type "scan"
-        const bootDelay = boot.length * 90 + 600;
-        push(setTimeout(() => {
-          let idx = 0;
-          const cmd = "scan";
-          const typeNext = () => {
-            idx++;
-            setInput(cmd.slice(0, idx));
-            if (idx < cmd.length) {
-              push(setTimeout(typeNext, 60));
-            } else {
-              push(setTimeout(() => { setInput(""); execute(cmd); }, 280));
-            }
-          };
-          typeNext();
-        }, bootDelay));
-      },
-      { threshold: 0.25 }
-    );
+    const obs = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      obs.disconnect();
+      setBooted(true);
+      const boot = welcomeLines();
+      reveal(boot);
+      const delay = boot.length * 75 + 500;
+      push(setTimeout(() => {
+        const cmd = "help";
+        let idx = 0;
+        const typeNext = () => {
+          idx++;
+          setInput(cmd.slice(0, idx));
+          if (idx < cmd.length) push(setTimeout(typeNext, 55));
+          else push(setTimeout(() => { setInput(""); execute(cmd); }, 250));
+        };
+        typeNext();
+      }, delay));
+    }, { threshold: 0.2 });
     obs.observe(el);
     return () => obs.disconnect();
   }, [booted]);
 
   useEffect(() => () => killTimers(), []);
 
+  const QUICK_CMDS = ["help","install","categories","demo","weather","crypto","ai","gaming","realtime","clear"];
+
   return (
-    <section
-      id="skills"
-      ref={sectionRef}
-      className="section-padding bg-white border-t border-border"
-    >
+    <section id="skills" ref={sectionRef} className="section-padding bg-white border-t border-border">
       <div className="container-max">
         {/* Section header */}
         <div className="max-w-2xl mb-10">
-          <span className="section-eyebrow">Expertise</span>
-          <h2 className="section-title">Skills &amp; Tools</h2>
+          <span className="section-eyebrow">Open Source</span>
+          <h2 className="section-title">My Package — Bemora</h2>
           <p className="section-subtitle">
-            A live terminal — type a command or click any highlighted word to open a skill bag.
+            An API library I built and maintain — 94+ categories, 320+ methods, zero-key free tier, MCP server for AI agents. Type a command or click any highlighted text.
           </p>
         </div>
 
-        {/* ── Terminal window ── */}
+        {/* Terminal */}
         <div
-          className="rounded-xl overflow-hidden shadow-2xl transition-colors duration-300"
+          className="rounded-xl overflow-hidden shadow-2xl"
           style={{
             background: T.bg,
             border: `1px solid ${T.border}`,
@@ -637,169 +632,117 @@ export default function SkillsSection() {
           onClick={() => inputRef.current?.focus()}
         >
           {/* Title bar */}
-          <div
-            className="flex items-center gap-2 px-4 py-3 transition-colors duration-300"
-            style={{ background: T.titleBg, borderBottom: `1px solid ${T.innerBorder}` }}
-          >
-            <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-            <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-            <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-            <span className="ml-3 text-xs" style={{ color: T.textDim }}>
-              skills.bag — mustafa@portfolio:~
+          <div style={{ background: T.titleBg, borderBottom: `1px solid ${T.innerBorder}`, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57", display: "inline-block" }} />
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e", display: "inline-block" }} />
+            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840", display: "inline-block" }} />
+            <span style={{ marginLeft: 10, fontSize: 12, color: T.textDim }}>
+              bemora — npm package terminal
             </span>
-            <div className="ml-auto flex items-center gap-3">
-              {/* Light/Dark toggle */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setLightMode(m => !m); }}
-                className="text-xs px-2 py-0.5 rounded transition-colors duration-200"
-                style={{
-                  color: T.textDim,
-                  border: `1px solid ${T.innerBorder}`,
-                  background: "transparent",
-                  fontFamily: "inherit",
-                  cursor: "pointer",
-                }}
-                title="Toggle light/dark mode"
-                data-testid="button-theme-toggle"
+            <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+              <a
+                href="https://www.npmjs.com/package/bemora"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ fontSize: 11, color: T.accent, textDecoration: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "2px 8px", fontFamily: "inherit" }}
               >
-                {lightMode ? "◑ dark" : "◐ light"}
-              </button>
-              <span className="flex items-center gap-1.5 text-xs" style={{ color: T.green }}>
-                <span
-                  className="inline-block w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: T.green }}
-                />
+                npm ↗
+              </a>
+              <a
+                href="https://github.com/Demon-radio/Bemora.lol"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ fontSize: 11, color: T.textDim, textDecoration: "none", border: `1px solid ${T.border}`, borderRadius: 4, padding: "2px 8px", fontFamily: "inherit" }}
+              >
+                GitHub ↗
+              </a>
+              <span style={{ fontSize: 11, color: T.green, display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: T.green, display: "inline-block", animation: "pulse 2s infinite" }} />
                 LIVE
               </span>
             </div>
           </div>
 
           {/* Output area */}
-          <div
-            className="relative"
-            style={{ minHeight: "340px", maxHeight: "460px", overflow: "hidden" }}
-          >
-            {!lightMode && <MatrixRain />}
-
-            {/* Scanlines overlay — only in dark mode */}
-            {!lightMode && (
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  pointerEvents: "none",
-                  zIndex: 1,
-                  backgroundImage:
-                    "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px)",
-                }}
-              />
-            )}
-
-            {/* Scrollable text */}
+          <div style={{ position: "relative", minHeight: 360, maxHeight: 480, overflow: "hidden" }}>
+            <StarField />
+            {/* Subtle glow overlay */}
+            <div aria-hidden style={{
+              position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1,
+              background: "radial-gradient(ellipse at 50% 0%, rgba(124,106,247,0.06) 0%, transparent 70%)",
+            }} />
             <div
               ref={outputRef}
-              className="overflow-y-auto px-6 pt-6 pb-2 md:px-8 relative transition-colors duration-300"
               style={{
-                minHeight: "340px",
-                maxHeight: "460px",
-                zIndex: 2,
-                opacity: fading ? 0 : 1,
-                transition: "opacity 0.14s ease",
-                background: lightMode ? T.bg : "transparent",
+                minHeight: 360, maxHeight: 480,
+                overflowY: "auto", padding: "20px 28px 12px",
+                position: "relative", zIndex: 2,
+                opacity: fading ? 0 : 1, transition: "opacity 0.14s ease",
               }}
             >
               {lines.slice(0, visibleCount).map((line, i) => {
-                if (line.kind === "blank") return <div key={i} className="h-1" />;
-                if (line.kind === "skill")
-                  return (
-                    <SkillLine
-                      key={i}
-                      name={line.name}
-                      percent={line.percent}
-                      desc={line.desc}
-                      icon={line.icon}
-                      tags={line.tags}
-                      theme={T}
-                    />
-                  );
-                return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} fallbackColor={T.text} />;
+                if (line.kind === "blank")  return <div key={i} style={{ height: 4 }} />;
+                if (line.kind === "banner") return <BannerLine key={i} />;
+                if (line.kind === "method") return <MethodLine key={i} category={line.category} name={line.name} desc={line.desc} free={line.free} />;
+                return <SegLine key={i} segs={line.segs} onCommand={handleLinkClick} />;
               })}
-
-              {/* Blinking cursor */}
               {!fading && (
-                <div className="flex items-center gap-2 text-sm mt-3 mb-1">
-                  <span style={{ color: T.accent }}>~</span>
-                  <span style={{ color: T.textDim }}>$</span>
-                  <span
-                    className="animate-blink inline-block"
-                    style={{ width: "8px", height: "15px", background: T.accent, verticalAlign: "middle" }}
-                  />
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 13 }}>
+                  <span style={{ color: T.accent }}>❯</span>
+                  <span style={{ width: 8, height: 15, background: T.accent, display: "inline-block", verticalAlign: "middle", opacity: 0.8, animation: "blink 1.1s step-end infinite" }} />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Input area */}
-          <div
-            className="px-6 py-3 md:px-8 transition-colors duration-300"
-            style={{ background: T.bg, borderTop: `1px solid ${T.innerBorder}` }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-sm shrink-0" style={{ color: T.accent }}>~</span>
-              <span className="text-sm shrink-0" style={{ color: T.textDim }}>$</span>
+          {/* Input row */}
+          <div style={{ background: T.bg, borderTop: `1px solid ${T.innerBorder}`, padding: "10px 28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ color: T.accent, fontSize: 14 }}>❯</span>
               <input
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={handleEnter}
                 placeholder="type a command and press Enter…"
                 autoComplete="off"
                 spellCheck={false}
-                className="flex-1 bg-transparent outline-none text-sm"
                 style={{
-                  color: T.inputText,
-                  caretColor: T.accent,
-                  fontFamily: "inherit",
-                  border: "none",
-                  minWidth: 0,
+                  flex: 1, background: "transparent", border: "none", outline: "none",
+                  fontSize: 13, color: T.inputText, caretColor: T.accent,
+                  fontFamily: "inherit", minWidth: 0,
                 }}
                 data-testid="input-terminal-command"
               />
               <button
-                onClick={handleSubmitBtn}
+                onClick={() => { if (input.trim() && !busy) { const v = input; setInput(""); execute(v); } }}
                 disabled={!input.trim() || busy}
-                className="shrink-0 text-xs px-3 py-1 rounded border transition-colors disabled:opacity-30"
                 style={{
-                  color: T.accent,
-                  borderColor: T.border,
-                  background: "transparent",
-                  fontFamily: "inherit",
+                  fontSize: 12, padding: "3px 10px", borderRadius: 4, border: `1px solid ${T.border}`,
+                  background: "transparent", color: T.accent, cursor: "pointer",
+                  fontFamily: "inherit", opacity: (!input.trim() || busy) ? 0.3 : 1,
                 }}
                 data-testid="button-terminal-enter"
-              >
-                ↵
-              </button>
+              >↵</button>
             </div>
           </div>
 
-          {/* Mobile quick-command buttons */}
-          <div
-            className="md:hidden px-4 py-3 flex flex-wrap gap-2 transition-colors duration-300"
-            style={{ background: T.titleBg, borderTop: `1px solid ${T.innerBorder}` }}
-          >
-            {MOBILE_CMDS.map((cmd) => (
+          {/* Quick-cmd bar */}
+          <div style={{ background: T.titleBg, borderTop: `1px solid ${T.innerBorder}`, padding: "8px 16px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {QUICK_CMDS.map(cmd => (
               <button
                 key={cmd}
                 onClick={() => handleLinkClick(cmd)}
-                className="text-xs px-2.5 py-1 rounded border transition-colors"
                 style={{
-                  color: T.textDim,
-                  borderColor: T.innerBorder,
-                  background: T.bg,
-                  fontFamily: "inherit",
+                  fontSize: 11, padding: "3px 10px", borderRadius: 4,
+                  border: `1px solid ${T.innerBorder}`, background: T.bg,
+                  color: VALID_CMDS.has(cmd) ? T.accent : T.textDim,
+                  cursor: "pointer", fontFamily: "inherit",
+                  transition: "border-color 0.15s",
                 }}
-                data-testid={`button-mobile-cmd-${cmd}`}
+                data-testid={`button-quick-cmd-${cmd}`}
               >
                 {cmd}
               </button>
