@@ -36,41 +36,63 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 
 function ProjectImage({ project, domain }: { project: Project; domain: string }) {
   const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    setLoaded(false);
     setFailed(false);
     if (project.imageUrl) {
       setImgSrc(project.imageUrl);
     } else if (project.liveUrl) {
-      // Use thum.io — free screenshot service, no API key needed
+      // thum.io — free screenshot service, no API key needed
       setImgSrc(`https://image.thum.io/get/width/780/crop/400/noanimate/${project.liveUrl}`);
     } else {
       setImgSrc(null);
     }
   }, [project.id, project.imageUrl, project.liveUrl]);
 
-  if (imgSrc && !failed) {
-    return (
-      <img
-        src={imgSrc}
-        alt={project.title}
-        onError={() => setFailed(true)}
-        style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-      />
-    );
-  }
-
-  return (
+  const Placeholder = () => (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)" }}>
       <div style={{ width: 56, height: 56, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2" />
-          <path d="M8 21h8M12 17v4" />
+          <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
         </svg>
       </div>
       <span style={{ fontSize: 13, color: "#94a3b8", fontFamily: "system-ui" }}>{domain}</span>
     </div>
+  );
+
+  if (!imgSrc || failed) return <Placeholder />;
+
+  return (
+    <>
+      {/* Shimmer skeleton while loading */}
+      {!loaded && (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(90deg, #f1f5f9 25%, #e8edf4 50%, #f1f5f9 75%)",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 1.4s infinite",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5">
+            <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
+          </svg>
+        </div>
+      )}
+      <img
+        src={imgSrc}
+        alt={project.title}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        style={{
+          width: "100%", height: "100%", objectFit: "cover", objectPosition: "top",
+          opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease",
+          position: "absolute", inset: 0,
+        }}
+      />
+    </>
   );
 }
 

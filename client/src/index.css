@@ -124,6 +124,11 @@
   50% { opacity: 0; }
 }
 
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 @layer utilities {
   .text-balance { text-wrap: balance; }
 }
