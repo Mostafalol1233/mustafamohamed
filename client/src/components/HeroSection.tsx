@@ -72,14 +72,10 @@ function QuoteCard({ mobile = false }: { mobile?: boolean }) {
           className="flex items-center gap-1.5 ml-3 px-3 py-1 rounded-md"
           style={{ background: "hsl(222 36% 15%)", border: "1px solid hsl(222 28% 20%)" }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="hsl(211 90% 65%)" strokeWidth="2.5">
-            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>
-          <span style={{ fontSize: "11px", color: "hsl(215 18% 62%)", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}>
-            wisdom.md
+          <span style={{ fontSize: "10px", color: "hsl(211 90% 65%)" }}>✦</span>
+          <span style={{ fontSize: "11px", color: "hsl(215 18% 62%)", fontFamily: "system-ui, sans-serif", letterSpacing: "0.02em" }}>
+            thought of the day
           </span>
-          <span style={{ fontSize: "10px", color: "hsl(215 18% 45%)", marginLeft: 2 }}>×</span>
         </div>
       </div>
 

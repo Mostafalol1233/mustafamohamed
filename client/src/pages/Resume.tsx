@@ -37,6 +37,9 @@ export default function ResumePage() {
             </div>
             <div className="text-right text-sm text-gray-500 leading-relaxed shrink-0">
               <div className="flex items-center justify-end gap-1.5">
+                <span>Cairo, Egypt · Remote-friendly</span>
+              </div>
+              <div className="flex items-center justify-end gap-1.5 mt-0.5">
                 <span>contact@crossfire.wiki</span>
               </div>
               <div className="flex items-center justify-end gap-1.5 mt-0.5">
@@ -82,7 +85,7 @@ export default function ResumePage() {
                   </div>
                   <ul className="mt-2.5 space-y-1.5 text-sm text-gray-600 list-none">
                     <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Designed and shipped 15+ client projects including e-commerce platforms, SaaS dashboards, gaming sites, and automation tools.</li>
-                    <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Built and maintained <strong>Bemora</strong>, an open-source npm package providing a unified interface to 94+ public APIs (weather, crypto, AI, gaming, and more).</li>
+                    <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Built and maintains <span className="font-semibold">Bemora</span> — an open-source npm package providing a unified interface to 94+ public APIs (weather, crypto, AI, gaming, and more).</li>
                     <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Developed bilingual (Arabic / English) web applications serving MENA-region clients, with RTL layout support and i18n architecture.</li>
                     <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Integrated Supabase backends (PostgreSQL, Auth, Storage) for real-time data, row-level security, and file management.</li>
                     <li className="flex gap-2"><span className="text-blue-500 mt-0.5">▸</span>Created Discord and Telegram bots with custom command systems, automation workflows, and third-party API hooks.</li>

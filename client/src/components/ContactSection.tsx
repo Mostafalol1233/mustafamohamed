@@ -457,13 +457,13 @@ export default function ContactSection() {
               </p>
               <div className="w-full" style={{ borderTop: "1px solid #21262d" }} />
               <div className="text-center">
-                <p className="text-xs mb-1.5" style={{ color: "#484f58" }}>Prefer email?</p>
+                <p className="text-xs mb-2" style={{ color: "#6e7681" }}>Prefer a direct email?</p>
                 <a
                   href="mailto:contact@crossfire.wiki"
-                  className="text-xs font-medium transition-colors"
-                  style={{ color: "#58a6ff" }}
-                  onMouseEnter={e => { e.currentTarget.style.color = "#79b8ff"; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = "#58a6ff"; }}
+                  className="font-medium transition-colors"
+                  style={{ color: "#58a6ff", fontSize: "13px", letterSpacing: "0.01em" }}
+                  onMouseEnter={e => { e.currentTarget.style.color = "#79b8ff"; e.currentTarget.style.textDecoration = "underline"; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = "#58a6ff"; e.currentTarget.style.textDecoration = "none"; }}
                 >
                   contact@crossfire.wiki
                 </a>
