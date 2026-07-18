@@ -26,7 +26,8 @@ export default function Navigation({ showAdminButton = false }: { showAdminButto
     { label: t.nav.skills, id: "skills" },
     { label: t.nav.portfolio, id: "portfolio" },
     { label: t.nav.blog, id: "blog" },
-    { label: t.nav.reviews, id: "reviews" },
+    { label: (t.nav as any).certs || "Certs", id: "certifications" },
+    { label: (t.nav as any).stack || "Stack", id: "reviews" },
     { label: t.nav.contact, id: "contact" },
   ];
 

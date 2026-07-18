@@ -201,8 +201,8 @@ export default function HeroSection() {
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }}
             className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mb-8">
             {lang === "ar"
-              ? "أبني تطبيقات ويب كاملة، ألعاب، وبوتات أتمتة. من قواعد البيانات إلى واجهة المستخدم — أهتم بالإنجاز الحقيقي."
-              : "I build web apps, games, and automation bots. Full-stack to game loops to scrapers — I ship real, complete software across the stack."}
+              ? "مطور ويب متكامل متخصص في تطبيقات الإنتاج وأدوات المطورين. من منصات التجارة الإلكترونية إلى مكتبات npm — أحوّل الأفكار إلى برمجيات حقيقية تعمل بكفاءة."
+              : "Full-stack engineer specializing in production web apps & developer tools. From e-commerce platforms to npm packages — I turn ideas into software that ships and scales."}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}

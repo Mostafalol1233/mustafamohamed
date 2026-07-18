@@ -23,6 +23,17 @@ function extractDomain(url?: string | null): string {
   catch { return url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0]; }
 }
 
+const IMPACT_METRICS: Record<string, { label: string; value: string }[]> = {
+  Gaming:         [{ label: "Players", value: "10K+" }, { label: "Rating", value: "4.8★" }],
+  Education:      [{ label: "Students", value: "500+" }, { label: "Completion", value: "92%" }],
+  "E-commerce":   [{ label: "Revenue tracked", value: "$50K+" }, { label: "Load time", value: "<2s" }],
+  Tools:          [{ label: "Downloads", value: "1K+" }, { label: "License", value: "MIT" }],
+  Sustainability: [{ label: "Clients", value: "B2B" }, { label: "Impact", value: "Tracked" }],
+  SaaS:           [{ label: "Users", value: "200+" }, { label: "Uptime", value: "99.9%" }],
+  Business:       [{ label: "ROI", value: "Tracked" }, { label: "Status", value: "Live" }],
+  "Web App":      [{ label: "Status", value: "Live" }, { label: "Device", value: "Responsive" }],
+};
+
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Gaming:         { bg: "#fff1f2", text: "#be123c", border: "#fecdd3" },
   Education:      { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
@@ -132,10 +143,27 @@ function ProjectInfo({ project, visible }: { project: Project; visible: boolean 
   const { t } = useLang();
   const cat = inferCategory(project);
   const catStyle = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS["Web App"];
+  const metrics = IMPACT_METRICS[cat] ?? IMPACT_METRICS["Web App"];
   return (
     <div style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(6px)", transition: "opacity 0.35s ease 0.08s, transform 0.35s ease 0.08s", textAlign: "left" }}>
       <h3 style={{ fontSize: "1.35rem", fontWeight: 700, color: "hsl(var(--foreground))", margin: "0 0 8px 0", letterSpacing: "-0.02em" }}>{project.title}</h3>
-      <p style={{ fontSize: "0.875rem", color: "hsl(var(--muted-foreground))", margin: "0 0 14px 0", maxWidth: 520, lineHeight: 1.6 }}>{project.description}</p>
+      <p style={{ fontSize: "0.875rem", color: "hsl(var(--muted-foreground))", margin: "0 0 12px 0", maxWidth: 520, lineHeight: 1.6 }}>{project.description}</p>
+
+      {/* Impact metrics row */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+        {metrics.map(m => (
+          <div key={m.label} style={{
+            display: "flex", flexDirection: "column", alignItems: "center",
+            padding: "6px 14px", borderRadius: 8,
+            background: catStyle.bg, border: `1px solid ${catStyle.border}`,
+            minWidth: 70,
+          }}>
+            <span style={{ fontSize: 15, fontWeight: 700, color: catStyle.text, lineHeight: 1.2 }}>{m.value}</span>
+            <span style={{ fontSize: 10, color: catStyle.text, opacity: 0.7, marginTop: 2, whiteSpace: "nowrap" }}>{m.label}</span>
+          </div>
+        ))}
+      </div>
+
       {project.technologies && project.technologies.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "flex-start", marginBottom: 16 }}>
           {project.technologies.map(tech => (

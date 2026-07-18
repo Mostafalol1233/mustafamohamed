@@ -100,11 +100,12 @@ export default function ReviewsSection() {
       style={{ padding: "40px 0 36px" }}
     >
       <div className="container-max mb-6">
+        <span className="section-eyebrow">Tech Stack</span>
         <p
-          className="text-xs font-semibold uppercase tracking-widest"
+          className="text-xs font-semibold uppercase tracking-widest mt-1"
           style={{ color: "hsl(var(--muted-foreground))", letterSpacing: "0.14em" }}
         >
-          {t.reviews?.eyebrow ?? "Platforms & Tools I Use"}
+          Platforms &amp; tools I build with every day
         </p>
       </div>
 

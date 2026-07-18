@@ -4,7 +4,7 @@ export const translations = {
   en: {
     nav: {
       home: "Home", skills: "Bemora", portfolio: "Portfolio",
-      reviews: "Reviews", contact: "Contact", blog: "Blog", admin: "Admin",
+      blog: "Blog", certs: "Certs", stack: "Stack", contact: "Contact", admin: "Admin",
     },
     hero: {
       available: "Available for new projects",
@@ -78,9 +78,10 @@ export const translations = {
       home: "الرئيسية",
       skills: "بيمورا",
       portfolio: "شغلي",
-      reviews: "آراء العملاء",
-      contact: "تواصل معايا",
       blog: "المدونة",
+      certs: "شهاداتي",
+      stack: "الأدوات",
+      contact: "تواصل معايا",
       admin: "لوحة التحكم",
     },
     hero: {

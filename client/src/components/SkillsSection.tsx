@@ -382,13 +382,10 @@ export default function SkillsSection() {
     }, 80));
   };
 
-  // Welcome → auto-enter after 3.5s, or on keypress
+  // Welcome → enter only on click (no auto-enter)
   useEffect(() => {
     if (phase !== "welcome" || !booted) return;
-    const t = setTimeout(enterTerminal, 3500);
-    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === "Enter") { clearTimeout(t); enterTerminal(); } };
-    window.addEventListener("keydown", onKey);
-    return () => { clearTimeout(t); window.removeEventListener("keydown", onKey); };
+    return () => {};
   }, [phase, booted]);
 
   // IntersectionObserver boot
@@ -437,24 +434,34 @@ export default function SkillsSection() {
           {/* Title bar */}
           <div style={{
             background: "#0a0a0a", borderBottom: "1px solid #27272a",
-            padding: "10px 16px", display: "flex", alignItems: "center", gap: 8,
+            padding: "10px 16px", display: "flex", alignItems: "center", position: "relative",
           }}>
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57", display: "inline-block" }} />
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e", display: "inline-block" }} />
-            <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840", display: "inline-block" }} />
-            <span style={{ marginLeft: 10, fontSize: 12, color: MUTED }}>
-              {phase === "welcome" ? "bemora — welcome" : "bemora — npm package terminal"}
-            </span>
+            {/* Traffic lights — left */}
+            <div style={{ display: "flex", gap: 6, flexShrink: 0, zIndex: 1 }}>
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff5f57", display: "inline-block" }} />
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#febc2e", display: "inline-block" }} />
+              <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#28c840", display: "inline-block" }} />
+            </div>
+
+            {/* Centered title — absolutely placed so it's truly centered regardless of side content */}
+            <div style={{ position: "absolute", left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none" }}>
+              <span style={{ fontSize: 12, color: MUTED, fontFamily: "inherit", letterSpacing: "0.04em" }}>
+                <span style={{ color: ACCENT, fontWeight: 700 }}>bemora</span>
+                {phase === "welcome" ? " — welcome" : " — npm package terminal"}
+              </span>
+            </div>
+
+            {/* Links — right */}
             {phase === "terminal" && (
-              <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+              <div style={{ marginLeft: "auto", display: "flex", gap: 8, zIndex: 1 }}>
                 <a href="https://www.npmjs.com/package/bemora" target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ fontSize: 11, color: ACCENT, textDecoration: "none", border: `1px solid ${MUTED}`, borderRadius: 4, padding: "2px 8px" }}>
+                  style={{ fontSize: 11, color: ACCENT, textDecoration: "none", border: `1px solid ${ACCENT}44`, borderRadius: 4, padding: "2px 10px", background: `${ACCENT}10` }}>
                   npm ↗
                 </a>
                 <a href="https://github.com/Demon-radio/Bemora.lol" target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ fontSize: 11, color: DIM, textDecoration: "none", border: `1px solid ${MUTED}`, borderRadius: 4, padding: "2px 8px" }}>
+                  style={{ fontSize: 11, color: BRIGHT, textDecoration: "none", border: `1px solid ${MUTED}`, borderRadius: 4, padding: "2px 10px", background: "#1c1c1c" }}>
                   GitHub ↗
                 </a>
               </div>
@@ -466,46 +473,44 @@ export default function SkillsSection() {
             <div
               onClick={enterTerminal}
               style={{
-                minHeight: 420, padding: "36px 40px 32px",
-                display: "flex", flexDirection: "column",
-                cursor: "pointer", userSelect: "none",
+                minHeight: 420, padding: "48px 40px 40px",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", userSelect: "none", gap: 32,
               }}
             >
-              {/* "Welcome to bemora" badge */}
-              <div style={{ marginBottom: "auto" }}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  fontSize: 13, color: BRIGHT,
-                  border: `1px solid #27272a`, borderRadius: 4,
-                  padding: "6px 14px",
-                }}>
-                  <span style={{ color: ACCENT }}>✦</span>
-                  Welcome to{" "}
-                  <strong style={{ color: ACCENT }}>bemora</strong>
-                </span>
+              {/* Big pixel name — centered hero */}
+              <div style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: "clamp(32px, 6vw, 64px)",
+                color: ACCENT,
+                lineHeight: 1.3,
+                textAlign: "center",
+                letterSpacing: "0.06em",
+                textShadow: `0 0 60px ${ACCENT}55, 0 0 120px ${ACCENT}22`,
+              }}>
+                BEMORA
               </div>
 
-              {/* Big pixel name */}
-              <div style={{
-                flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "20px 0",
-              }}>
-                <div style={{
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: "clamp(28px, 5vw, 58px)",
-                  color: ACCENT,
-                  lineHeight: 1.4,
-                  textAlign: "center",
-                  letterSpacing: "0.05em",
-                  textShadow: `0 0 40px ${ACCENT}44`,
-                }}>
-                  BEMORA
+              {/* Tagline */}
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 13, color: BRIGHT, marginBottom: 6, letterSpacing: "0.02em" }}>
+                  94+ API categories · 320+ methods · zero-key free tier
+                </div>
+                <div style={{ fontSize: 11, color: DIM }}>
+                  npm install bemora
                 </div>
               </div>
 
-              {/* "Press Enter" */}
-              <div style={{ fontSize: 13, color: DIM }}>
-                Press <strong style={{ color: BRIGHT }}>Enter</strong> to continue
+              {/* Click-to-enter pill */}
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                border: `1px solid ${ACCENT}55`, borderRadius: 999,
+                padding: "10px 28px", background: `${ACCENT}0d`,
+                fontSize: 13, color: BRIGHT, letterSpacing: "0.03em",
+                transition: "all 0.15s",
+              }}>
+                <span style={{ color: ACCENT, fontSize: 16 }}>▶</span>
+                Click to explore
               </div>
             </div>
           )}
@@ -576,18 +581,24 @@ export default function SkillsSection() {
               {/* Quick-cmd bar */}
               <div style={{
                 background: "#0a0a0a", borderTop: "1px solid #27272a",
-                padding: "8px 16px", display: "flex", flexWrap: "wrap", gap: 6,
+                padding: "10px 16px",
               }}>
-                {QUICK.map(cmd => (
-                  <button key={cmd} onClick={() => handleLink(cmd)}
-                    style={{
-                      fontSize: 11, padding: "3px 10px", borderRadius: 4,
-                      border: `1px solid #27272a`, background: BG,
-                      color: ACCENT, cursor: "pointer", fontFamily: "inherit",
-                    }}
-                    data-testid={`button-quick-cmd-${cmd}`}
-                  >{cmd}</button>
-                ))}
+                <div style={{ fontSize: 10, color: DIM, marginBottom: 7, textTransform: "uppercase", letterSpacing: "0.1em" }}>Quick commands</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {QUICK.map(cmd => (
+                    <button key={cmd} onClick={() => handleLink(cmd)}
+                      style={{
+                        fontSize: 11, padding: "4px 12px", borderRadius: 6,
+                        border: `1px solid #2a2a2a`, background: "#141414",
+                        color: ACCENT, cursor: "pointer", fontFamily: "inherit",
+                        transition: "all 0.12s", letterSpacing: "0.02em",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = `${ACCENT}1a`; e.currentTarget.style.borderColor = `${ACCENT}55`; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#141414"; e.currentTarget.style.borderColor = "#2a2a2a"; }}
+                      data-testid={`button-quick-cmd-${cmd}`}
+                    >$ {cmd}</button>
+                  ))}
+                </div>
               </div>
             </>
           )}
