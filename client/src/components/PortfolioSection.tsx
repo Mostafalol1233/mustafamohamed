@@ -275,15 +275,6 @@ export default function PortfolioSection() {
           <p className="section-subtitle">{t.portfolio.subtitle}</p>
         </div>
 
-        {/* Dragon Console */}
-        <div className="mb-16">
-          <div className="mb-4">
-            <p className="text-sm font-semibold text-foreground mb-1">Physics Console</p>
-            <p className="text-xs text-muted-foreground">Mouse-driven physics simulation built with vanilla Canvas API — hover to interact.</p>
-          </div>
-          <DragonConsole />
-        </div>
-
         {isLoading ? <ViewerSkeleton /> : projects.length === 0 ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: "hsl(var(--muted-foreground))", fontSize: 14 }}>No projects to display yet.</div>
         ) : <ProjectViewer projects={projects} />}

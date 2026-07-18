@@ -9,13 +9,13 @@ const ROLES_EN = ["Full-Stack Developer", "Game Developer", "Bot & Automation En
 const ROLES_AR = ["مطور ويب متكامل", "مطور ألعاب", "مهندس أتمتة وبوتات", "مهندس برمجيات"];
 
 function useTypewriter(words: string[], speed = 75, pause = 2000) {
-  const [display, setDisplay] = useState("");
+  const [display, setDisplay] = useState(() => words[0] ?? "");
   const [wi, setWi] = useState(0);
-  const [ci, setCi] = useState(0);
+  const [ci, setCi] = useState(() => words[0]?.length ?? 0);
   const [del, setDel] = useState(false);
 
   useEffect(() => {
-    setWi(0); setCi(0); setDel(false); setDisplay("");
+    setWi(0); setCi(words[0]?.length ?? 0); setDel(false); setDisplay(words[0] ?? "");
   }, [words]);
 
   useEffect(() => {
@@ -158,7 +158,7 @@ export default function HeroSection() {
   const stats = [
     { value: "4+",  label: t.hero.stats.years },
     { value: "15+", label: t.hero.stats.projects },
-    { value: "94+", label: lang === "ar" ? "تكامل في Bemora" : "Bemora Integrations" },
+    { value: "94+", label: lang === "ar" ? "واجهة API مدمجة" : "APIs Integrated" },
   ];
 
   const techStack = ["React", "TypeScript", "Python", "C++", "Node.js", "Ruby", "Godot"];
@@ -175,13 +175,19 @@ export default function HeroSection() {
 
       <div className="container-max w-full relative z-10">
         <div className="max-w-3xl">
-          {isAvailable && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground mb-8 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-dot" />
-              {t.hero.available}
-            </motion.div>
-          )}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+            className="flex flex-wrap items-center gap-2 mb-8">
+            {isAvailable && (
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse-dot" />
+                {t.hero.available}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground shadow-sm">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {lang === "ar" ? "القاهرة، مصر · متاح للعمل عن بُعد" : "Cairo, Egypt · Remote-friendly"}
+            </span>
+          </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.05 }}
             className="text-5xl md:text-7xl font-bold text-foreground tracking-tight leading-[1.05] mb-4">
