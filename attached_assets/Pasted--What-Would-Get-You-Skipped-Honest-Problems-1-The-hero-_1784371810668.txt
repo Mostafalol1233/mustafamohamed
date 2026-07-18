@@ -1,0 +1,34 @@
+🚨 What Would Get You Skipped — Honest Problems
+1. The hero copy is unfocused
+
+"I build web apps, games, and automation bots"
+
+That's three completely different disciplines in one sentence. A recruiter reading this doesn't know what role you're applying for. Are you a game dev? A backend automation engineer? A web developer? You need one clear line:
+
+"Full-stack developer specialized in JavaScript/TypeScript — I build fast, production-ready web apps and open-source tools."
+
+Pick your lane in the copy. You can do everything — but tell them what you WANT to do.
+
+2. The stats need honesty + proof
+
+"4+ Years" — a recruiter will ask "so you started at ~16?" and probe it in the interview. Be ready. If it counts self-learning, that's fine — but it needs to match your GitHub activity.
+"15+ Projects" — great, but WHERE? The portfolio carousel better show strong ones. If a recruiter clicks Portfolio and sees placeholder screenshots or low-effort apps, the number backfires.
+"6+ Certificates" — not shown anywhere. Either display them (with issuer: Google, Meta, AWS, etc.) or remove the stat. Unsupported stats raise red flags.
+3. No profile photo Corporate HR's ATS (applicant tracking systems) aside — on a personal portfolio, a face creates trust. A genuine, professional photo in the hero would meaningfully increase contact conversion. Not mandatory, but it's a gap.
+
+4. "Download Resume" must actually work The button exists but goes nowhere until you upload a resume URL in settings. This is the #1 thing HR clicks. An empty button is worse than no button — it signals an unfinished portfolio. Fix this immediately.
+
+5. The Bemora section replaces Skills entirely Creative choice — but traditional recruiters (especially HR generalists, not tech leads) won't click through a terminal CLI to find out you know React. They scan. They need to see: React · TypeScript · Node.js · Python in plain text somewhere. Consider adding a small 6-item tech grid under the Bemora terminal, or move it to the hero tech chips row.
+
+6. Reviews section If this section has no real testimonials, it reads as vanity padding. One real quote from a real person (client, colleague, professor, open-source contributor) is worth more than a section header with nothing in it. If it's empty — remove the nav link entirely until you have content.
+
+7. Projects need impact metrics, not just existence
+
+"Project Name — built with React"
+
+vs.
+
+"Built a crypto dashboard tracking 50+ coins with live WebSocket feeds — 200+ npm downloads/week"
+
+The second one gets interviews. Numbers, problem, scale.
+

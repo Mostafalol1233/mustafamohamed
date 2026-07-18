@@ -162,7 +162,7 @@ export default function HeroSection() {
   const stats = [
     { value: "4+",  label: t.hero.stats.years },
     { value: "15+", label: t.hero.stats.projects },
-    { value: "6+",  label: t.hero.stats.certs },
+    { value: "94+", label: lang === "ar" ? "فئة API" : "API Categories" },
   ];
 
   const techStack = ["React", "TypeScript", "Python", "C++", "Node.js", "Ruby", "Godot"];
@@ -202,7 +202,7 @@ export default function HeroSection() {
             className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl mb-8">
             {lang === "ar"
               ? "مطور ويب متكامل متخصص في تطبيقات الإنتاج وأدوات المطورين. من منصات التجارة الإلكترونية إلى مكتبات npm — أحوّل الأفكار إلى برمجيات حقيقية تعمل بكفاءة."
-              : "Full-stack engineer specializing in production web apps & developer tools. From e-commerce platforms to npm packages — I turn ideas into software that ships and scales."}
+              : "Full-stack developer specialized in JavaScript/TypeScript. I build fast, production-ready web apps and open-source tools."}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}

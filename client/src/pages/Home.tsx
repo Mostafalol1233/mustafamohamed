@@ -3,7 +3,6 @@ import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import SkillsSection from "@/components/SkillsSection";
 import PortfolioSection from "@/components/PortfolioSection";
-import CertificationsSection from "@/components/CertificationsSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactSection from "@/components/ContactSection";
 import BlogSection from "@/components/BlogSection";
@@ -110,7 +109,6 @@ export default function Home() {
         <HeroSection />
         <SkillsSection />
         <PortfolioSection />
-        <CertificationsSection />
         <BlogSection />
         <ReviewsSection />
         <ContactSection />
@@ -126,7 +124,7 @@ export default function Home() {
               <span className="font-semibold text-sm text-foreground hidden sm:inline">Mustafa Mohamed</span>
             </div>
             <nav className="flex items-center justify-center gap-4 flex-wrap">
-              {["home", "skills", "portfolio", "blog", "certifications", "reviews", "contact"].map(id => (
+              {["home", "skills", "portfolio", "blog", "reviews", "contact"].map(id => (
                 <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors capitalize" data-testid={`footer-link-${id}`}>
                   {id.charAt(0).toUpperCase() + id.slice(1)}

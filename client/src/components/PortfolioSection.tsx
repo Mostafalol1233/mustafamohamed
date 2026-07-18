@@ -50,18 +50,41 @@ function ProjectImage({ project, domain }: { project: Project; domain: string })
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
 
+  // Screenshot service fallback chain
+  const screenshotSrc = (url: string, attempt: number): string | null => {
+    const enc = encodeURIComponent(url);
+    if (attempt === 0) return `https://s.wordpress.com/mshots/v1/${enc}?w=780&h=400`;
+    if (attempt === 1) return `https://image.thum.io/get/width/780/crop/400/${url}`;
+    return null;
+  };
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
+    setAttempt(0);
     if (project.imageUrl) {
       setImgSrc(project.imageUrl);
     } else if (project.liveUrl) {
-      // thum.io — free screenshot service, no API key needed
-      setImgSrc(`https://image.thum.io/get/width/780/crop/400/noanimate/${project.liveUrl}`);
+      setImgSrc(screenshotSrc(project.liveUrl, 0));
     } else {
       setImgSrc(null);
     }
   }, [project.id, project.imageUrl, project.liveUrl]);
+
+  const handleError = () => {
+    if (!project.imageUrl && project.liveUrl) {
+      const next = attempt + 1;
+      const nextSrc = screenshotSrc(project.liveUrl, next);
+      if (nextSrc) {
+        setAttempt(next);
+        setLoaded(false);
+        setImgSrc(nextSrc);
+        return;
+      }
+    }
+    setFailed(true);
+  };
 
   const Placeholder = () => (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, background: "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)" }}>
@@ -96,7 +119,7 @@ function ProjectImage({ project, domain }: { project: Project; domain: string })
         src={imgSrc}
         alt={project.title}
         onLoad={() => setLoaded(true)}
-        onError={() => setFailed(true)}
+        onError={handleError}
         style={{
           width: "100%", height: "100%", objectFit: "cover", objectPosition: "top",
           opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease",
