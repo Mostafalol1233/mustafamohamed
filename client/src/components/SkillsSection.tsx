@@ -603,28 +603,6 @@ export default function SkillsSection() {
             </>
           )}
         </div>
-        {/* ── Visible tech stack grid — for scanners who won't use the terminal ── */}
-        <div className="mt-10">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-5" style={{ letterSpacing: "0.12em" }}>
-            Core stack — at a glance
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-            {[
-              { name: "React",      icon: "⚛️", note: "Frontend" },
-              { name: "TypeScript", icon: "🔷", note: "Language" },
-              { name: "Node.js",    icon: "🟢", note: "Backend" },
-              { name: "Python",     icon: "🐍", note: "Scripting / AI" },
-              { name: "Supabase",   icon: "⚡", note: "Database" },
-              { name: "Godot",      icon: "🎮", note: "Game Dev" },
-            ].map(({ name, icon, note }) => (
-              <div key={name} className="flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl border border-border bg-card hover:border-primary/40 transition-colors text-center">
-                <span className="text-2xl">{icon}</span>
-                <span className="text-sm font-semibold text-foreground">{name}</span>
-                <span className="text-[10px] text-muted-foreground">{note}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
